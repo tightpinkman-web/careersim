@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { prisma } from "@/lib/prisma";
-import { anthropic, GAME_MASTER_MODEL, GAME_MASTER_MAX_TOKENS } from "@/lib/anthropic";
+import { getAnthropicClient, GAME_MASTER_MODEL, GAME_MASTER_MAX_TOKENS } from "@/lib/anthropic";
 import { GAME_MASTER_PROMPTS } from "@/lib/prompts/gameMasters";
 import { CAREER_STATE_SCHEMAS, type CareerTypeKey } from "@/lib/schemas/simulation";
 import type { SimulationState } from "@/types/simulation";
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
 
   let state: SimulationState;
   try {
-    const response = await anthropic.messages.parse({
+    const response = await getAnthropicClient().messages.parse({
       model: GAME_MASTER_MODEL,
       max_tokens: GAME_MASTER_MAX_TOKENS,
       system: GAME_MASTER_PROMPTS[careerType],
