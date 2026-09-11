@@ -10,7 +10,7 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.125.0",
+    "@google/genai": "^2.22.0",
     "@prisma/client": "6.19.3",
     "@supabase/supabase-js": "^2.116.0",
     "clsx": "^2.1.1",
@@ -37,6 +37,8 @@
   "allowScripts": {
     "prisma@6.19.3": true,
     "@prisma/client@6.19.3": true,
-    "@prisma/engines@6.19.3": true
+    "@prisma/engines@6.19.3": true,
+    "@google/genai@2.22.0": true,
+    "protobufjs@7.6.6": true
   }
 }

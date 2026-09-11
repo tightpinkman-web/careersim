@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
-import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { prisma } from "@/lib/prisma";
-import { getAnthropicClient, GAME_MASTER_MODEL, GAME_MASTER_MAX_TOKENS } from "@/lib/anthropic";
+import { generateStructured, statusForGeminiError, describeGeminiError } from "@/lib/gemini";
 import { GAME_MASTER_PROMPTS } from "@/lib/prompts/gameMasters";
 import { CAREER_STATE_SCHEMAS, type CareerTypeKey } from "@/lib/schemas/simulation";
 import type { SimulationState } from "@/types/simulation";
@@ -82,30 +80,19 @@ export async function POST(request: Request) {
 
   let state: SimulationState;
   try {
-    const response = await getAnthropicClient().messages.parse({
-      model: GAME_MASTER_MODEL,
-      max_tokens: GAME_MASTER_MAX_TOKENS,
+    state = (await generateStructured({
       system: GAME_MASTER_PROMPTS[careerType],
-      messages: [
+      turns: [
         {
           role: "user",
-          content:
-            "[SESSION_START] Begin the simulation. Establish the scenario and generate Step 1 (currentStep: 1).",
+          text: "[SESSION_START] Begin the simulation. Establish the scenario and generate Step 1 (currentStep: 1).",
         },
       ],
-      output_config: {
-        format: zodOutputFormat(CAREER_STATE_SCHEMAS[careerType]),
-      },
-    });
-
-    if (!response.parsed_output) {
-      throw new Error("Claude returned a response that did not parse against the expected schema.");
-    }
-
-    state = response.parsed_output as SimulationState;
+      schema: CAREER_STATE_SCHEMAS[careerType],
+    })) as SimulationState;
   } catch (err) {
     await prisma.simulationSession.delete({ where: { id: session.id } });
-    return NextResponse.json({ error: describeAnthropicError(err) }, { status: statusForAnthropicError(err) });
+    return NextResponse.json({ error: describeGeminiError(err) }, { status: statusForGeminiError(err) });
   }
 
   await prisma.actionLog.create({
@@ -119,18 +106,4 @@ export async function POST(request: Request) {
   });
 
   return NextResponse.json({ sessionId: session.id, state });
-}
-
-function statusForAnthropicError(err: unknown): number {
-  if (err instanceof Anthropic.RateLimitError) return 429;
-  if (err instanceof Anthropic.AuthenticationError) return 401;
-  if (err instanceof Anthropic.BadRequestError) return 400;
-  if (err instanceof Anthropic.APIError) return 502;
-  return 500;
-}
-
-function describeAnthropicError(err: unknown): string {
-  if (err instanceof Anthropic.APIError) return `Game Master call failed: ${err.message}`;
-  if (err instanceof Error) return err.message;
-  return "Unknown error generating the initial simulation state.";
 }

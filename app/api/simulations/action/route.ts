@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
-import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { prisma } from "@/lib/prisma";
-import { getAnthropicClient, GAME_MASTER_MODEL, GAME_MASTER_MAX_TOKENS } from "@/lib/anthropic";
+import { generateStructured, statusForGeminiError, describeGeminiError, type ChatTurn } from "@/lib/gemini";
 import { GAME_MASTER_PROMPTS } from "@/lib/prompts/gameMasters";
 import { CAREER_STATE_SCHEMAS, type CareerTypeKey } from "@/lib/schemas/simulation";
 import type { SimulationState } from "@/types/simulation";
@@ -39,32 +37,22 @@ export async function POST(request: Request) {
 
   const careerType = session.careerType as CareerTypeKey;
 
-  const messages: Anthropic.MessageParam[] = [];
+  const turns: ChatTurn[] = [];
   for (const log of session.actionLogs) {
-    messages.push({ role: "user", content: log.studentInput });
-    messages.push({ role: "assistant", content: JSON.stringify(log.returnedState) });
+    turns.push({ role: "user", text: log.studentInput });
+    turns.push({ role: "model", text: JSON.stringify(log.returnedState) });
   }
-  messages.push({ role: "user", content: action });
+  turns.push({ role: "user", text: action });
 
   let state: SimulationState;
   try {
-    const response = await getAnthropicClient().messages.parse({
-      model: GAME_MASTER_MODEL,
-      max_tokens: GAME_MASTER_MAX_TOKENS,
+    state = (await generateStructured({
       system: GAME_MASTER_PROMPTS[careerType],
-      messages,
-      output_config: {
-        format: zodOutputFormat(CAREER_STATE_SCHEMAS[careerType]),
-      },
-    });
-
-    if (!response.parsed_output) {
-      throw new Error("Claude returned a response that did not parse against the expected schema.");
-    }
-
-    state = response.parsed_output as SimulationState;
+      turns,
+      schema: CAREER_STATE_SCHEMAS[careerType],
+    })) as SimulationState;
   } catch (err) {
-    return NextResponse.json({ error: describeAnthropicError(err) }, { status: statusForAnthropicError(err) });
+    return NextResponse.json({ error: describeGeminiError(err) }, { status: statusForGeminiError(err) });
   }
 
   const nextStepSequence =
@@ -95,18 +83,4 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({ sessionId: session.id, state });
-}
-
-function statusForAnthropicError(err: unknown): number {
-  if (err instanceof Anthropic.RateLimitError) return 429;
-  if (err instanceof Anthropic.AuthenticationError) return 401;
-  if (err instanceof Anthropic.BadRequestError) return 400;
-  if (err instanceof Anthropic.APIError) return 502;
-  return 500;
-}
-
-function describeAnthropicError(err: unknown): string {
-  if (err instanceof Anthropic.APIError) return `Game Master call failed: ${err.message}`;
-  if (err instanceof Error) return err.message;
-  return "Unknown error generating the next simulation state.";
 }

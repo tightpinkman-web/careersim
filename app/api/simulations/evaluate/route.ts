@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import Anthropic from "@anthropic-ai/sdk";
-import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { prisma } from "@/lib/prisma";
-import { getAnthropicClient, GAME_MASTER_MODEL, GAME_MASTER_MAX_TOKENS } from "@/lib/anthropic";
+import { generateStructured, statusForGeminiError, describeGeminiError } from "@/lib/gemini";
 import { buildEvaluationPrompt } from "@/lib/prompts/evaluation";
 import { EvaluationSchema } from "@/lib/schemas/evaluation";
 import type { CareerType } from "@/types/simulation";
@@ -47,23 +45,20 @@ export async function POST(request: Request) {
 
   let evaluation;
   try {
-    const response = await getAnthropicClient().messages.parse({
-      model: GAME_MASTER_MODEL,
-      max_tokens: GAME_MASTER_MAX_TOKENS,
+    evaluation = await generateStructured({
       system,
-      messages: [{ role: "user", content: user }],
-      output_config: {
-        format: zodOutputFormat(EvaluationSchema),
-      },
+      turns: [{ role: "user", text: user }],
+      schema: EvaluationSchema,
     });
-
-    if (!response.parsed_output) {
-      throw new Error("Claude returned a response that did not parse against the evaluation schema.");
-    }
-
-    evaluation = response.parsed_output;
   } catch (err) {
-    return NextResponse.json({ error: describeAnthropicError(err) }, { status: statusForAnthropicError(err) });
+    return NextResponse.json({ error: describeGeminiError(err) }, { status: statusForGeminiError(err) });
+  }
+
+  if (Object.keys(evaluation.competencies).length !== 4) {
+    return NextResponse.json(
+      { error: "Evaluation did not map exactly 4 competency dimensions." },
+      { status: 502 }
+    );
   }
 
   const updated = await prisma.simulationSession.update({
@@ -83,18 +78,4 @@ export async function POST(request: Request) {
     sessionId: updated.id,
     evaluation,
   });
-}
-
-function statusForAnthropicError(err: unknown): number {
-  if (err instanceof Anthropic.RateLimitError) return 429;
-  if (err instanceof Anthropic.AuthenticationError) return 401;
-  if (err instanceof Anthropic.BadRequestError) return 400;
-  if (err instanceof Anthropic.APIError) return 502;
-  return 500;
-}
-
-function describeAnthropicError(err: unknown): string {
-  if (err instanceof Anthropic.APIError) return `Evaluation call failed: ${err.message}`;
-  if (err instanceof Error) return err.message;
-  return "Unknown error generating the evaluation.";
 }

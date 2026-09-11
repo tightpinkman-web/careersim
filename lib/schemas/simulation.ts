@@ -1,9 +1,9 @@
 import { z } from "zod";
 
 /**
- * Zod mirror of types/simulation.ts, used to force the Anthropic Messages API
- * structured-output format (output_config.format) so Claude's JSON response is
- * guaranteed to match the SimulationState shape the frontend renders.
+ * Zod mirror of types/simulation.ts, used both to generate the Gemini structured-output
+ * JSON schema (responseJsonSchema) and to validate Gemini's response, so the JSON
+ * response is guaranteed to match the SimulationState shape the frontend renders.
  */
 
 export const AllowedActionSchema = z.object({
