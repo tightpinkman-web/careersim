@@ -63,15 +63,15 @@ export default function SimulationShell({ state, onAction }: SimulationShellProp
       {/* Top HUD */}
       <div
         className={cn(
-          "flex shrink-0 items-center gap-4 border-b px-4 py-2 text-xs",
+          "flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1 border-b px-4 py-2 text-xs",
           isDark ? "border-slate-800 bg-slate-900 text-slate-300" : "border-slate-200 bg-white text-slate-600"
         )}
       >
         <span className="rounded-full bg-indigo-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
-          Step {state.currentStep}
+          Step {state.currentStep ?? 1}
         </span>
         <span className="font-medium">{state.careerType.replace(/_/g, " ")}</span>
-        <div className="ml-auto flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4 sm:ml-auto">
           {hudEntries.map(([key, value]) => {
             const Icon = HUD_ICON[key];
             return (

@@ -30,8 +30,8 @@ export default function VCSimulationView({ payload, narrativePrompt }: VCSimulat
             <h2 className="text-sm font-semibold text-slate-700">Inbox</h2>
             <span className="ml-auto text-xs text-slate-400">{emails.length} messages</span>
           </div>
-          <div className="flex min-h-0 flex-1">
-            <ul className="w-1/2 min-w-[160px] overflow-y-auto border-r border-slate-100">
+          <div className="flex min-h-0 flex-1 flex-col sm:flex-row">
+            <ul className="max-h-40 w-full shrink-0 overflow-y-auto border-b border-slate-100 sm:max-h-none sm:w-1/2 sm:min-w-[160px] sm:border-b-0 sm:border-r">
               {emails.map((email) => (
                 <li key={email.id}>
                   <button
@@ -52,7 +52,7 @@ export default function VCSimulationView({ payload, narrativePrompt }: VCSimulat
                 </li>
               ))}
             </ul>
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="min-h-0 flex-1 overflow-y-auto p-4">
               <AnimatePresence mode="wait">
                 {selectedEmail ? (
                   <motion.div

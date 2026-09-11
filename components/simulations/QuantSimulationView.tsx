@@ -52,7 +52,7 @@ export default function QuantSimulationView({ payload, narrativePrompt }: QuantS
       {/* Left: chart + parameters */}
       <div className="flex min-h-0 flex-col gap-3">
         <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-slate-800 bg-slate-900">
-          <div className="flex items-center gap-3 border-b border-slate-800 px-4 py-3">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-slate-800 px-4 py-3">
             <h2 className="text-sm font-semibold text-slate-100">{ticker}</h2>
             <span className={cn("flex items-center gap-1 text-xs font-medium", pnl >= 0 ? "text-emerald-400" : "text-rose-400")}>
               {pnl >= 0 ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}

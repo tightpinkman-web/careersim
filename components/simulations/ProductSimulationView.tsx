@@ -70,7 +70,7 @@ export default function ProductSimulationView({ payload, narrativePrompt }: Prod
           <GitCommitHorizontal className="h-4 w-4 text-slate-500" />
           <h2 className="text-sm font-semibold text-slate-700">Sprint Board</h2>
         </div>
-        <div className="grid min-h-0 flex-1 grid-cols-3 gap-3 overflow-y-auto p-3">
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 overflow-y-auto p-3 sm:grid-cols-3">
           {COLUMN_ORDER.map((colId) => (
             <div
               key={colId}

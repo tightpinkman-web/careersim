@@ -42,15 +42,15 @@ export default function CyberSimulationView({ payload, narrativePrompt }: CyberS
     systemHealth >= 70 ? "bg-emerald-500" : systemHealth >= 40 ? "bg-amber-500" : "bg-rose-500";
 
   return (
-    <div className="flex h-full min-h-0 overflow-hidden rounded-lg border border-slate-800 bg-black text-emerald-400">
+    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-slate-800 bg-black text-emerald-400 md:flex-row">
       <div className="flex min-h-0 flex-1 flex-col">
         {/* Header: SOC system health */}
-        <div className="flex items-center gap-4 border-b border-slate-800 bg-slate-950 px-4 py-3">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-slate-800 bg-slate-950 px-4 py-3">
           <div className="flex items-center gap-2">
-            <Activity className="h-4 w-4 text-emerald-400" />
+            <Activity className="h-4 w-4 shrink-0 text-emerald-400" />
             <span className="text-xs font-semibold uppercase tracking-wide text-slate-300">SOC Health</span>
           </div>
-          <div className="h-2 w-40 overflow-hidden rounded-full bg-slate-800">
+          <div className="h-2 w-24 overflow-hidden rounded-full bg-slate-800 sm:w-40">
             <motion.div
               className={cn("h-full rounded-full", healthColor)}
               animate={{ width: `${systemHealth}%` }}
@@ -58,8 +58,8 @@ export default function CyberSimulationView({ payload, narrativePrompt }: CyberS
             />
           </div>
           <span className="text-xs text-slate-400">{systemHealth}%</span>
-          <span className="ml-auto flex items-center gap-1 text-xs text-rose-400">
-            <ShieldAlert className="h-3.5 w-3.5" />
+          <span className="flex items-center gap-1 text-xs text-rose-400 sm:ml-auto">
+            <ShieldAlert className="h-3.5 w-3.5 shrink-0" />
             {activeIncidents} active incident{activeIncidents === 1 ? "" : "s"}
           </span>
         </div>
@@ -104,7 +104,7 @@ export default function CyberSimulationView({ payload, narrativePrompt }: CyberS
       </div>
 
       {/* Side drawer: live alert feed */}
-      <div className="flex w-72 shrink-0 flex-col border-l border-slate-800 bg-slate-950">
+      <div className="flex max-h-56 w-full shrink-0 flex-col border-t border-slate-800 bg-slate-950 md:h-auto md:max-h-none md:w-72 md:border-l md:border-t-0">
         <div className="flex items-center gap-2 border-b border-slate-800 px-4 py-3">
           <TerminalIcon className="h-4 w-4 text-slate-300" />
           <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-300">Threat Feed</h2>
