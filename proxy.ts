@@ -39,7 +39,7 @@ function isRateLimited(key: string): boolean {
   return timestamps.length > RATE_LIMIT_MAX_REQUESTS;
 }
 
-function validateSimulationApiRequest(request: NextRequest): NextResponse | null {
+export function proxy(request: NextRequest): NextResponse | undefined {
   const ip = getClientIp(request);
 
   if (isRateLimited(ip)) {
@@ -52,10 +52,7 @@ function validateSimulationApiRequest(request: NextRequest): NextResponse | null
   if (request.method === "POST") {
     const contentType = request.headers.get("content-type") ?? "";
     if (!contentType.includes("application/json")) {
-      return NextResponse.json(
-        { error: "Content-Type must be application/json." },
-        { status: 415 }
-      );
+      return NextResponse.json({ error: "Content-Type must be application/json." }, { status: 415 });
     }
 
     const contentLength = Number(request.headers.get("content-length") ?? "0");
@@ -63,54 +60,11 @@ function validateSimulationApiRequest(request: NextRequest): NextResponse | null
       return NextResponse.json({ error: "Request body too large." }, { status: 413 });
     }
   }
-
-  return null;
 }
 
-function buildCspHeader(nonce: string): string {
-  const isDev = process.env.NODE_ENV !== "production";
-  return [
-    `default-src 'self'`,
-    // 'unsafe-eval' is required in dev only (Next.js/Turbopack HMR); production stays strict.
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDev ? " 'unsafe-eval'" : ""}`,
-    // React/framer-motion render inline `style` attributes (e.g. animated widths/transforms),
-    // which CSP style-src can only allow via 'unsafe-inline' - there is no per-attribute nonce.
-    `style-src 'self' 'unsafe-inline'`,
-    `img-src 'self' blob: data:`,
-    `font-src 'self'`,
-    `connect-src 'self' https://*.supabase.co`,
-    `object-src 'none'`,
-    `base-uri 'self'`,
-    `form-action 'self'`,
-    `frame-ancestors 'none'`,
-    `upgrade-insecure-requests`,
-  ].join("; ");
-}
-
-export function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl;
-
-  if (pathname.startsWith("/api/simulations")) {
-    const rejection = validateSimulationApiRequest(request);
-    if (rejection) return rejection;
-  }
-
-  // Nonce-based strict CSP for every page, per Next.js's documented App Router CSP recipe:
-  // https://nextjs.org/docs/app/building-your-application/configuring/content-security-policy
-  const nonce = Buffer.from(crypto.randomUUID()).toString("base64");
-  const csp = buildCspHeader(nonce);
-
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set("x-nonce", nonce);
-  requestHeaders.set("Content-Security-Policy", csp);
-
-  const response = NextResponse.next({ request: { headers: requestHeaders } });
-  response.headers.set("Content-Security-Policy", csp);
-  return response;
-}
-
+// Content-Security-Policy and the other static security headers now live in next.config.ts,
+// since they no longer depend on a per-request nonce - this proxy only needs to run over the
+// simulation API routes it's actually guarding.
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
-  ],
+  matcher: ["/api/simulations/:path*"],
 };
