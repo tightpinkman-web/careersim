@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum CareerType {
+  VENTURE_CAPITAL
+  CYBERSECURITY
+  PRODUCT_MANAGEMENT
+  CORPORATE_LAW
+  QUANT_TRADING
+}
+
+enum SimulationStatus {
+  IN_PROGRESS
+  COMPLETED
+}
+
+model Student {
+  id              String   @id @default(uuid())
+  supabaseAuthId  String   @unique @map("supabase_auth_id")
+  email           String   @unique
+  name            String
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  simulationSessions SimulationSession[]
+
+  @@map("students")
+}
+
+model SimulationSession {
+  id                String            @id @default(uuid())
+  studentId         String            @map("student_id")
+  student           Student           @relation(fields: [studentId], references: [id])
+  careerType        CareerType        @map("career_type")
+  status            SimulationStatus  @default(IN_PROGRESS)
+  overallScore      Int?              @map("overall_score")
+  feedbackSummary   String?           @map("feedback_summary")
+  competencies      Json?             @map("competencies")
+  keyStrengths      String[]          @default([]) @map("key_strengths")
+  growthAreas       String[]          @default([]) @map("growth_areas")
+  careerFitSummary  String?           @map("career_fit_summary")
+  startedAt         DateTime          @default(now()) @map("started_at")
+  completedAt       DateTime?         @map("completed_at")
+
+  actionLogs ActionLog[]
+
+  @@map("simulation_sessions")
+}
+
+model ActionLog {
+  id              String            @id @default(uuid())
+  sessionId       String            @map("session_id")
+  session         SimulationSession @relation(fields: [sessionId], references: [id])
+  stepSequence    Int               @map("step_sequence")
+  studentInput    String            @map("student_input")
+  returnedState   Json              @map("returned_state")
+  decisionTag     String?           @map("decision_tag")
+  createdAt       DateTime          @default(now()) @map("created_at")
+
+  @@map("action_logs")
+}
