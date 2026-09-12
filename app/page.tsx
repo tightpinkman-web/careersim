@@ -2,9 +2,9 @@ import Link from "next/link";
 import { GraduationCap, Compass, ShieldCheck, Sparkles, Mail, Phone, ArrowRight, PlayCircle } from "lucide-react";
 import ContactForm from "@/components/ContactForm";
 
-// TODO: replace with your real public-facing contact details before launch.
-const CONTACT_EMAIL = "[YOUR_EMAIL]";
-const CONTACT_PHONE = "[YOUR_PHONE]";
+const CONTACT_EMAIL = "tightpinkman@gmail.com";
+const CONTACT_PHONE = "9739409451";
+const CONTACT_PHONE_DISPLAY = "(973) 940-9451";
 
 const ABOUT_HIGHLIGHTS = [
   { icon: GraduationCap, label: "Built for 10th-12th graders" },
@@ -107,7 +107,7 @@ export default function Home() {
                 className="flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-indigo-600"
               >
                 <Phone className="h-4 w-4 text-indigo-600" />
-                {CONTACT_PHONE}
+                {CONTACT_PHONE_DISPLAY}
               </a>
             </div>
           </div>
