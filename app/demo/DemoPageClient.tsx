@@ -19,6 +19,7 @@ import {
   GraduationCap,
 } from "lucide-react";
 import PreSimPrepModal from "@/components/PreSimPrepModal";
+import { getAnonymousSessionId } from "@/lib/anonymousSession";
 import { ageTierForMode, type CareerType, type SimulationMode } from "@/types/simulation";
 
 interface CareerInfo {
@@ -222,20 +223,6 @@ const CAREERS: CareerInfo[] = [
     },
   },
 ];
-
-function getAnonymousSessionId(): string {
-  const KEY = "sim_anon_session_id";
-  try {
-    const existing = localStorage.getItem(KEY);
-    if (existing) return existing;
-    const fresh = crypto.randomUUID();
-    localStorage.setItem(KEY, fresh);
-    return fresh;
-  } catch {
-    // localStorage unavailable (private browsing, etc.) - fall back to a per-load id
-    return crypto.randomUUID();
-  }
-}
 
 export default function DemoPageClient() {
   const router = useRouter();

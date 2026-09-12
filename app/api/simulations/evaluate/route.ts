@@ -41,6 +41,7 @@ export async function POST(request: Request) {
       stepSequence: log.stepSequence,
       studentInput: log.studentInput,
       returnedState: log.returnedState,
+      decisionTimeSeconds: log.decisionTimeSeconds,
     }))
   );
 

@@ -95,6 +95,9 @@ model ActionLog {
   studentInput    String            @map("student_input")
   returnedState   Json              @map("returned_state")
   decisionTag     String?           @map("decision_tag")
+  /** Seconds the student took to respond to this step (null for the initial SESSION_START turn
+   *  and any turn predating this field). Surfaced in the HUD countdown and fed into evaluation. */
+  decisionTimeSeconds Int?          @map("decision_time_seconds")
   createdAt       DateTime          @default(now()) @map("created_at")
 
   @@map("action_logs")

@@ -5,7 +5,12 @@ export interface EvaluationTurn {
   studentInput: string;
   /** The full SimulationState JSON persisted on ActionLog.returnedState for this turn. */
   returnedState: unknown;
+  /** Seconds the student took to respond to this step, measured against a 60s decision window.
+   *  null/undefined for the initial SESSION_START turn or any turn predating this field. */
+  decisionTimeSeconds?: number | null;
 }
+
+const DECISION_WINDOW_SECONDS = 60;
 
 /**
  * The exact 4 competency dimensions each career's evaluation must score, in both audiences.
@@ -104,12 +109,22 @@ function formatTurnForTranscript(turn: EvaluationTurn): string {
   const optionsOffered = state?.allowedActions?.map((a) => a.label).join(", ") ?? "n/a";
   const hud = state?.hudMetrics ? JSON.stringify(state.hudMetrics) : "n/a";
 
+  const timeLine =
+    typeof turn.decisionTimeSeconds === "number"
+      ? `Time taken to decide: ${turn.decisionTimeSeconds}s (${
+          turn.decisionTimeSeconds <= DECISION_WINDOW_SECONDS
+            ? `within the ${DECISION_WINDOW_SECONDS}s decision window`
+            : `${turn.decisionTimeSeconds - DECISION_WINDOW_SECONDS}s over the ${DECISION_WINDOW_SECONDS}s decision window`
+        })`
+      : "Time taken to decide: not recorded for this step";
+
   return [
     `--- Step ${turn.stepSequence} ---`,
     `Situation the student faced: ${state?.narrativePrompt ?? "n/a"}`,
     `Options offered: ${optionsOffered}`,
     `HUD metrics at this point: ${hud}`,
     `Student's actual decision: ${turn.studentInput}`,
+    timeLine,
   ].join("\n");
 }
 
@@ -133,6 +148,19 @@ decision history. ${MODE_EVALUATION_TONE[mode]}
 Base every judgment strictly on the transcript you are given. Cite what the student actually chose,
 not what a hypothetical ideal student would have chosen. Do not be generically positive - if the
 transcript shows the student missed something important, say so plainly in growthAreas.
+
+TIME PRESSURE
+Each step in the transcript below records how long the student took to decide against a ${DECISION_WINDOW_SECONDS}s
+decision window (real professionals in this field rarely get unlimited time to think). Factor time
+efficiency and decisive action under pressure into overallScore, not just the correctness of the
+final call: a student who consistently blew well past the window, even while reaching reasonable
+conclusions, should score lower than one who reasoned just as well within it. Conversely, a student
+who rushed to a shallow or wrong decision purely to beat the clock should not be rewarded for speed
+alone. Where a career's competency dimensions include a speed/pressure-related one (e.g. "Speed",
+"Decision Speed Under Pressure", "Decisiveness Under Uncertainty"), let the timing data drive that
+score specifically; where none of the 4 dimensions are timing-related, still let timing pull
+overallScore up or down, and mention it explicitly in keyStrengths or growthAreas when it was a
+notable factor (consistently fast and sound, or consistently over time and hesitant).
 
 OUTPUT FORMAT - NON-NEGOTIABLE
 Respond with ONLY valid JSON, no markdown fences, no commentary before or after. The object must

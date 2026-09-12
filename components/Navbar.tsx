@@ -10,6 +10,7 @@ const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/demo", label: "Demo Sims" },
   { href: "/catalog", label: "Career Catalog" },
+  { href: "/history", label: "My Results & Reports" },
   { href: "/request", label: "Request a Sim" },
   { href: "/#contact", label: "Contact Us" },
 ];

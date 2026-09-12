@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Clock, Gauge, DollarSign, Percent } from "lucide-react";
+import { Send, Clock, Gauge, DollarSign, Percent, Timer } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SimulationState } from "@/types/simulation";
 import VCSimulationView from "@/components/simulations/VCSimulationView";
@@ -13,7 +13,10 @@ import QuantSimulationView from "@/components/simulations/QuantSimulationView";
 
 interface SimulationShellProps {
   state: SimulationState;
-  onAction?: (actionId: string, freeformInput?: string) => void;
+  /** elapsedSeconds is how long the student took to respond to the current step, measured from
+   *  when this state was rendered to when they submitted - captured regardless of whether the
+   *  60s countdown had run out. */
+  onAction?: (actionId: string, freeformInput?: string, elapsedSeconds?: number) => void;
 }
 
 const HUD_ICON: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -23,6 +26,8 @@ const HUD_ICON: Record<string, React.ComponentType<{ className?: string }>> = {
   timeRemaining: Clock,
 };
 
+const DECISION_WINDOW_SECONDS = 60;
+
 function formatHudKey(key: string) {
   return key
     .replace(/([A-Z])/g, " $1")
@@ -30,14 +35,41 @@ function formatHudKey(key: string) {
     .trim();
 }
 
+function formatCountdown(secondsRemaining: number): string {
+  const overtime = secondsRemaining < 0;
+  const abs = Math.abs(secondsRemaining);
+  const m = Math.floor(abs / 60);
+  const s = abs % 60;
+  const clock = `${m}:${s.toString().padStart(2, "0")}`;
+  return overtime ? `+${clock}` : clock;
+}
+
 export default function SimulationShell({ state, onAction }: SimulationShellProps) {
   const [freeform, setFreeform] = useState("");
+  const [secondsRemaining, setSecondsRemaining] = useState(DECISION_WINDOW_SECONDS);
+  const stepStartRef = useRef(0);
   const hudEntries = Object.entries(state.hudMetrics).filter(([, v]) => v !== undefined);
 
   const isDark = state.ui_mode === "CYBERSECURITY" || state.ui_mode === "QUANT_TRADING";
 
+  // Reset the per-step decision clock whenever a new step arrives. The only setState call is
+  // inside the setInterval callback (subscribing to an external timer, the sanctioned pattern) -
+  // stepStartRef.current is a ref write, not state, and Date.now() only runs post-render here,
+  // inside the effect, never during render itself.
+  useEffect(() => {
+    stepStartRef.current = Date.now();
+    const interval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - stepStartRef.current) / 1000);
+      setSecondsRemaining(DECISION_WINDOW_SECONDS - elapsed);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [state.currentStep]);
+
   const handleAction = (actionId: string) => {
-    onAction?.(actionId, freeform.trim() || undefined);
+    // Derived from the already-ticking countdown state rather than a fresh Date.now() call, so
+    // this stays a pure read (at most ~1s of rounding, which is fine for this purpose).
+    const elapsedSeconds = Math.max(0, DECISION_WINDOW_SECONDS - secondsRemaining);
+    onAction?.(actionId, freeform.trim() || undefined, elapsedSeconds);
     setFreeform("");
   };
 
@@ -69,6 +101,20 @@ export default function SimulationShell({ state, onAction }: SimulationShellProp
       >
         <span className="rounded-full bg-indigo-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
           Step {state.currentStep ?? 1}
+        </span>
+        <span
+          className={cn(
+            "flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold tabular-nums",
+            secondsRemaining <= 15
+              ? "bg-amber-500/15 text-amber-600"
+              : isDark
+                ? "bg-slate-800 text-slate-300"
+                : "bg-slate-100 text-slate-600"
+          )}
+          title="Time taken on this step is factored into your final evaluation"
+        >
+          <Timer className="h-3 w-3" />
+          {formatCountdown(secondsRemaining)}
         </span>
         <span className="font-medium">{state.careerType.replace(/_/g, " ")}</span>
         <div className="flex flex-wrap items-center gap-4 sm:ml-auto">
@@ -128,7 +174,9 @@ export default function SimulationShell({ state, onAction }: SimulationShellProp
               title={action.description}
               className={cn(
                 "flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                action.kind === "danger" && "bg-rose-600 text-white hover:bg-rose-700",
+                // Deliberately no red/green/yellow here - button color communicates which
+                // action this is, never whether it's the "right" or "safe" one to pick.
+                action.kind === "danger" && "bg-violet-600 text-white hover:bg-violet-700",
                 action.kind === "secondary" &&
                   (isDark ? "bg-slate-800 text-slate-200 hover:bg-slate-700" : "bg-slate-200 text-slate-700 hover:bg-slate-300"),
                 (!action.kind || action.kind === "primary") && "bg-indigo-600 text-white hover:bg-indigo-700"

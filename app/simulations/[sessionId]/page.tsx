@@ -51,7 +51,7 @@ export default function ActiveSimulationPage() {
   }, []);
 
   const handleAction = useCallback(
-    async (actionId: string, freeformInput?: string) => {
+    async (actionId: string, freeformInput?: string, elapsedSeconds?: number) => {
       if (submitting) return;
       const action = freeformInput ? `${actionId}: ${freeformInput}` : actionId;
 
@@ -61,7 +61,7 @@ export default function ActiveSimulationPage() {
         const res = await fetch("/api/simulations/action", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sessionId, action }),
+          body: JSON.stringify({ sessionId, action, decisionTimeSeconds: elapsedSeconds }),
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error ?? "Failed to submit your decision.");

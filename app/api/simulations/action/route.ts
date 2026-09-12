@@ -8,6 +8,9 @@ import type { SimulationMode, SimulationState } from "@/types/simulation";
 interface ActionRequestBody {
   sessionId?: string;
   action?: string;
+  /** Seconds the student took to respond to this step, captured client-side against the 60s
+   *  HUD countdown. Optional - older clients or edge cases may omit it. */
+  decisionTimeSeconds?: number;
 }
 
 export async function POST(request: Request) {
@@ -18,9 +21,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Request body must be valid JSON." }, { status: 400 });
   }
 
-  const { sessionId, action } = body;
+  const { sessionId, action, decisionTimeSeconds } = body;
   if (!sessionId || !action || !action.trim()) {
     return NextResponse.json({ error: "sessionId and action are required." }, { status: 400 });
+  }
+  if (
+    decisionTimeSeconds !== undefined &&
+    (typeof decisionTimeSeconds !== "number" || !Number.isFinite(decisionTimeSeconds) || decisionTimeSeconds < 0)
+  ) {
+    return NextResponse.json({ error: "decisionTimeSeconds must be a non-negative number." }, { status: 400 });
   }
 
   const session = await prisma.simulationSession.findUnique({
@@ -68,6 +77,7 @@ export async function POST(request: Request) {
       studentInput: action,
       returnedState: state as object,
       decisionTag: action.slice(0, 60),
+      decisionTimeSeconds: decisionTimeSeconds ?? null,
     },
   });
 

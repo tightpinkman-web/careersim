@@ -15,6 +15,7 @@ import {
 } from "recharts";
 import { cn } from "@/lib/utils";
 import DownloadReportButton from "@/components/DownloadReportButton";
+import { CAREER_TITLES } from "@/lib/careerTitles";
 import type { CareerType, SimulationMode } from "@/types/simulation";
 
 interface ResultsDashboardProps {
@@ -87,7 +88,7 @@ export default function ResultsDashboard({
   careerFitSummary,
 }: ResultsDashboardProps) {
   const radarData = Object.entries(competencies).map(([dimension, value]) => ({ dimension, value }));
-  const careerTitle = careerType.replace(/_/g, " ");
+  const careerTitle = CAREER_TITLES[careerType];
 
   return (
     <div className="min-h-screen bg-slate-100 pb-24">
@@ -118,6 +119,26 @@ export default function ResultsDashboard({
               what a strong performer in this career would have done.
             </p>
           </div>
+        </motion.div>
+
+        {/* Prominent PDF download - impossible to miss right after finishing */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+          className="mt-6 flex justify-center"
+        >
+          <DownloadReportButton
+            variant="prominent"
+            sessionId={sessionId}
+            careerTitle={careerTitle}
+            mode={mode}
+            overallScore={overallScore}
+            competencies={competencies}
+            keyStrengths={keyStrengths}
+            growthAreas={growthAreas}
+            careerFitSummary={careerFitSummary}
+          />
         </motion.div>
 
         {/* Competency radar */}

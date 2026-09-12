@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Download, Loader2, AlertTriangle } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { SimulationMode } from "@/types/simulation";
 
 interface DownloadReportButtonProps {
@@ -13,6 +14,9 @@ interface DownloadReportButtonProps {
   keyStrengths: string[];
   growthAreas: string[];
   careerFitSummary: string;
+  /** "prominent" is a larger, higher-contrast treatment for hero placements; "default" suits a
+   *  toolbar or card. */
+  variant?: "default" | "prominent";
 }
 
 /**
@@ -31,6 +35,7 @@ export default function DownloadReportButton({
   keyStrengths,
   growthAreas,
   careerFitSummary,
+  variant = "default",
 }: DownloadReportButtonProps) {
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -74,14 +79,25 @@ export default function DownloadReportButton({
     }
   };
 
+  const isProminent = variant === "prominent";
+
   return (
-    <div className="flex flex-col items-center gap-1 sm:items-end">
+    <div className={cn("flex flex-col gap-1", isProminent ? "items-center" : "items-center sm:items-end")}>
       <button
         onClick={handleDownload}
         disabled={generating}
-        className="flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
+        className={cn(
+          "flex items-center gap-2 font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60",
+          isProminent
+            ? "rounded-lg bg-indigo-600 px-6 py-3.5 text-base shadow-indigo-200 ring-4 ring-indigo-100"
+            : "rounded-md bg-indigo-600 px-4 py-2.5 text-sm font-medium"
+        )}
       >
-        {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+        {generating ? (
+          <Loader2 className={cn("animate-spin", isProminent ? "h-5 w-5" : "h-4 w-4")} />
+        ) : (
+          <Download className={isProminent ? "h-5 w-5" : "h-4 w-4"} />
+        )}
         {generating ? "Generating PDF..." : "Download Official Assessment Report (PDF)"}
       </button>
       {error && (
