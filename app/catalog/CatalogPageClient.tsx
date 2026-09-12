@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Search, PlayCircle, ThumbsUp, GraduationCap, Briefcase } from "lucide-react";
+import { Search, PlayCircle, ThumbsUp, Check, GraduationCap, Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CATALOG, type CatalogIndustry, type CatalogStatus } from "@/lib/catalogData";
+import { CATALOG, type CatalogIndustry, type CatalogStatus, type CatalogVoteMap } from "@/lib/catalogData";
+import { getVotedCatalogIds, markCatalogIdVoted } from "@/lib/votedCatalogEntries";
 
 const INDUSTRY_PILLS: ("All" | CatalogIndustry)[] = ["All", "Tech", "Finance", "Legal", "Engineering", "Healthcare"];
 const STATUS_PILLS: { id: "All" | CatalogStatus; label: string }[] = [
@@ -17,10 +18,54 @@ export default function CatalogPageClient() {
   const [search, setSearch] = useState("");
   const [industry, setIndustry] = useState<"All" | CatalogIndustry>("All");
   const [status, setStatus] = useState<"All" | CatalogStatus>("All");
+  const [votes, setVotes] = useState<CatalogVoteMap>({});
+  // Lazy initializer (not an effect) - reading localStorage here is a synchronous, one-time
+  // read of already-existing browser state, not a subscription to an external system.
+  const [votedIds, setVotedIds] = useState<Set<string>>(() => getVotedCatalogIds());
+  const [votingId, setVotingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let ignore = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/catalog/vote");
+        const data = await res.json();
+        if (!ignore && res.ok) setVotes(data.votes ?? {});
+      } catch {
+        // Vote counts are a nice-to-have on this page - fail silently and show 0s.
+      }
+    })();
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  const handleVote = async (catalogId: string) => {
+    if (votingId || votedIds.has(catalogId)) return;
+    setVotingId(catalogId);
+    // Optimistic update - reconciled with the server's real count on success, rolled back on failure.
+    setVotes((prev) => ({ ...prev, [catalogId]: (prev[catalogId] ?? 0) + 1 }));
+    try {
+      const res = await fetch("/api/catalog/vote", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ catalogId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed to vote.");
+      setVotes((prev) => ({ ...prev, [catalogId]: data.voteCount }));
+      markCatalogIdVoted(catalogId);
+      setVotedIds((prev) => new Set(prev).add(catalogId));
+    } catch {
+      setVotes((prev) => ({ ...prev, [catalogId]: Math.max(0, (prev[catalogId] ?? 1) - 1) }));
+    } finally {
+      setVotingId(null);
+    }
+  };
 
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
-    return CATALOG.filter((entry) => {
+    const matches = CATALOG.filter((entry) => {
       if (industry !== "All" && entry.industry !== industry) return false;
       if (status !== "All" && entry.status !== status) return false;
       if (!query) return true;
@@ -30,7 +75,16 @@ export default function CatalogPageClient() {
         entry.keySkills.some((skill) => skill.toLowerCase().includes(query))
       );
     });
-  }, [search, industry, status]);
+
+    // Only reorders within the "in development" group (highest votes first) - live demos and
+    // the relative position of everything else are left exactly as authored.
+    return [...matches].sort((a, b) => {
+      if (a.status === "in_development" && b.status === "in_development") {
+        return (votes[b.id] ?? 0) - (votes[a.id] ?? 0);
+      }
+      return 0;
+    });
+  }, [search, industry, status, votes]);
 
   return (
     <div className="min-h-full w-full bg-slate-50">
@@ -106,14 +160,22 @@ export default function CatalogPageClient() {
                   </span>
                   <h2 className="mt-2 text-sm font-semibold text-slate-900">{entry.title}</h2>
                 </div>
-                <span
-                  className={cn(
-                    "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
-                    entry.status === "live" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+                <div className="flex shrink-0 flex-col items-end gap-1">
+                  <span
+                    className={cn(
+                      "rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
+                      entry.status === "live" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+                    )}
+                  >
+                    {entry.status === "live" ? "Live Demo" : "In Development"}
+                  </span>
+                  {entry.status === "in_development" && (
+                    <span className="flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-700">
+                      <ThumbsUp className="h-2.5 w-2.5" />
+                      {votes[entry.id] ?? 0} {(votes[entry.id] ?? 0) === 1 ? "vote" : "votes"}
+                    </span>
                   )}
-                >
-                  {entry.status === "live" ? "Live Demo" : "In Development"}
-                </span>
+                </div>
               </div>
 
               <p className="text-xs leading-relaxed text-slate-500">{entry.description}</p>
@@ -153,13 +215,20 @@ export default function CatalogPageClient() {
                     Launch Simulation
                   </Link>
                 ) : (
-                  <Link
-                    href={`/request?career=${encodeURIComponent(entry.title)}`}
-                    className="flex w-full items-center justify-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50"
+                  <button
+                    type="button"
+                    onClick={() => handleVote(entry.id)}
+                    disabled={votedIds.has(entry.id) || votingId === entry.id}
+                    className={cn(
+                      "flex w-full items-center justify-center gap-1.5 rounded-md border px-3 py-2 text-xs font-semibold transition-colors disabled:cursor-not-allowed",
+                      votedIds.has(entry.id)
+                        ? "border-slate-200 bg-slate-50 text-slate-400"
+                        : "border-slate-300 bg-white text-slate-700 hover:bg-slate-50"
+                    )}
                   >
-                    <ThumbsUp className="h-3.5 w-3.5" />
-                    Vote to Prioritize
-                  </Link>
+                    {votedIds.has(entry.id) ? <Check className="h-3.5 w-3.5" /> : <ThumbsUp className="h-3.5 w-3.5" />}
+                    {votedIds.has(entry.id) ? "Voted — Thanks!" : "Vote to Prioritize"}
+                  </button>
                 )}
               </div>
             </div>

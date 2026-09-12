@@ -1,5 +1,38 @@
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Font } from "@react-pdf/renderer";
 import type { SimulationMode } from "@/types/simulation";
+
+// @react-pdf/renderer's default hyphenation engine splits long words at line-wraps by inserting
+// a soft-hyphen character that Helvetica's WinAnsi encoding has no glyph for, which is what was
+// actually causing "corrupted"/garbled characters to show up mid-sentence in generated reports.
+// Returning the word unsplit disables that injection point entirely.
+Font.registerHyphenationCallback((word) => [word]);
+
+/**
+ * AI-generated report text (career fit summaries, strengths, growth areas) routinely contains
+ * "smart" typographic punctuation - curly quotes, em/en dashes, ellipses - plus the occasional
+ * stray HTML entity. None of that is in Helvetica's WinAnsi encoding, so it would render as
+ * garbled boxes or mojibake. This normalizes every dynamic string down to plain, WinAnsi-safe
+ * text before it reaches a <Text> node; nothing outside that range survives.
+ */
+function sanitizeText(value: string): string {
+  return value
+    .normalize("NFKC")
+    .replace(/<[^>]*>/g, "")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#0?39;/gi, "'")
+    .replace(/[‘’‚‛]/g, "'")
+    .replace(/[“”„‟]/g, '"')
+    .replace(/[–—]/g, "-")
+    .replace(/…/g, "...")
+    .replace(/ /g, " ")
+    .replace(/[•●◦‣]/g, "-")
+    .replace(/[^\x20-\x7E¡-ÿ\n]/g, "")
+    .trim();
+}
 
 export interface AssessmentPdfReportProps {
   sessionId: string;
@@ -250,7 +283,7 @@ export default function AssessmentPdfReport({
 
   return (
     <Document
-      title={`Career Aptitude Report - ${careerTitle}`}
+      title={`Career Aptitude Report - ${sanitizeText(careerTitle)}`}
       author="AI Career Simulator"
       subject="Career Aptitude Assessment"
     >
@@ -258,7 +291,7 @@ export default function AssessmentPdfReport({
       <Page size="A4" style={styles.page}>
         <ReportHeader sessionId={sessionId} generatedDate={generatedDate} mode={mode} />
 
-        <Text style={styles.careerTitle}>{careerTitle}</Text>
+        <Text style={styles.careerTitle}>{sanitizeText(careerTitle)}</Text>
 
         <Text style={styles.sectionTitle}>Executive Summary</Text>
         <View style={styles.summaryRow}>
@@ -276,7 +309,7 @@ export default function AssessmentPdfReport({
         {competencyEntries.map(([label, value]) => (
           <View key={label} style={styles.barRow}>
             <View style={styles.barLabelRow}>
-              <Text style={styles.barLabel}>{label}</Text>
+              <Text style={styles.barLabel}>{sanitizeText(label)}</Text>
               <Text style={styles.barValue}>{value}/100</Text>
             </View>
             <View style={styles.barTrack}>
@@ -299,7 +332,7 @@ export default function AssessmentPdfReport({
           {keyStrengths.map((strength, i) => (
             <View key={i} style={styles.listItemRow}>
               <Text style={[styles.bullet, { color: COLORS.emerald }]}>•</Text>
-              <Text style={[styles.listItemText, { color: "#065f46" }]}>{strength}</Text>
+              <Text style={[styles.listItemText, { color: "#065f46" }]}>{sanitizeText(strength)}</Text>
             </View>
           ))}
         </View>
@@ -310,14 +343,14 @@ export default function AssessmentPdfReport({
           {growthAreas.map((area, i) => (
             <View key={i} style={styles.listItemRow}>
               <Text style={[styles.bullet, { color: COLORS.amber }]}>•</Text>
-              <Text style={[styles.listItemText, { color: "#78350f" }]}>{area}</Text>
+              <Text style={[styles.listItemText, { color: "#78350f" }]}>{sanitizeText(area)}</Text>
             </View>
           ))}
         </View>
 
         <Text style={styles.sectionTitle}>Career Reality Fit</Text>
         <View style={styles.fitCard}>
-          <Text style={styles.fitText}>{careerFitSummary}</Text>
+          <Text style={styles.fitText}>{sanitizeText(careerFitSummary)}</Text>
         </View>
 
         <ReportFooter />

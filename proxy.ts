@@ -40,7 +40,12 @@ function isRateLimited(key: string): boolean {
   return timestamps.length > RATE_LIMIT_MAX_REQUESTS;
 }
 
-const GUARDED_API_PREFIXES = ["/api/simulations/", "/api/simulation-requests", "/api/contact"];
+const GUARDED_API_PREFIXES = [
+  "/api/simulations/",
+  "/api/simulation-requests",
+  "/api/contact",
+  "/api/catalog/vote",
+];
 
 function isGuardedApiRoute(pathname: string): boolean {
   return GUARDED_API_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(prefix));

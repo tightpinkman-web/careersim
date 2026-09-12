@@ -12,6 +12,10 @@ export interface CatalogEntry {
   modeSupport: CatalogModeSupport;
 }
 
+/** CatalogEntry.id -> vote count, as returned by GET /api/catalog/vote. Entries with no votes
+ *  yet simply have no key - look up with `?? 0`. */
+export type CatalogVoteMap = Record<string, number>;
+
 export const CATALOG: CatalogEntry[] = [
   // ---------- Live demo sims (5) ----------
   {

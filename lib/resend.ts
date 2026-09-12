@@ -73,24 +73,12 @@ function renderFieldsText(title: string, rows: [string, string][]): string {
 }
 
 interface SimulationRequestEmailData {
-  name: string;
-  role: string;
-  organization: string | null;
   requestedCareerTitle: string;
-  industry: string;
-  keySkills: string;
 }
 
 export function buildSimulationRequestEmail(data: SimulationRequestEmailData) {
   const subject = `New Career Sim Request: ${data.requestedCareerTitle}`;
-  const rows: [string, string][] = [
-    ["Name", data.name],
-    ["Role", data.role],
-    ["Organization", data.organization || "—"],
-    ["Requested Career", data.requestedCareerTitle],
-    ["Industry", data.industry],
-    ["Key Skills", data.keySkills],
-  ];
+  const rows: [string, string][] = [["Requested Career", data.requestedCareerTitle]];
   return { subject, html: renderFieldsHtml(subject, rows), text: renderFieldsText(subject, rows) };
 }
 

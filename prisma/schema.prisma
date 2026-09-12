@@ -76,6 +76,17 @@ model SimulationRequest {
   @@map("simulation_requests")
 }
 
+/** Vote tally for a planned (not-yet-built) catalog entry, keyed by its CatalogEntry.id slug from
+ *  lib/catalogData.ts. One row per entry, created on first vote. */
+model CatalogVote {
+  id         String   @id @default(uuid())
+  catalogId  String   @unique @map("catalog_id")
+  voteCount  Int      @default(0) @map("vote_count")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("catalog_votes")
+}
+
 model ContactLead {
   id           String   @id @default(uuid())
   name         String
