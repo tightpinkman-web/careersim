@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import EvaluationTrigger from "@/components/results/EvaluationTrigger";
 import ResultsDashboard from "@/components/results/ResultsDashboard";
-import type { CareerType } from "@/types/simulation";
+import type { CareerType, SimulationMode } from "@/types/simulation";
 
 export default async function SimulationResultsPage({
   params,
@@ -27,7 +27,9 @@ export default async function SimulationResultsPage({
 
   return (
     <ResultsDashboard
+      sessionId={session.id}
       careerType={session.careerType as CareerType}
+      mode={session.mode as SimulationMode}
       overallScore={session.overallScore!}
       competencies={session.competencies as Record<string, number>}
       keyStrengths={session.keyStrengths}

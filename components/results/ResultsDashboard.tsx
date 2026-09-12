@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { CheckCircle2, TrendingUp, Compass, ArrowLeft, Printer } from "lucide-react";
+import { CheckCircle2, TrendingUp, Compass, ArrowLeft } from "lucide-react";
 import {
   ResponsiveContainer,
   RadarChart,
@@ -14,10 +14,13 @@ import {
   Tooltip,
 } from "recharts";
 import { cn } from "@/lib/utils";
-import type { CareerType } from "@/types/simulation";
+import DownloadReportButton from "@/components/DownloadReportButton";
+import type { CareerType, SimulationMode } from "@/types/simulation";
 
 interface ResultsDashboardProps {
+  sessionId: string;
   careerType: CareerType;
+  mode: SimulationMode;
   overallScore: number;
   competencies: Record<string, number>;
   keyStrengths: string[];
@@ -74,7 +77,9 @@ function ScoreCircle({ score }: { score: number }) {
 }
 
 export default function ResultsDashboard({
+  sessionId,
   careerType,
+  mode,
   overallScore,
   competencies,
   keyStrengths,
@@ -82,12 +87,13 @@ export default function ResultsDashboard({
   careerFitSummary,
 }: ResultsDashboardProps) {
   const radarData = Object.entries(competencies).map(([dimension, value]) => ({ dimension, value }));
+  const careerTitle = careerType.replace(/_/g, " ");
 
   return (
     <div className="min-h-screen bg-slate-100 pb-24">
       <div className="mx-auto max-w-4xl px-4 py-8 sm:py-12">
         <p className="text-center text-xs font-semibold uppercase tracking-wide text-indigo-600">
-          {careerType.replace(/_/g, " ")} &middot; Career Aptitude Assessment
+          {careerTitle} &middot; Career Aptitude Assessment
         </p>
 
         {/* Hero score card */}
@@ -215,13 +221,16 @@ export default function ResultsDashboard({
             <ArrowLeft className="h-4 w-4" />
             Try Another Career
           </Link>
-          <button
-            onClick={() => window.print()}
-            className="flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-indigo-700"
-          >
-            <Printer className="h-4 w-4" />
-            Export Career Assessment (PDF)
-          </button>
+          <DownloadReportButton
+            sessionId={sessionId}
+            careerTitle={careerTitle}
+            mode={mode}
+            overallScore={overallScore}
+            competencies={competencies}
+            keyStrengths={keyStrengths}
+            growthAreas={growthAreas}
+            careerFitSummary={careerFitSummary}
+          />
         </div>
       </div>
     </div>
