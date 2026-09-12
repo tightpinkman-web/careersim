@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/demo", label: "Demo Sims" },
+  { href: "/catalog", label: "Career Catalog" },
   { href: "/request", label: "Request a Sim" },
   { href: "/#contact", label: "Contact Us" },
 ];
