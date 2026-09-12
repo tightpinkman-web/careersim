@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { generateStructured, statusForGeminiError, describeGeminiError } from "@/lib/gemini";
 import { buildEvaluationPrompt } from "@/lib/prompts/evaluation";
 import { EvaluationSchema } from "@/lib/schemas/evaluation";
-import type { CareerType } from "@/types/simulation";
+import type { CareerType, SimulationMode } from "@/types/simulation";
 
 interface EvaluateRequestBody {
   sessionId?: string;
@@ -36,6 +36,7 @@ export async function POST(request: Request) {
 
   const { system, user } = buildEvaluationPrompt(
     session.careerType as CareerType,
+    session.mode as SimulationMode,
     session.actionLogs.map((log) => ({
       stepSequence: log.stepSequence,
       studentInput: log.studentInput,

@@ -1,16 +1,20 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { generateStructured, statusForGeminiError, describeGeminiError } from "@/lib/gemini";
-import { GAME_MASTER_PROMPTS } from "@/lib/prompts/gameMasters";
+import { getGameMasterPrompt } from "@/lib/prompts/gameMasters";
 import { CAREER_STATE_SCHEMAS, type CareerTypeKey } from "@/lib/schemas/simulation";
-import type { SimulationState } from "@/types/simulation";
+import { ageTierForMode, type AgeTier, type SimulationMode, type SimulationState } from "@/types/simulation";
 
 const VALID_CAREER_TYPES = Object.keys(CAREER_STATE_SCHEMAS) as CareerTypeKey[];
+const VALID_MODES: SimulationMode[] = ["child", "professional"];
+const VALID_AGE_TIERS: AgeTier[] = ["10-12th", "college_pro"];
 
 interface StartRequestBody {
   studentId?: string;
   anonymousSessionId?: string;
   careerType?: string;
+  mode?: string;
+  ageTier?: string;
 }
 
 async function resolveStudent(body: StartRequestBody) {
@@ -60,6 +64,22 @@ export async function POST(request: Request) {
     );
   }
 
+  const mode = body.mode as SimulationMode | undefined;
+  if (!mode || !VALID_MODES.includes(mode)) {
+    return NextResponse.json({ error: `mode must be one of: ${VALID_MODES.join(", ")}` }, { status: 400 });
+  }
+
+  const ageTier = body.ageTier as AgeTier | undefined;
+  if (!ageTier || !VALID_AGE_TIERS.includes(ageTier)) {
+    return NextResponse.json({ error: `ageTier must be one of: ${VALID_AGE_TIERS.join(", ")}` }, { status: 400 });
+  }
+  if (ageTier !== ageTierForMode(mode)) {
+    return NextResponse.json(
+      { error: `ageTier "${ageTier}" does not match mode "${mode}" (expected "${ageTierForMode(mode)}").` },
+      { status: 400 }
+    );
+  }
+
   let student;
   try {
     student = await resolveStudent(body);
@@ -74,6 +94,8 @@ export async function POST(request: Request) {
     data: {
       studentId: student.id,
       careerType,
+      mode,
+      ageTier,
       status: "IN_PROGRESS",
     },
   });
@@ -81,7 +103,7 @@ export async function POST(request: Request) {
   let state: SimulationState;
   try {
     state = (await generateStructured({
-      system: GAME_MASTER_PROMPTS[careerType],
+      system: getGameMasterPrompt(careerType, mode),
       turns: [
         {
           role: "user",

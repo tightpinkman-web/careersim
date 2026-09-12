@@ -1,4 +1,4 @@
-import type { CareerType } from "@/types/simulation";
+import type { CareerType, SimulationMode } from "@/types/simulation";
 
 export interface EvaluationTurn {
   stepSequence: number;
@@ -8,35 +8,67 @@ export interface EvaluationTurn {
 }
 
 /**
- * The exact 4 competency dimensions each career's evaluation must score. Tailored to what
- * actually distinguishes strong performers in that career's daily reality.
+ * The exact 4 competency dimensions each career's evaluation must score, in both audiences.
+ * "professional" names the dimension the way an industry practitioner would; "child" tests the
+ * same underlying skill but in plain, jargon-free language appropriate for a 10th-12th grader
+ * exploring the career, not yet working in it.
  */
-const CAREER_COMPETENCY_DIMENSIONS: Record<CareerType, [string, string, string, string]> = {
-  VENTURE_CAPITAL: ["Unit Economics Analysis", "Risk Identification", "Thesis Articulation", "Speed"],
-  CYBERSECURITY: [
-    "Threat Triage Accuracy",
-    "Containment Sequencing",
-    "Technical Command Proficiency",
-    "Decision Speed Under Pressure",
-  ],
-  PRODUCT_MANAGEMENT: [
-    "Root Cause Diagnosis",
-    "Prioritization Discipline",
-    "Resource Constraint Management",
-    "Data-Driven Reasoning",
-  ],
-  CORPORATE_LAW: [
-    "Clause Risk Detection",
-    "Negotiation Strategy",
-    "Precision of Drafting Language",
-    "Client Interest Alignment",
-  ],
-  QUANT_TRADING: [
-    "Risk Parameter Discipline",
-    "Volatility Reasoning",
-    "Pattern Recognition",
-    "Decisiveness Under Uncertainty",
-  ],
+const CAREER_COMPETENCY_DIMENSIONS: Record<CareerType, Record<SimulationMode, [string, string, string, string]>> = {
+  VENTURE_CAPITAL: {
+    professional: ["Unit Economics Analysis", "Risk Identification", "Thesis Articulation", "Speed"],
+    child: ["Understanding the Numbers", "Spotting Red Flags", "Explaining Your Reasoning", "Decision Speed"],
+  },
+  CYBERSECURITY: {
+    professional: [
+      "Threat Triage Accuracy",
+      "Containment Sequencing",
+      "Technical Command Proficiency",
+      "Decision Speed Under Pressure",
+    ],
+    child: [
+      "Spotting the Problem",
+      "Doing Things in the Right Order",
+      "Following Instructions Precisely",
+      "Staying Calm Under Pressure",
+    ],
+  },
+  PRODUCT_MANAGEMENT: {
+    professional: [
+      "Root Cause Diagnosis",
+      "Prioritization Discipline",
+      "Resource Constraint Management",
+      "Data-Driven Reasoning",
+    ],
+    child: [
+      "Finding the Real Problem",
+      "Choosing What Matters Most",
+      "Working Within Limits",
+      "Using Evidence to Decide",
+    ],
+  },
+  CORPORATE_LAW: {
+    professional: [
+      "Clause Risk Detection",
+      "Negotiation Strategy",
+      "Precision of Drafting Language",
+      "Client Interest Alignment",
+    ],
+    child: ["Spotting Unfair Terms", "Negotiating Fairly", "Careful Reading & Writing", "Looking Out for Your Client"],
+  },
+  QUANT_TRADING: {
+    professional: [
+      "Risk Parameter Discipline",
+      "Volatility Reasoning",
+      "Pattern Recognition",
+      "Decisiveness Under Uncertainty",
+    ],
+    child: [
+      "Managing Risk Wisely",
+      "Understanding Ups and Downs",
+      "Spotting Patterns",
+      "Making Decisions Under Pressure",
+    ],
+  },
 };
 
 const CAREER_REALITY_FRAME: Record<CareerType, string> = {
@@ -50,6 +82,13 @@ const CAREER_REALITY_FRAME: Record<CareerType, string> = {
     "the daily reality of corporate law: catching adversarial drafting buried in boilerplate, negotiating from principle rather than position, and protecting client interests without derailing the deal",
   QUANT_TRADING:
     "the daily reality of a trading desk: managing risk parameters actively rather than passively, reasoning correctly about volatility regimes, and making decisive calls when the market is moving against you",
+};
+
+const MODE_EVALUATION_TONE: Record<SimulationMode, string> = {
+  professional:
+    "Grade them like a rigorous, fair manager conducting a real performance review - specific, evidence-based, and unafraid to be critical where the transcript warrants it.",
+  child:
+    "Grade them like an encouraging but honest mentor talking to a high schooler exploring this career, not a working professional. Write every field - competency names aside, which are fixed - in simple, jargon-free language a 10th-12th grader would understand. Focus on aptitude and potential (logical reasoning, communication, problem-solving process), not on technical mastery they haven't been taught yet. Still be honest in growthAreas - encouraging does not mean uncritical.",
 };
 
 function formatTurnForTranscript(turn: EvaluationTurn): string {
@@ -76,19 +115,20 @@ function formatTurnForTranscript(turn: EvaluationTurn): string {
 
 /**
  * Builds the system + user prompt pair for the post-simulation evaluation call. The system
- * prompt fixes the persona, the 4 competency dimensions, and the strict JSON output contract;
- * the user prompt embeds the complete ActionLog turn-by-turn transcript for this session.
+ * prompt fixes the persona, the 4 competency dimensions (mode-specific naming), tone (mode-
+ * specific), and the strict JSON output contract; the user prompt embeds the complete ActionLog
+ * turn-by-turn transcript for this session.
  */
 export function buildEvaluationPrompt(
   careerType: CareerType,
+  mode: SimulationMode,
   turns: EvaluationTurn[]
 ): { system: string; user: string } {
-  const [dim1, dim2, dim3, dim4] = CAREER_COMPETENCY_DIMENSIONS[careerType];
+  const [dim1, dim2, dim3, dim4] = CAREER_COMPETENCY_DIMENSIONS[careerType][mode];
 
   const system = `You are an expert evaluator and career coach assessing a student's performance in a
 ${careerType.replace(/_/g, " ")} career simulation, having observed their complete turn-by-turn
-decision history. Your job is to grade them like a rigorous, fair manager conducting a real
-performance review - specific, evidence-based, and calibrated against ${CAREER_REALITY_FRAME[careerType]}.
+decision history. ${MODE_EVALUATION_TONE[mode]}
 
 Base every judgment strictly on the transcript you are given. Cite what the student actually chose,
 not what a hypothetical ideal student would have chosen. Do not be generically positive - if the

@@ -14,6 +14,16 @@ export type UiMode =
   | "CORPORATE_LAW"
   | "QUANT_TRADING";
 
+/** Child/Aptitude Focus (simplified, jargon-free) vs Professional/Full Tech (full complexity). */
+export type SimulationMode = "child" | "professional";
+
+/** Derived 1:1 from SimulationMode - "child" -> "10-12th", "professional" -> "college_pro". */
+export type AgeTier = "10-12th" | "college_pro";
+
+export function ageTierForMode(mode: SimulationMode): AgeTier {
+  return mode === "child" ? "10-12th" : "college_pro";
+}
+
 export interface AllowedAction {
   id: string;
   label: string;

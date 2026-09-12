@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { generateStructured, statusForGeminiError, describeGeminiError, type ChatTurn } from "@/lib/gemini";
-import { GAME_MASTER_PROMPTS } from "@/lib/prompts/gameMasters";
+import { getGameMasterPrompt } from "@/lib/prompts/gameMasters";
 import { CAREER_STATE_SCHEMAS, type CareerTypeKey } from "@/lib/schemas/simulation";
-import type { SimulationState } from "@/types/simulation";
+import type { SimulationMode, SimulationState } from "@/types/simulation";
 
 interface ActionRequestBody {
   sessionId?: string;
@@ -36,6 +36,7 @@ export async function POST(request: Request) {
   }
 
   const careerType = session.careerType as CareerTypeKey;
+  const mode = session.mode as SimulationMode;
 
   const turns: ChatTurn[] = [];
   for (const log of session.actionLogs) {
@@ -47,7 +48,7 @@ export async function POST(request: Request) {
   let state: SimulationState;
   try {
     state = (await generateStructured({
-      system: GAME_MASTER_PROMPTS[careerType],
+      system: getGameMasterPrompt(careerType, mode),
       turns,
       schema: CAREER_STATE_SCHEMAS[careerType],
     })) as SimulationState;

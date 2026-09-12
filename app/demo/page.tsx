@@ -10,15 +10,16 @@ import {
   Scale,
   LineChart,
   X,
-  Clock,
   Target,
   Sparkles,
-  Loader2,
+  Clock,
   AlertTriangle,
   ArrowRight,
   Megaphone,
+  GraduationCap,
 } from "lucide-react";
-import type { CareerType } from "@/types/simulation";
+import PreSimPrepModal from "@/components/PreSimPrepModal";
+import { ageTierForMode, type CareerType, type SimulationMode } from "@/types/simulation";
 
 interface CareerInfo {
   careerType: CareerType;
@@ -28,6 +29,7 @@ interface CareerInfo {
   mission: string[];
   skills: string[];
   duration: string;
+  keyConcepts: Record<SimulationMode, [string, string, string]>;
 }
 
 const CAREERS: CareerInfo[] = [
@@ -43,6 +45,18 @@ const CAREERS: CareerInfo[] = [
     ],
     skills: ["Financial Analysis", "Risk Identification", "Critical Thinking", "Persuasive Writing"],
     duration: "~10 minutes",
+    keyConcepts: {
+      professional: [
+        "ARR (Annual Recurring Revenue): the yearly revenue a subscription business can count on repeating.",
+        "Churn: the rate at which customers cancel or fail to renew - the silent killer of recurring revenue.",
+        "Term Sheet: the non-binding document that sets the price and key terms of an investment.",
+      ],
+      child: [
+        "Recurring Revenue: money a business collects again and again, like a monthly allowance instead of a one-time gift.",
+        "Churn: when customers stop coming back - like friends who stop showing up to your lemonade stand.",
+        "Term Sheet: a short 'here's the deal' note investors write before signing anything official.",
+      ],
+    },
   },
   {
     careerType: "CYBERSECURITY",
@@ -56,6 +70,18 @@ const CAREERS: CareerInfo[] = [
     ],
     skills: ["Threat Triage", "Technical Command", "Decision Speed", "Incident Response"],
     duration: "~10 minutes",
+    keyConcepts: {
+      professional: [
+        "Ransomware: malicious software that encrypts a victim's files and demands payment to unlock them.",
+        "Containment: isolating an infected system from the network before an attacker can spread further.",
+        "EDR: security software that watches individual computers for suspicious activity in real time.",
+      ],
+      child: [
+        "Ransomware: a computer virus that locks up files and demands money to unlock them - like a digital kidnapping.",
+        "Containment: cutting off a sick computer from the rest of the network, like isolating someone with a cold.",
+        "Security Alert: a warning sign that something suspicious might be happening, like a smoke detector going off.",
+      ],
+    },
   },
   {
     careerType: "PRODUCT_MANAGEMENT",
@@ -69,6 +95,18 @@ const CAREERS: CareerInfo[] = [
     ],
     skills: ["Data-Driven Reasoning", "Prioritization", "Root Cause Analysis", "Stakeholder Communication"],
     duration: "~10 minutes",
+    keyConcepts: {
+      professional: [
+        "Conversion Rate: the percentage of visitors who complete a desired action, like finishing a purchase.",
+        "Sprint: a fixed time block (often 1-2 weeks) where a team commits to completing a set amount of work.",
+        "Backlog: the running list of features and fixes a team hasn't built yet, ranked by priority.",
+      ],
+      child: [
+        "Conversion Rate: out of everyone who visits a store, how many actually buy something.",
+        "Sprint: a short, focused work period - like a two-week countdown to finish a project.",
+        "Backlog: your to-do list of ideas and fixes, sorted by what matters most.",
+      ],
+    },
   },
   {
     careerType: "CORPORATE_LAW",
@@ -82,6 +120,18 @@ const CAREERS: CareerInfo[] = [
     ],
     skills: ["Contract Risk Detection", "Negotiation Strategy", "Precision Drafting", "Client Advocacy"],
     duration: "~10 minutes",
+    keyConcepts: {
+      professional: [
+        "Non-Compete Clause: a contract term restricting someone from working for a competitor for a set time and area.",
+        "Redline: a tracked-changes edit showing exactly what language is being added, removed, or changed.",
+        "Indemnification: a promise in a contract to cover the other party's losses if certain problems arise.",
+      ],
+      child: [
+        "Non-Compete Clause: a rule saying you can't work for a rival business for a while - like a 'no rematch' rule.",
+        "Redline: marking up a document to show exactly what you want to change, like editing an essay.",
+        "Indemnification: a promise to pay for damages if something goes wrong - a safety net written into a contract.",
+      ],
+    },
   },
   {
     careerType: "QUANT_TRADING",
@@ -95,6 +145,18 @@ const CAREERS: CareerInfo[] = [
     ],
     skills: ["Risk Management", "Volatility Reasoning", "Pattern Recognition", "Decisive Execution"],
     duration: "~10 minutes",
+    keyConcepts: {
+      professional: [
+        "Stop-Loss: a preset price at which a losing position is automatically sold to limit further losses.",
+        "Volatility: how much and how fast a price swings up and down - higher volatility means bigger, faster moves.",
+        "Order Book: the live list of buy and sell orders waiting to be matched at various prices.",
+      ],
+      child: [
+        "Stop-Loss: a safety rule that says 'sell automatically if I start losing too much money.'",
+        "Volatility: how wildly a price jumps around - calm water vs. a stormy sea.",
+        "Order Book: a live list of who wants to buy and who wants to sell, and at what price.",
+      ],
+    },
   },
 ];
 
@@ -115,11 +177,19 @@ function getAnonymousSessionId(): string {
 export default function DemoPage() {
   const router = useRouter();
   const [selected, setSelected] = useState<CareerInfo | null>(null);
+  const [mode, setMode] = useState<SimulationMode | null>(null);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const closeAll = () => {
+    if (starting) return;
+    setSelected(null);
+    setMode(null);
+    setError(null);
+  };
+
   const startSimulation = async () => {
-    if (!selected || starting) return;
+    if (!selected || !mode || starting) return;
     setStarting(true);
     setError(null);
     try {
@@ -129,6 +199,8 @@ export default function DemoPage() {
         body: JSON.stringify({
           anonymousSessionId: getAnonymousSessionId(),
           careerType: selected.careerType,
+          mode,
+          ageTier: ageTierForMode(mode),
         }),
       });
       const data = await res.json();
@@ -181,15 +253,15 @@ export default function DemoPage() {
         </div>
       </div>
 
-      {/* Onboarding briefing modal */}
-      <AnimatePresence>
-        {selected && (
+      <AnimatePresence mode="wait">
+        {selected && !mode && (
           <motion.div
+            key="briefing"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4"
-            onClick={() => !starting && setSelected(null)}
+            onClick={closeAll}
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.96, y: 8 }}
@@ -212,7 +284,7 @@ export default function DemoPage() {
                   </div>
                 </div>
                 <button
-                  onClick={() => !starting && setSelected(null)}
+                  onClick={closeAll}
                   className="shrink-0 rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
                   aria-label="Close"
                 >
@@ -259,31 +331,66 @@ export default function DemoPage() {
                 Estimated duration: <span className="font-medium text-slate-700">{selected.duration}</span>
               </div>
 
+              <div className="mt-6">
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-700">Choose Your Mode</h3>
+                <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <button
+                    onClick={() => setMode("child")}
+                    className="flex flex-col items-start gap-1 rounded-lg border border-slate-200 p-3 text-left transition-colors hover:border-emerald-300 hover:bg-emerald-50"
+                  >
+                    <span className="flex items-center gap-1.5 text-sm font-semibold text-slate-900">
+                      <GraduationCap className="h-4 w-4 text-emerald-600" />
+                      Child / Aptitude Focus
+                    </span>
+                    <span className="text-xs text-slate-500">
+                      Simplified jargon, focused on decision logic &amp; soft skills.
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => setMode("professional")}
+                    className="flex flex-col items-start gap-1 rounded-lg border border-slate-200 p-3 text-left transition-colors hover:border-slate-400 hover:bg-slate-50"
+                  >
+                    <span className="flex items-center gap-1.5 text-sm font-semibold text-slate-900">
+                      <Briefcase className="h-4 w-4 text-slate-700" />
+                      Professional / Full Tech
+                    </span>
+                    <span className="text-xs text-slate-500">
+                      Real-world technical depth &amp; industry metrics.
+                    </span>
+                  </button>
+                </div>
+              </div>
+
               {error && (
                 <p className="mt-4 flex items-center gap-1.5 rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-700">
                   <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
                   {error}
                 </p>
               )}
-
-              <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                <button
-                  onClick={() => setSelected(null)}
-                  disabled={starting}
-                  className="rounded-md px-4 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100 disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={startSimulation}
-                  disabled={starting}
-                  className="flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
-                >
-                  {starting ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
-                  {starting ? "Starting..." : "Start Simulation"}
-                </button>
-              </div>
             </motion.div>
+          </motion.div>
+        )}
+
+        {selected && mode && (
+          <motion.div
+            key="prep"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4"
+            onClick={closeAll}
+          >
+            <PreSimPrepModal
+              title={selected.title}
+              tagline={selected.tagline}
+              mission={selected.mission}
+              keyConcepts={selected.keyConcepts[mode]}
+              mode={mode}
+              starting={starting}
+              error={error}
+              onBack={() => setMode(null)}
+              onConfirm={startSimulation}
+            />
           </motion.div>
         )}
       </AnimatePresence>

@@ -1,4 +1,4 @@
-import type { CareerType } from "@/types/simulation";
+import type { CareerType, SimulationMode } from "@/types/simulation";
 
 const JSON_CONTRACT = (uiMode: CareerType, payloadShape: string) => `
 OUTPUT FORMAT - NON-NEGOTIABLE
@@ -31,6 +31,40 @@ Rules:
 - Most scenarios should run 5-10 turns before concluding. Do not end the scenario prematurely, and
   do not let it drag on forever - converge toward a conclusion once the core decision has been made.
 `;
+
+/**
+ * Appended to every career's scenario prompt, governing vocabulary, framing, and HUD-label style.
+ * This is the mechanism behind the platform's two audiences: a 10th-12th grader sampling a career
+ * before choosing a major (child/aptitude) vs. a college student or working professional (full
+ * technical depth).
+ */
+const MODE_INSTRUCTIONS: Record<SimulationMode, string> = {
+  child: `
+AUDIENCE & TONE - CHILD / APTITUDE FOCUS MODE
+This student is in 10th-12th grade and has no professional background in this field. Follow these
+rules strictly on every single turn:
+- Strictly suppress heavy industry jargon. If a technical term is genuinely necessary to the scene,
+  introduce it once and immediately explain it inline with a short, everyday analogy in the same
+  sentence (e.g. "ARR - basically the money the business collects every year on repeat, like a
+  subscription you pay for again and again").
+- Anchor every decision point on foundational aptitude, not technical mastery: logical reasoning,
+  clear team communication, and a sound problem-solving process. The scenario's stakes and setting
+  stay realistic - only the vocabulary and depth of technical mechanics simplify.
+- hudMetrics keys, and any metric named in narrativePrompt or allowedActions, MUST use simple,
+  everyday labels instead of industry terminology - e.g. "Project Health" or "Budget Left" instead
+  of a financial ratio, "Team Trust" instead of a retention metric, "Time Left" instead of a
+  technical countdown label. Never surface a raw industry metric name as a HUD label.
+- Keep sentences short and concrete. Do not assume the student has ever heard of this field's tools,
+  acronyms, or metrics before today.
+`,
+  professional: `
+AUDIENCE & TONE - PROFESSIONAL / FULL TECHNICAL MODE
+This student is a college student or working professional preparing for this career. Retain full
+technical complexity: real industry terminology, realistic operational constraints, and precise,
+industry-standard metrics. Do not simplify, soften, or explain away technical vocabulary - use it
+exactly as a practitioner in this field would, with no hand-holding.
+`,
+};
 
 const VC_PAYLOAD_SHAPE = `{
     "emails": [{ "id": string, "from": string, "subject": string, "preview": string, "body": string, "receivedAt": string, "read"?: boolean, "attachments"?: string[] }],
@@ -71,7 +105,15 @@ const QUANT_PAYLOAD_SHAPE = `{
     "pnl": number
   }`;
 
-export const GAME_MASTER_PROMPTS: Record<CareerType, string> = {
+const PAYLOAD_SHAPES: Record<CareerType, string> = {
+  VENTURE_CAPITAL: VC_PAYLOAD_SHAPE,
+  CYBERSECURITY: CYBER_PAYLOAD_SHAPE,
+  PRODUCT_MANAGEMENT: PRODUCT_PAYLOAD_SHAPE,
+  CORPORATE_LAW: LAW_PAYLOAD_SHAPE,
+  QUANT_TRADING: QUANT_PAYLOAD_SHAPE,
+};
+
+const SCENARIOS: Record<CareerType, string> = {
   VENTURE_CAPITAL: `You are the Game Master for a venture capital career simulation. You play the role of a
 sharp, skeptical Partner at a top-tier VC firm who is walking a junior associate (the student) through
 live diligence on a pre-Series A B2B SaaS company ("Nimbus Robotics" or a startup name you establish
@@ -91,8 +133,7 @@ diligence question, a decision to advance/pass/request more data), update the in
 in payload accordingly, and offer 2-5 concrete next actions in allowedActions. Conclude the scenario
 (isComplete: true) once the student has made and justified an investment decision (advance to partner
 meeting, pass, or similar), and grade overallScore and feedbackSummary on how rigorously they
-surfaced and reasoned about the churn red flags, not just whether they said yes or no to the deal.
-${JSON_CONTRACT("VENTURE_CAPITAL", VC_PAYLOAD_SHAPE)}`,
+surfaced and reasoned about the churn red flags, not just whether they said yes or no to the deal.`,
 
   CYBERSECURITY: `You are the Game Master for a cybersecurity career simulation. You play the role of the
 Lead SOC (Security Operations Center) Officer directing the student through an active ransomware
@@ -110,8 +151,7 @@ from backup) as well as investigative commands. Reward decisive, correctly-seque
 destroy forensic evidence or leave critical hospital systems (e.g. a ventilator control network)
 offline unnecessarily. Conclude (isComplete: true) once the breach is contained and systemHealth has
 stabilized, or once the student has clearly failed to contain it in a reasonable number of turns, and
-grade overallScore/feedbackSummary on incident response rigor and speed-to-containment.
-${JSON_CONTRACT("CYBERSECURITY", CYBER_PAYLOAD_SHAPE)}`,
+grade overallScore/feedbackSummary on incident response rigor and speed-to-containment.`,
 
   PRODUCT_MANAGEMENT: `You are the Game Master for a product management career simulation. You play the
 role of the Head of Product at a mid-stage e-commerce company. Checkout conversion has just dropped
@@ -128,8 +168,7 @@ student moves cards and commits to a plan, reflecting the consequences of their 
 (committing to more than the point budget should be called out, not silently allowed; ignoring the
 root-cause bug should mean conversionRate does not meaningfully recover). Conclude (isComplete: true)
 once the student commits a sprint plan, and grade overallScore/feedbackSummary on whether they
-correctly diagnosed the root cause and prioritized within the developer point constraint.
-${JSON_CONTRACT("PRODUCT_MANAGEMENT", PRODUCT_PAYLOAD_SHAPE)}`,
+correctly diagnosed the root cause and prioritized within the developer point constraint.`,
 
   CORPORATE_LAW: `You are the Game Master for a corporate law career simulation. You play the role of
 the Lead Corporate Lawyer guiding the student, an associate, through negotiating a direct-to-consumer
@@ -146,8 +185,7 @@ back-and-forth with opposing counsel who initially resists softening the non-com
 concedes proportionally to how well-reasoned the student's counter-proposals are. Conclude
 (isComplete: true) once the parties reach agreement or negotiations clearly break down, and grade
 overallScore/feedbackSummary primarily on whether the student identified and meaningfully narrowed the
-predatory non-compete.
-${JSON_CONTRACT("CORPORATE_LAW", LAW_PAYLOAD_SHAPE)}`,
+predatory non-compete.`,
 
   QUANT_TRADING: `You are the Game Master for a quantitative trading career simulation. You play the
 role of the Quantitative Desk Lead overseeing the student, a junior quant, who holds a position in a
@@ -164,6 +202,11 @@ through allowedActions (tighten stop-loss, widen volatility threshold, reduce ex
 liquidate) rather than leaving risk parameters static. Track pnl consistently with the price path and
 the student's choices. Conclude (isComplete: true) once the announcement has fully played out and the
 student has settled their position (held, reduced, or liquidated) with the resulting pnl, and grade
-overallScore/feedbackSummary on risk-adjusted decision-making under volatility, not raw pnl alone.
-${JSON_CONTRACT("QUANT_TRADING", QUANT_PAYLOAD_SHAPE)}`,
+overallScore/feedbackSummary on risk-adjusted decision-making under volatility, not raw pnl alone.`,
 };
+
+export function getGameMasterPrompt(careerType: CareerType, mode: SimulationMode): string {
+  return `${SCENARIOS[careerType]}
+${MODE_INSTRUCTIONS[mode]}
+${JSON_CONTRACT(careerType, PAYLOAD_SHAPES[careerType])}`;
+}

@@ -44,6 +44,11 @@ model SimulationSession {
   student           Student           @relation(fields: [studentId], references: [id])
   careerType        CareerType        @map("career_type")
   status            SimulationStatus  @default(IN_PROGRESS)
+  // "child" | "professional" - see types/simulation.ts SimulationMode. Plain String (not a
+  // Postgres enum) because ageTier's values ("10-12th") aren't valid enum identifiers.
+  mode              String            @default("professional")
+  // "10-12th" | "college_pro" - see types/simulation.ts AgeTier.
+  ageTier           String            @default("college_pro") @map("age_tier")
   overallScore      Int?              @map("overall_score")
   feedbackSummary   String?           @map("feedback_summary")
   competencies      Json?             @map("competencies")
