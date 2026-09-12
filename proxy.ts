@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createServerClient } from "@supabase/ssr";
 
 /**
  * In-memory sliding-window rate limiter, keyed by client IP.
@@ -39,33 +40,77 @@ function isRateLimited(key: string): boolean {
   return timestamps.length > RATE_LIMIT_MAX_REQUESTS;
 }
 
-export function proxy(request: NextRequest): NextResponse | undefined {
-  const ip = getClientIp(request);
+const GUARDED_API_PREFIXES = ["/api/simulations/", "/api/simulation-requests", "/api/contact"];
 
-  if (isRateLimited(ip)) {
-    return NextResponse.json(
-      { error: "Too many requests. Please slow down and try again shortly." },
-      { status: 429, headers: { "Retry-After": "60" } }
-    );
-  }
-
-  if (request.method === "POST") {
-    const contentType = request.headers.get("content-type") ?? "";
-    if (!contentType.includes("application/json")) {
-      return NextResponse.json({ error: "Content-Type must be application/json." }, { status: 415 });
-    }
-
-    const contentLength = Number(request.headers.get("content-length") ?? "0");
-    if (contentLength > MAX_JSON_BODY_BYTES) {
-      return NextResponse.json({ error: "Request body too large." }, { status: 413 });
-    }
-  }
+function isGuardedApiRoute(pathname: string): boolean {
+  return GUARDED_API_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(prefix));
 }
 
-// Content-Security-Policy and the other static security headers now live in next.config.ts,
-// since they no longer depend on a per-request nonce - this proxy only needs to run over the
-// API routes it's actually guarding: the simulation routes plus the two public lead-capture
-// forms (also public-facing POST endpoints, same bot/abuse surface).
+/** Refreshes the Supabase auth session cookie against the request/response pair this proxy is
+ *  already building, so a signed-in user's server components and API routes always see a valid
+ *  session without a separate middleware file (this Next.js version supports only one proxy). */
+async function refreshSupabaseSession(request: NextRequest): Promise<NextResponse> {
+  let response = NextResponse.next({ request });
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          for (const { name, value } of cookiesToSet) {
+            request.cookies.set(name, value);
+          }
+          response = NextResponse.next({ request });
+          for (const { name, value, options } of cookiesToSet) {
+            response.cookies.set(name, value, options);
+          }
+        },
+      },
+    }
+  );
+
+  await supabase.auth.getUser();
+  return response;
+}
+
+export async function proxy(request: NextRequest): Promise<NextResponse> {
+  const pathname = request.nextUrl.pathname;
+
+  if (isGuardedApiRoute(pathname)) {
+    const ip = getClientIp(request);
+
+    if (isRateLimited(ip)) {
+      return NextResponse.json(
+        { error: "Too many requests. Please slow down and try again shortly." },
+        { status: 429, headers: { "Retry-After": "60" } }
+      );
+    }
+
+    if (request.method === "POST") {
+      const contentType = request.headers.get("content-type") ?? "";
+      if (!contentType.includes("application/json")) {
+        return NextResponse.json({ error: "Content-Type must be application/json." }, { status: 415 });
+      }
+
+      const contentLength = Number(request.headers.get("content-length") ?? "0");
+      if (contentLength > MAX_JSON_BODY_BYTES) {
+        return NextResponse.json({ error: "Request body too large." }, { status: 413 });
+      }
+    }
+  }
+
+  return refreshSupabaseSession(request);
+}
+
+// Content-Security-Policy and the other static security headers live in next.config.ts, since
+// they no longer depend on a per-request nonce. This proxy now runs on nearly every route (not
+// just the guarded API routes above) so the Supabase auth cookie stays fresh across page loads;
+// isGuardedApiRoute() scopes the abuse-prevention checks back down to just the routes that need
+// them.
 export const config = {
-  matcher: ["/api/simulations/:path*", "/api/simulation-requests", "/api/contact"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
 };

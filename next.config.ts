@@ -9,7 +9,9 @@ const isDev = process.env.NODE_ENV === "development";
 
 const cspHeader = [
   `default-src 'self'`,
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  // 'wasm-unsafe-eval' lets @react-pdf/renderer instantiate its WebAssembly font-shaping module
+  // client-side without relaxing script-src to allow arbitrary eval'd JS.
+  `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ""}`,
   `style-src 'self' 'unsafe-inline'`,
   `img-src 'self' blob: data:`,
   `font-src 'self' data:`,

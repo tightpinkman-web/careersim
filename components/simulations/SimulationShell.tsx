@@ -28,6 +28,24 @@ const HUD_ICON: Record<string, React.ComponentType<{ className?: string }>> = {
 
 const DECISION_WINDOW_SECONDS = 60;
 
+// Rotating neutral/cool palette for decision buttons. No color here is meant to signal "right"
+// or "safe" - red/green/yellow are excluded entirely so students can't read an implied verdict
+// into which option looks more inviting. Order matches `action.kind` when present (primary,
+// secondary, danger), then cycles through the remaining cool accents for any further options.
+const CHOICE_PALETTE = [
+  { light: "bg-indigo-600 text-white hover:bg-indigo-700", dark: "bg-indigo-600 text-white hover:bg-indigo-500" },
+  { light: "bg-slate-200 text-slate-700 hover:bg-slate-300", dark: "bg-slate-800 text-slate-200 hover:bg-slate-700" },
+  { light: "bg-violet-600 text-white hover:bg-violet-700", dark: "bg-violet-600 text-white hover:bg-violet-500" },
+  { light: "bg-cyan-600 text-white hover:bg-cyan-700", dark: "bg-cyan-600 text-white hover:bg-cyan-500" },
+  { light: "bg-zinc-600 text-white hover:bg-zinc-700", dark: "bg-zinc-700 text-white hover:bg-zinc-600" },
+  { light: "bg-teal-600 text-white hover:bg-teal-700", dark: "bg-teal-600 text-white hover:bg-teal-500" },
+] as const;
+
+function choiceButtonClasses(index: number, isDark: boolean): string {
+  const swatch = CHOICE_PALETTE[index % CHOICE_PALETTE.length];
+  return isDark ? swatch.dark : swatch.light;
+}
+
 function formatHudKey(key: string) {
   return key
     .replace(/([A-Z])/g, " $1")
@@ -167,19 +185,14 @@ export default function SimulationShell({ state, onAction }: SimulationShellProp
                 : "border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-400 focus:border-indigo-400"
             )}
           />
-          {state.allowedActions.map((action) => (
+          {state.allowedActions.map((action, index) => (
             <button
               key={action.id}
               onClick={() => handleAction(action.id)}
               title={action.description}
               className={cn(
                 "flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                // Deliberately no red/green/yellow here - button color communicates which
-                // action this is, never whether it's the "right" or "safe" one to pick.
-                action.kind === "danger" && "bg-violet-600 text-white hover:bg-violet-700",
-                action.kind === "secondary" &&
-                  (isDark ? "bg-slate-800 text-slate-200 hover:bg-slate-700" : "bg-slate-200 text-slate-700 hover:bg-slate-300"),
-                (!action.kind || action.kind === "primary") && "bg-indigo-600 text-white hover:bg-indigo-700"
+                choiceButtonClasses(index, isDark)
               )}
             >
               <Send className="h-3.5 w-3.5" />
