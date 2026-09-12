@@ -21,6 +21,11 @@ enum SimulationStatus {
   COMPLETED
 }
 
+enum RequesterRole {
+  COUNSELOR
+  STUDENT
+}
+
 model Student {
   id              String   @id @default(uuid())
   supabaseAuthId  String   @unique @map("supabase_auth_id")
@@ -51,6 +56,30 @@ model SimulationSession {
   actionLogs ActionLog[]
 
   @@map("simulation_sessions")
+}
+
+model SimulationRequest {
+  id                   String        @id @default(uuid())
+  name                 String
+  role                 RequesterRole
+  organization         String?
+  requestedCareerTitle String        @map("requested_career_title")
+  industry             String
+  keySkills            String        @map("key_skills")
+  createdAt            DateTime      @default(now()) @map("created_at")
+
+  @@map("simulation_requests")
+}
+
+model ContactLead {
+  id           String   @id @default(uuid())
+  name         String
+  email        String
+  organization String?
+  message      String?
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("contact_leads")
 }
 
 model ActionLog {

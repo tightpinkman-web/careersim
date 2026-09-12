@@ -64,7 +64,8 @@ export function proxy(request: NextRequest): NextResponse | undefined {
 
 // Content-Security-Policy and the other static security headers now live in next.config.ts,
 // since they no longer depend on a per-request nonce - this proxy only needs to run over the
-// simulation API routes it's actually guarding.
+// API routes it's actually guarding: the simulation routes plus the two public lead-capture
+// forms (also public-facing POST endpoints, same bot/abuse surface).
 export const config = {
-  matcher: ["/api/simulations/:path*"],
+  matcher: ["/api/simulations/:path*", "/api/simulation-requests", "/api/contact"],
 };

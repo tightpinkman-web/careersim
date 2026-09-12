@@ -78,7 +78,7 @@ export default function ActiveSimulationPage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-100">
+      <div className="flex h-full items-center justify-center bg-slate-100">
         <div className="flex flex-col items-center gap-3 text-slate-500">
           <Loader2 className="h-6 w-6 animate-spin" />
           <p className="text-sm">Loading simulation session...</p>
@@ -89,7 +89,7 @@ export default function ActiveSimulationPage() {
 
   if (error && !state) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-100">
+      <div className="flex h-full items-center justify-center bg-slate-100">
         <div className="flex max-w-sm flex-col items-center gap-3 text-center text-slate-600">
           <AlertTriangle className="h-6 w-6 text-rose-500" />
           <p className="text-sm">{error}</p>
@@ -107,7 +107,7 @@ export default function ActiveSimulationPage() {
   if (!state) return null;
 
   return (
-    <div className="relative flex h-screen flex-col bg-slate-100">
+    <div className="relative flex h-full flex-col bg-slate-100">
       {status === "COMPLETED" && (
         <div className="flex items-center gap-3 border-b border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-800">
           <Trophy className="h-4 w-4 shrink-0" />

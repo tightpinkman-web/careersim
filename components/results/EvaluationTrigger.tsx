@@ -32,7 +32,7 @@ export default function EvaluationTrigger({ sessionId }: EvaluationTriggerProps)
   };
 
   return (
-    <div className="flex h-screen flex-col items-center justify-center gap-4 bg-slate-100 px-4 text-center">
+    <div className="flex h-full flex-col items-center justify-center gap-4 bg-slate-100 px-4 text-center">
       <Sparkles className="h-8 w-8 text-indigo-500" />
       <h1 className="text-lg font-semibold text-slate-800">Your evaluation isn&apos;t ready yet</h1>
       <p className="max-w-sm text-sm text-slate-500">

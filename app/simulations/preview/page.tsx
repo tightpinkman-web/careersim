@@ -249,7 +249,7 @@ export default function SimulationPreviewPage() {
   const state = DUMMY_STATES[activeMode];
 
   return (
-    <div className="flex h-screen flex-col bg-slate-100">
+    <div className="flex h-full flex-col bg-slate-100">
       {/* Floating mode switcher */}
       <div className="pointer-events-none absolute inset-x-0 top-3 z-50 flex justify-center">
         <div className="pointer-events-auto flex items-center gap-1 rounded-full border border-slate-200 bg-white/95 p-1 shadow-lg backdrop-blur">
