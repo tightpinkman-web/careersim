@@ -26,10 +26,13 @@ interface CareerInfo {
   title: string;
   tagline: string;
   icon: React.ComponentType<{ className?: string }>;
+  /** Shown in the step-1 briefing modal, before a mode is chosen - mode-agnostic. */
   mission: string[];
   skills: string[];
   duration: string;
   keyConcepts: Record<SimulationMode, [string, string, string]>;
+  /** Shown in PreSimPrepModal's "Your Mission & Core Objective", tuned per mode. */
+  prepMission: Record<SimulationMode, string[]>;
 }
 
 const CAREERS: CareerInfo[] = [
@@ -52,9 +55,21 @@ const CAREERS: CareerInfo[] = [
         "Term Sheet: the non-binding document that sets the price and key terms of an investment.",
       ],
       child: [
+        "Equity: owning a slice of the company's pizza pie - the bigger your slice, the more you get if the pizza (the company) grows.",
         "Recurring Revenue: money a business collects again and again, like a monthly allowance instead of a one-time gift.",
         "Churn: when customers stop coming back - like friends who stop showing up to your lemonade stand.",
-        "Term Sheet: a short 'here's the deal' note investors write before signing anything official.",
+      ],
+    },
+    prepMission: {
+      professional: [
+        "Review a live pitch deck, inbox, and financials",
+        "Spot red flags before recommending a term sheet",
+        "Defend your investment thesis to a skeptical partner",
+      ],
+      child: [
+        "Ask sharp questions and notice when something doesn't quite add up",
+        "Explain your reasoning clearly enough that a partner could follow it",
+        "Stay curious about the story behind the numbers, not just the numbers themselves",
       ],
     },
   },
@@ -82,6 +97,18 @@ const CAREERS: CareerInfo[] = [
         "Security Alert: a warning sign that something suspicious might be happening, like a smoke detector going off.",
       ],
     },
+    prepMission: {
+      professional: [
+        "Triage live threat alerts and terminal output",
+        "Sequence containment actions correctly",
+        "Balance speed against forensic integrity",
+      ],
+      child: [
+        "Stay calm and think through the problem step by step, like solving a puzzle under a ticking clock",
+        "Communicate clearly with your team so everyone knows what to do next",
+        "Stay curious about the clues the system is giving you instead of guessing",
+      ],
+    },
   },
   {
     careerType: "PRODUCT_MANAGEMENT",
@@ -105,6 +132,18 @@ const CAREERS: CareerInfo[] = [
         "Conversion Rate: out of everyone who visits a store, how many actually buy something.",
         "Sprint: a short, focused work period - like a two-week countdown to finish a project.",
         "Backlog: your to-do list of ideas and fixes, sorted by what matters most.",
+      ],
+    },
+    prepMission: {
+      professional: [
+        "Diagnose the root cause from funnel data",
+        "Prioritize a backlog against a fixed dev budget",
+        "Defend your roadmap call with evidence",
+      ],
+      child: [
+        "Figure out the real reason something is going wrong before jumping to a fix",
+        "Work as a team to decide what matters most with limited time",
+        "Stay curious about what the evidence is actually telling you",
       ],
     },
   },
@@ -132,6 +171,18 @@ const CAREERS: CareerInfo[] = [
         "Indemnification: a promise to pay for damages if something goes wrong - a safety net written into a contract.",
       ],
     },
+    prepMission: {
+      professional: [
+        "Review a full acquisition agreement for risk",
+        "Spot an unreasonable non-compete clause",
+        "Negotiate market-standard terms with opposing counsel",
+      ],
+      child: [
+        "Read carefully enough to notice when a rule seems unfair",
+        "Work together to find a solution both sides can agree to",
+        "Stay curious about why each rule in the contract is there",
+      ],
+    },
   },
   {
     careerType: "QUANT_TRADING",
@@ -152,9 +203,21 @@ const CAREERS: CareerInfo[] = [
         "Order Book: the live list of buy and sell orders waiting to be matched at various prices.",
       ],
       child: [
+        "Algorithm: a recipe for making decisions automatically - step-by-step instructions a computer follows, no matter how busy things get.",
         "Stop-Loss: a safety rule that says 'sell automatically if I start losing too much money.'",
         "Volatility: how wildly a price jumps around - calm water vs. a stormy sea.",
-        "Order Book: a live list of who wants to buy and who wants to sell, and at what price.",
+      ],
+    },
+    prepMission: {
+      professional: [
+        "Read live price action and the order book",
+        "Actively manage stop-loss and volatility parameters",
+        "Make a decisive risk call under pressure",
+      ],
+      child: [
+        "Make logical, level-headed choices even when things are moving fast",
+        "Think like part of a trading team, not just for yourself",
+        "Stay curious about why the price is moving the way it is",
       ],
     },
   },
@@ -383,7 +446,7 @@ export default function DemoPage() {
             <PreSimPrepModal
               title={selected.title}
               tagline={selected.tagline}
-              mission={selected.mission}
+              mission={selected.prepMission[mode]}
               keyConcepts={selected.keyConcepts[mode]}
               mode={mode}
               starting={starting}

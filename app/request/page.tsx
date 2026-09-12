@@ -74,7 +74,7 @@ function RequestForm() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Your full name"
-              className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-indigo-400"
+              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-indigo-400"
             />
           </div>
 
@@ -104,7 +104,7 @@ function RequestForm() {
               value={organization}
               onChange={(e) => setOrganization(e.target.value)}
               placeholder="School or counseling practice"
-              className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-indigo-400"
+              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-indigo-400"
             />
           </div>
 
@@ -115,7 +115,7 @@ function RequestForm() {
               value={requestedCareerTitle}
               onChange={(e) => setRequestedCareerTitle(e.target.value)}
               placeholder="e.g. Nurse Practitioner, Architect, Data Scientist"
-              className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-indigo-400"
+              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-indigo-400"
             />
           </div>
 
@@ -126,7 +126,7 @@ function RequestForm() {
               value={industry}
               onChange={(e) => setIndustry(e.target.value)}
               placeholder="e.g. Healthcare, Architecture, Technology"
-              className="w-full rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-indigo-400"
+              className="w-full rounded-md border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-indigo-400"
             />
           </div>
 
@@ -138,7 +138,7 @@ function RequestForm() {
               onChange={(e) => setKeySkills(e.target.value)}
               placeholder="e.g. Patient triage, spatial reasoning, statistical modeling"
               rows={3}
-              className="w-full resize-none rounded-md border border-slate-200 px-3 py-2.5 text-sm outline-none focus:border-indigo-400"
+              className="w-full resize-none rounded-md border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-indigo-400"
             />
           </div>
 

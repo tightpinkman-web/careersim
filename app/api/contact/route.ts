@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { buildContactLeadEmail, sendLeadAlertEmail } from "@/lib/resend";
 
 interface ContactRequestBody {
   name?: string;
@@ -36,6 +37,8 @@ export async function POST(request: Request) {
       message: message?.trim() || null,
     },
   });
+
+  await sendLeadAlertEmail(buildContactLeadEmail(created));
 
   return NextResponse.json({ id: created.id });
 }

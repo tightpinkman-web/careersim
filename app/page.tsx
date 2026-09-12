@@ -57,13 +57,13 @@ export default function Home() {
             <h2 className="mt-2 text-2xl font-bold text-slate-900 sm:text-3xl">
               Real career trial runs, before the major is chosen
             </h2>
-            <p className="mt-4 text-sm leading-relaxed text-slate-600">
+            <p className="mt-4 text-sm leading-relaxed text-slate-700">
               Most 10th-12th graders choose a college major based on a job title, not a job. Our mission is to
               give students an experiential, realistic trial run of the careers they&apos;re considering &mdash;
               powered by the same AI &quot;Game Master&quot; technology counselors can trust to be consistent,
               scored, and repeatable, session after session.
             </p>
-            <p className="mt-4 text-sm leading-relaxed text-slate-600">
+            <p className="mt-4 text-sm leading-relaxed text-slate-700">
               Every simulation drops a student into a live scenario with real constraints and consequences, then
               scores their decisions against how a strong performer in that career would actually act &mdash; not
               a quiz, a rehearsal.

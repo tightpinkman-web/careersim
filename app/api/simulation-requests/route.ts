@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { buildSimulationRequestEmail, sendLeadAlertEmail } from "@/lib/resend";
 
 interface SimulationRequestBody {
   name?: string;
@@ -41,6 +42,8 @@ export async function POST(request: Request) {
       keySkills: keySkills.trim(),
     },
   });
+
+  await sendLeadAlertEmail(buildSimulationRequestEmail(created));
 
   return NextResponse.json({ id: created.id });
 }
