@@ -1,6 +1,6 @@
-import Link from "next/link";
-import { GraduationCap, Compass, ShieldCheck, Sparkles, Mail, Phone, ArrowRight, PlayCircle } from "lucide-react";
+import { GraduationCap, Compass, ShieldCheck, Sparkles, Mail, Phone, ArrowRight, PlayCircle, LibraryBig } from "lucide-react";
 import ContactForm from "@/components/ContactForm";
+import AuthGatedCta from "@/components/AuthGatedCta";
 
 const CONTACT_EMAIL = "tightpinkman@gmail.com";
 const CONTACT_PHONE = "9739409451";
@@ -31,20 +31,27 @@ export default function Home() {
             Law, and Quant Trading.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link
+            <AuthGatedCta
               href="/demo"
               className="flex w-full items-center justify-center gap-2 rounded-md bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 sm:w-auto"
             >
               <PlayCircle className="h-4 w-4" />
-              Try Demo Simulations
-            </Link>
-            <Link
+              Start Demo Simulation
+            </AuthGatedCta>
+            <AuthGatedCta
+              href="/catalog"
+              className="flex w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 sm:w-auto"
+            >
+              <LibraryBig className="h-4 w-4" />
+              Browse Catalog
+            </AuthGatedCta>
+            <AuthGatedCta
               href="/request"
               className="flex w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50 sm:w-auto"
             >
-              Request a Career Simulation
+              Request Career
               <ArrowRight className="h-4 w-4" />
-            </Link>
+            </AuthGatedCta>
           </div>
         </div>
       </section>

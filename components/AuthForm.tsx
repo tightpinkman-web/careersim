@@ -1,18 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, AlertTriangle, Mail, Lock, User } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { safeRedirectPath } from "@/lib/safeRedirect";
 
 interface AuthFormProps {
   mode: "login" | "signup";
 }
 
-/** Shared email/password + Google OAuth form for /login and /signup. Supabase Auth issues an
- *  httpOnly session cookie on success - no separate tracking/analytics cookie is ever set here. */
-export default function AuthForm({ mode }: AuthFormProps) {
+function AuthFormInner({ mode }: AuthFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectTo = safeRedirectPath(searchParams.get("redirectTo"));
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -52,13 +53,13 @@ export default function AuthForm({ mode }: AuthFormProps) {
           return;
         }
         await syncStudent();
-        router.push("/history");
+        router.push(redirectTo);
         router.refresh();
       } else {
         const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
         if (signInError) throw signInError;
         await syncStudent();
-        router.push("/history");
+        router.push(redirectTo);
         router.refresh();
       }
     } catch (err) {
@@ -73,7 +74,9 @@ export default function AuthForm({ mode }: AuthFormProps) {
     const supabase = createClient();
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback?next=/history` },
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
+      },
     });
     if (oauthError) setError(oauthError.message);
   };
@@ -175,5 +178,15 @@ export default function AuthForm({ mode }: AuthFormProps) {
         Continue with Google
       </button>
     </form>
+  );
+}
+
+/** Wrapped in Suspense because it reads ?redirectTo= via useSearchParams, which Next requires
+ *  to be inside a Suspense boundary during static rendering. */
+export default function AuthForm({ mode }: AuthFormProps) {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center py-8"><Loader2 className="h-5 w-5 animate-spin text-slate-400" /></div>}>
+      <AuthFormInner mode={mode} />
+    </Suspense>
   );
 }

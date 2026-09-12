@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, LogIn, LogOut, UserCircle } from "lucide-react";
+import { Menu, X, LogIn, LogOut, UserCircle, History } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 
@@ -11,7 +11,6 @@ const NAV_LINKS = [
   { href: "/", label: "Home" },
   { href: "/demo", label: "Demo Sims" },
   { href: "/catalog", label: "Career Catalog" },
-  { href: "/history", label: "My Results & Reports" },
   { href: "/request", label: "Request a Sim" },
   { href: "/#contact", label: "Contact Us" },
 ];
@@ -35,6 +34,8 @@ export default function Navbar() {
     if (href === "/") return pathname === "/";
     return pathname.startsWith(href);
   };
+
+  const loginHref = `/login?redirectTo=${encodeURIComponent(pathname)}`;
 
   return (
     <header className="sticky top-0 z-40 shrink-0 border-b border-slate-200 bg-white/95 backdrop-blur">
@@ -67,6 +68,13 @@ export default function Navbar() {
           <div className="flex items-center gap-1">
             {email === undefined ? null : email ? (
               <>
+                <Link
+                  href="/history"
+                  className="flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100"
+                >
+                  <History className="h-3.5 w-3.5" />
+                  My History
+                </Link>
                 <span className="flex items-center gap-1 px-2 text-xs text-slate-500">
                   <UserCircle className="h-4 w-4" />
                   {email}
@@ -77,24 +85,24 @@ export default function Navbar() {
                     className="flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100"
                   >
                     <LogOut className="h-3.5 w-3.5" />
-                    Log Out
+                    Sign Out
                   </button>
                 </form>
               </>
             ) : (
               <>
                 <Link
-                  href="/login"
+                  href={loginHref}
                   className="flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100"
                 >
                   <LogIn className="h-3.5 w-3.5" />
-                  Log In
+                  Sign In
                 </Link>
                 <Link
                   href="/signup"
                   className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white hover:bg-indigo-700"
                 >
-                  Sign Up
+                  Get Started
                 </Link>
               </>
             )}
@@ -137,31 +145,41 @@ export default function Navbar() {
           </div>
           <div className="mt-1 flex flex-col gap-1 pt-1">
             {email ? (
-              <form action="/api/auth/signout" method="post">
-                <button
-                  type="submit"
-                  className="flex w-full items-center gap-1.5 rounded-md px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100"
+              <>
+                <Link
+                  href="/history"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-1.5 rounded-md px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100"
                 >
-                  <LogOut className="h-4 w-4" />
-                  Log Out ({email})
-                </button>
-              </form>
+                  <History className="h-4 w-4" />
+                  My History
+                </Link>
+                <form action="/api/auth/signout" method="post">
+                  <button
+                    type="submit"
+                    className="flex w-full items-center gap-1.5 rounded-md px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Sign Out ({email})
+                  </button>
+                </form>
+              </>
             ) : (
               <>
                 <Link
-                  href="/login"
+                  href={loginHref}
                   onClick={() => setOpen(false)}
                   className="flex items-center gap-1.5 rounded-md px-3 py-2.5 text-sm font-medium text-slate-600 hover:bg-slate-100"
                 >
                   <LogIn className="h-4 w-4" />
-                  Log In
+                  Sign In
                 </Link>
                 <Link
                   href="/signup"
                   onClick={() => setOpen(false)}
                   className="rounded-md bg-indigo-600 px-3 py-2.5 text-center text-sm font-medium text-white hover:bg-indigo-700"
                 >
-                  Sign Up
+                  Get Started
                 </Link>
               </>
             )}
