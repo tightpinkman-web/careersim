@@ -51,20 +51,12 @@ function isGuardedApiRoute(pathname: string): boolean {
   return GUARDED_API_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(prefix));
 }
 
-// Every core feature page requires a signed-in account; everything else (the landing page, auth
-// pages, legal pages, and all API routes - APIs return JSON 401s from their own handlers, they're
-// never HTML-redirected) stays public.
-const PROTECTED_PAGE_PREFIXES = ["/demo", "/catalog", "/request", "/history", "/simulations"];
-
-function isProtectedPageRoute(pathname: string): boolean {
-  return PROTECTED_PAGE_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
-}
-
 /** Refreshes the Supabase auth session cookie against the request/response pair this proxy is
  *  already building (so a signed-in user's server components and API routes always see a valid
- *  session without a separate middleware file - this Next.js version supports only one proxy),
- *  and redirects signed-out visitors away from gated feature pages to /login. */
-async function refreshSessionAndGatePages(request: NextRequest): Promise<NextResponse> {
+ *  session without a separate middleware file - this Next.js version supports only one proxy).
+ *  Every page is public - guests fall through to the anonymous-session flow the app already
+ *  supports (see lib/authStudent.ts) - this only keeps an optional session cookie fresh. */
+async function refreshSession(request: NextRequest): Promise<NextResponse> {
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -88,21 +80,7 @@ async function refreshSessionAndGatePages(request: NextRequest): Promise<NextRes
     }
   );
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user && isProtectedPageRoute(request.nextUrl.pathname)) {
-    const loginUrl = new URL("/login", request.url);
-    loginUrl.searchParams.set("redirectTo", request.nextUrl.pathname + request.nextUrl.search);
-    const redirectResponse = NextResponse.redirect(loginUrl);
-    // Carry over any session cookie the getUser() call above just refreshed/cleared, so a
-    // borderline-expired session is still cleaned up even on the request that gets redirected.
-    for (const cookie of response.cookies.getAll()) {
-      redirectResponse.cookies.set(cookie);
-    }
-    return redirectResponse;
-  }
+  await supabase.auth.getUser();
 
   return response;
 }
@@ -133,7 +111,7 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     }
   }
 
-  return refreshSessionAndGatePages(request);
+  return refreshSession(request);
 }
 
 // Content-Security-Policy and the other static security headers live in next.config.ts, since

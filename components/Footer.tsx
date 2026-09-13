@@ -4,19 +4,15 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Mail, Phone } from "lucide-react";
 import Logo from "@/components/Logo";
+import { isImmersiveRoute } from "@/lib/immersiveRoutes";
 
 const CONTACT_EMAIL = "tightpinkman@gmail.com";
 const CONTACT_PHONE = "9739409451";
 const CONTACT_PHONE_DISPLAY = "(973) 940-9451";
 
-// The live simulation experience (/demo, /simulations/*) is a full-viewport, app-like shell -
-// a footer underneath it would just eat into the vertical space that layout depends on. Every
-// other route is a normal marketing/content page and gets the standard site footer.
-const FOOTER_HIDDEN_PREFIXES = ["/demo", "/simulations"];
-
 export default function Footer() {
   const pathname = usePathname();
-  if (FOOTER_HIDDEN_PREFIXES.some((prefix) => pathname.startsWith(prefix))) return null;
+  if (isImmersiveRoute(pathname)) return null;
 
   return (
     <footer className="shrink-0 border-t border-slate-200 bg-white">

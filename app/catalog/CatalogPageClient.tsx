@@ -109,7 +109,7 @@ export default function CatalogPageClient() {
         </div>
 
         {/* Filter pills */}
-        <div className="mt-6 flex flex-col items-center gap-3">
+        <div className="mt-6 mb-8 flex flex-col items-center gap-3">
           <div className="flex flex-wrap justify-center gap-1.5">
             {INDUSTRY_PILLS.map((option) => (
               <button
@@ -142,16 +142,16 @@ export default function CatalogPageClient() {
           </div>
         </div>
 
-        <p className="mt-6 text-center text-xs text-slate-400">
+        <p className="text-center text-xs text-slate-400">
           {filtered.length} {filtered.length === 1 ? "career" : "careers"} found
         </p>
 
         {/* Card grid */}
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filtered.map((entry) => (
             <div
               key={entry.id}
-              className="group flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-200/70"
+              className="group flex h-full flex-col gap-3 rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-slate-300 hover:shadow-lg hover:shadow-slate-200/70"
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
