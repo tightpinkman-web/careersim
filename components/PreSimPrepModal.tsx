@@ -50,7 +50,7 @@ export default function PreSimPrepModal({
         </button>
         <span
           className={cn(
-            "flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold",
+            "flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-semibold",
             isChild ? "bg-emerald-50 text-emerald-700" : "bg-slate-800 text-white"
           )}
         >
@@ -107,7 +107,7 @@ export default function PreSimPrepModal({
         className="mt-6 flex w-full items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
       >
         {starting ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
-        {starting ? "Starting..." : "I'm Ready — Enter Simulation"}
+        {starting ? "Starting..." : "I'm Ready: Enter Simulation"}
       </button>
     </motion.div>
   );

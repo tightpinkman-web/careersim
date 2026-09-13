@@ -108,12 +108,12 @@ export default function SimulationShell({ state, onAction }: SimulationShellProp
           isDark ? "border-slate-800 bg-slate-900 text-slate-300" : "border-slate-200 bg-white text-slate-600"
         )}
       >
-        <span className="rounded-full bg-indigo-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
+        <span className="rounded-md bg-indigo-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
           Step {state.currentStep ?? 1}
         </span>
         <span
           className={cn(
-            "flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-semibold tabular-nums transition-colors",
+            "flex items-center gap-1 rounded-md border px-2.5 py-1 text-[10px] font-semibold tabular-nums transition-colors",
             secondsRemaining <= 15
               ? "border-amber-500/30 bg-amber-500/15 text-amber-600"
               : isDark

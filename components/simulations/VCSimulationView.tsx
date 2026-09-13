@@ -106,7 +106,7 @@ export default function VCSimulationView({ payload, narrativePrompt }: VCSimulat
       <div className="flex min-h-0 flex-col gap-4">
         <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-slate-200 bg-slate-900 text-white shadow-sm">
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
-            <h2 className="text-sm font-semibold">{startupName} &mdash; Data Room</h2>
+            <h2 className="text-sm font-semibold">{startupName}: Data Room</h2>
             <span className="text-xs text-slate-400">
               {deckSlides.length > 0 ? slideIndex + 1 : 0} / {deckSlides.length}
             </span>
@@ -139,14 +139,14 @@ export default function VCSimulationView({ payload, narrativePrompt }: VCSimulat
                 <button
                   onClick={() => setSlideIndex((i) => Math.max(0, i - 1))}
                   disabled={slideIndex === 0}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-1.5 disabled:opacity-30"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 rounded-md bg-white/10 p-1.5 disabled:opacity-30"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </button>
                 <button
                   onClick={() => setSlideIndex((i) => Math.min(deckSlides.length - 1, i + 1))}
                   disabled={slideIndex === deckSlides.length - 1}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/10 p-1.5 disabled:opacity-30"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md bg-white/10 p-1.5 disabled:opacity-30"
                 >
                   <ChevronRight className="h-4 w-4" />
                 </button>

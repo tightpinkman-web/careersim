@@ -1,4 +1,4 @@
-import { Document, Page, Text, View, StyleSheet, Font, Svg, Path, Circle, Rect, Defs, LinearGradient, Stop } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Font, Svg, Path, Rect } from "@react-pdf/renderer";
 import type { SimulationMode } from "@/types/simulation";
 
 // @react-pdf/renderer's default hyphenation engine splits long words at line-wraps by inserting
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
     color: COLORS.ink,
   },
   platformNameAccent: {
-    color: COLORS.indigo,
+    color: COLORS.muted,
   },
   reportTitle: {
     fontSize: 11,
@@ -245,24 +245,15 @@ function ReportHeader({
   return (
     <View style={styles.headerRow}>
       <View style={styles.brandRow}>
-        <Svg width={18} height={18} viewBox="0 0 40 40">
-          <Defs>
-            <LinearGradient id="careerSimPdfLogo" x1="2" y1="38" x2="38" y2="2" gradientUnits="userSpaceOnUse">
-              <Stop offset="0%" stopColor={COLORS.indigo} />
-              <Stop offset="100%" stopColor="#14b8a6" />
-            </LinearGradient>
-          </Defs>
-          <Rect x="1" y="1" width="38" height="38" rx="11" fill="url(#careerSimPdfLogo)" />
+        <Svg width={18} height={18} viewBox="0 0 32 32">
+          <Rect x="1" y="1" width="30" height="30" rx="7" fill={COLORS.ink} />
           <Path
-            d="M11 27L19.5 18.5L27 12"
+            d="M9 23L21 11M21 17L21 11L15 11"
             stroke="white"
-            strokeWidth={2.5}
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            strokeWidth={2.25}
+            strokeLinecap="square"
+            strokeLinejoin="miter"
           />
-          <Path d="M21 12H27V18" stroke="white" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
-          <Circle cx="11" cy="27" r="2.25" fill="white" />
-          <Circle cx="19.5" cy="18.5" r="2.25" fill="white" />
         </Svg>
         <View>
           <Text style={styles.platformName}>
@@ -292,7 +283,7 @@ function ReportHeader({
 }
 
 function ReportFooter() {
-  return <Text style={styles.footer}>Generated via AI Career Simulation Engine — B2B Partner Portal</Text>;
+  return <Text style={styles.footer}>Generated via AI Career Simulation Engine - B2B Partner Portal</Text>;
 }
 
 export default function AssessmentPdfReport({

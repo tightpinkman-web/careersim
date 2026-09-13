@@ -80,7 +80,7 @@ export default function LawSimulationView({ payload, narrativePrompt }: LawSimul
       {!chatOpen && (
         <button
           onClick={() => setChatOpen(true)}
-          className="absolute bottom-4 right-4 flex items-center gap-2 rounded-full bg-slate-900 px-4 py-2.5 text-xs font-medium text-white shadow-lg hover:bg-slate-800"
+          className="absolute bottom-4 right-4 flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2.5 text-xs font-medium text-white shadow-lg hover:bg-slate-800"
         >
           <MessageSquare className="h-4 w-4" />
           Negotiation ({messages.length})

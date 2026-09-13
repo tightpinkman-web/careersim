@@ -36,7 +36,7 @@ const CAREER_FILTER_OPTIONS: CareerFilter[] = [
 ];
 
 function formatDate(iso: string | null): string {
-  if (!iso) return "—";
+  if (!iso) return "N/A";
   return new Date(iso).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
 }
 
@@ -194,11 +194,11 @@ export default function HistoryPage() {
                   <h2 className="text-sm font-semibold text-slate-900">{CAREER_TITLES[session.careerType]}</h2>
                   <span
                     className={cn(
-                      "shrink-0 rounded-full px-2.5 py-1 text-xs font-bold",
+                      "shrink-0 rounded-md px-2.5 py-1 text-xs font-bold",
                       scoreBadgeClasses(session.overallScore)
                     )}
                   >
-                    {session.overallScore ?? "—"}/100
+                    {session.overallScore ?? "N/A"}/100
                   </span>
                 </div>
 
@@ -209,7 +209,7 @@ export default function HistoryPage() {
                   </span>
                   <span
                     className={cn(
-                      "flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold",
+                      "flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-semibold",
                       isChild ? "bg-emerald-50 text-emerald-700" : "bg-slate-800 text-white"
                     )}
                   >

@@ -209,7 +209,7 @@ export default function QuantSimulationView({ payload, narrativePrompt }: QuantS
                   )}
                 />
                 <span className="text-slate-200">{item.headline}</span>
-                <span className="ml-1 text-slate-500">&mdash; {item.source}</span>
+                <span className="ml-1 text-slate-500">&middot; {item.source}</span>
               </motion.div>
             ))}
           </div>

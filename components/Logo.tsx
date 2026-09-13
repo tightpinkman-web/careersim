@@ -1,6 +1,3 @@
-"use client";
-
-import { useId } from "react";
 import { cn } from "@/lib/utils";
 
 interface LogoProps {
@@ -12,49 +9,29 @@ interface LogoProps {
 }
 
 /**
- * The mark is a rising three-node path with an arrowhead - career progression as a simple line
- * graph - inside a rounded indigo-to-teal badge. Kept legible down to favicon-ish sizes.
+ * Solid slate mark (an upward line with a squared arrowhead, no gradient or color accent) plus a
+ * plain two-weight wordmark. Kept as one flat shape so it stays legible down to favicon size.
  */
 export default function Logo({ className, size = 32, showText = true }: LogoProps) {
-  // Unique per instance so multiple <Logo /> renders on one page (navbar + footer) don't collide
-  // on the gradient's id.
-  const gradientId = useId();
-
   return (
     <span className={cn("inline-flex items-center gap-2", className)}>
       <svg
         width={size}
         height={size}
-        viewBox="0 0 40 40"
+        viewBox="0 0 32 32"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         aria-hidden="true"
         className="shrink-0"
       >
-        <defs>
-          <linearGradient id={gradientId} x1="2" y1="38" x2="38" y2="2" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stopColor="#4f46e5" />
-            <stop offset="100%" stopColor="#14b8a6" />
-          </linearGradient>
-        </defs>
-        <rect x="1" y="1" width="38" height="38" rx="11" fill={`url(#${gradientId})`} />
+        <rect x="1" y="1" width="30" height="30" rx="7" fill="#0f172a" />
         <path
-          d="M11 27L19.5 18.5L27 12"
+          d="M9 23L21 11M21 17L21 11L15 11"
           stroke="white"
           strokeWidth="2.25"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          opacity="0.95"
+          strokeLinecap="square"
+          strokeLinejoin="miter"
         />
-        <path
-          d="M21 12H27V18"
-          stroke="white"
-          strokeWidth="2.25"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <circle cx="11" cy="27" r="2.25" fill="white" />
-        <circle cx="19.5" cy="18.5" r="2.25" fill="white" />
       </svg>
       {showText && (
         <span
@@ -62,7 +39,7 @@ export default function Logo({ className, size = 32, showText = true }: LogoProp
           style={{ fontSize: size * 0.5 }}
         >
           <span className="text-slate-900">Career</span>
-          <span className="bg-gradient-to-r from-indigo-600 to-teal-500 bg-clip-text text-transparent">Sim</span>
+          <span className="text-slate-500">Sim</span>
         </span>
       )}
     </span>

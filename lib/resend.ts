@@ -94,8 +94,8 @@ export function buildContactLeadEmail(data: ContactLeadEmailData) {
   const rows: [string, string][] = [
     ["Name", data.name],
     ["Email", data.email],
-    ["Organization", data.organization || "—"],
-    ["Message", data.message || "—"],
+    ["Organization", data.organization || "N/A"],
+    ["Message", data.message || "N/A"],
   ];
   return { subject, html: renderFieldsHtml(subject, rows), text: renderFieldsText(subject, rows) };
 }

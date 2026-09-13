@@ -32,7 +32,7 @@ export default function PrivacyPage() {
             <p className="mt-2">
               This site sets exactly one type of cookie: a strictly necessary session cookie issued by
               our authentication provider (Supabase Auth) to keep you signed in. This cookie is
-              functional only &mdash; it identifies your logged-in session and nothing else. We do not use
+              functional only: it identifies your logged-in session and nothing else. We do not use
               analytics cookies, advertising cookies, or any cross-site tracking cookies of any kind.
             </p>
           </section>

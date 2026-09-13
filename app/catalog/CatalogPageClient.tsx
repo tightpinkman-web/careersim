@@ -104,7 +104,7 @@ export default function CatalogPageClient() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by title, description, or skill..."
-            className="w-full rounded-full border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm outline-none transition-shadow focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
+            className="w-full rounded-lg border border-slate-200 bg-white py-2.5 pl-10 pr-4 text-sm outline-none transition-shadow focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
           />
         </div>
 
@@ -116,7 +116,7 @@ export default function CatalogPageClient() {
                 key={option}
                 onClick={() => setIndustry(option)}
                 className={cn(
-                  "rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+                  "rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
                   industry === option ? "bg-indigo-600 text-white" : "bg-white text-slate-600 hover:bg-slate-100"
                 )}
               >
@@ -130,7 +130,7 @@ export default function CatalogPageClient() {
                 key={option.id}
                 onClick={() => setStatus(option.id)}
                 className={cn(
-                  "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+                  "rounded-md border px-3 py-1.5 text-xs font-medium transition-colors",
                   status === option.id
                     ? "border-slate-800 bg-slate-800 text-white"
                     : "border-slate-200 bg-white text-slate-600 hover:bg-slate-100"
@@ -155,7 +155,7 @@ export default function CatalogPageClient() {
             >
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <span className="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-500">
+                  <span className="rounded-md border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide text-slate-500">
                     {entry.industry}
                   </span>
                   <h2 className="mt-2 text-sm font-semibold text-slate-900">{entry.title}</h2>
@@ -163,7 +163,7 @@ export default function CatalogPageClient() {
                 <div className="flex shrink-0 flex-col items-end gap-1">
                   <span
                     className={cn(
-                      "flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
+                      "flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
                       entry.status === "live"
                         ? "bg-emerald-100 text-emerald-800"
                         : "bg-slate-100 text-slate-600"
@@ -178,7 +178,7 @@ export default function CatalogPageClient() {
                     {entry.status === "live" ? "Live Simulation" : "In Development"}
                   </span>
                   {entry.status === "in_development" && (
-                    <span className="flex items-center gap-1 rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-700">
+                    <span className="flex items-center gap-1 rounded-md bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-700">
                       <ThumbsUp className="h-2.5 w-2.5" />
                       {votes[entry.id] ?? 0} {(votes[entry.id] ?? 0) === 1 ? "vote" : "votes"}
                     </span>
@@ -192,7 +192,7 @@ export default function CatalogPageClient() {
                 {entry.keySkills.map((skill) => (
                   <span
                     key={skill}
-                    className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600"
+                    className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600"
                   >
                     {skill}
                   </span>
@@ -235,7 +235,7 @@ export default function CatalogPageClient() {
                     )}
                   >
                     {votedIds.has(entry.id) ? <Check className="h-3.5 w-3.5" /> : <ThumbsUp className="h-3.5 w-3.5" />}
-                    {votedIds.has(entry.id) ? "Voted — Thanks!" : "Vote to Prioritize"}
+                    {votedIds.has(entry.id) ? "Voted - Thanks!" : "Vote to Prioritize"}
                   </button>
                 )}
               </div>

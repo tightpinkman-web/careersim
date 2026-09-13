@@ -266,7 +266,7 @@ export default function DemoPageClient() {
     <div className="min-h-full w-full bg-slate-50">
       <div className="flex items-center gap-2 border-b border-indigo-100 bg-indigo-50 px-4 py-2.5 text-center text-xs font-medium text-indigo-800 sm:justify-center">
         <Megaphone className="h-3.5 w-3.5 shrink-0" />
-        <span>Counselor Preview Environment &mdash; test our 5 flagship career simulations.</span>
+        <span>Counselor Preview Environment: test our 5 flagship career simulations.</span>
       </div>
 
       <div className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
@@ -368,7 +368,7 @@ export default function DemoPageClient() {
                   {selected.skills.map((skill) => (
                     <span
                       key={skill}
-                      className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600"
+                      className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600"
                     >
                       {skill}
                     </span>

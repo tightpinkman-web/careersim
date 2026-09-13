@@ -8,8 +8,7 @@ export function OgImageContent() {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#eef2ff",
-        backgroundImage: "linear-gradient(to bottom, #eef2ff, #ffffff)",
+        backgroundColor: "#f8fafc",
         fontFamily: "sans-serif",
         padding: "60px",
       }}

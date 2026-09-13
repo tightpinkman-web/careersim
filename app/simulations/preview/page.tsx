@@ -192,7 +192,7 @@ const DUMMY_STATES: Record<UiMode, SimulationState> = {
       ],
       negotiationThread: [
         { id: "n1", sender: "opposing_counsel", text: "We can't accept an uncapped indemnity on IP claims.", timestamp: "2:04 PM" },
-        { id: "n2", sender: "student", text: "Understood — proposing a 2x fees cap as a middle ground.", timestamp: "2:07 PM" },
+        { id: "n2", sender: "student", text: "Understood - proposing a 2x fees cap as a middle ground.", timestamp: "2:07 PM" },
       ],
     },
   },
@@ -252,13 +252,13 @@ export default function SimulationPreviewPage() {
     <div className="flex h-full flex-col bg-slate-100">
       {/* Floating mode switcher */}
       <div className="pointer-events-none absolute inset-x-0 top-3 z-50 flex justify-center">
-        <div className="pointer-events-auto flex items-center gap-1 rounded-full border border-slate-200 bg-white/95 p-1 shadow-lg backdrop-blur">
+        <div className="pointer-events-auto flex items-center gap-1 rounded-md border border-slate-200 bg-white/95 p-1 shadow-lg backdrop-blur">
           {MODES.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               onClick={() => setActiveMode(id)}
               className={cn(
-                "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
+                "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
                 activeMode === id ? "bg-indigo-600 text-white" : "text-slate-600 hover:bg-slate-100"
               )}
             >

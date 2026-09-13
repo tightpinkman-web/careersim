@@ -39,7 +39,7 @@ function RequestFormInner() {
         <CheckCircle2 className="h-8 w-8 text-emerald-600" />
         <h2 className="text-lg font-semibold text-slate-900">Request received</h2>
         <p className="max-w-sm text-sm text-slate-500">
-          Thanks &mdash; we&apos;ll review your requested career simulation and follow up if we need more detail.
+          Thanks. We&apos;ll review your requested career simulation and follow up if we need more detail.
         </p>
         <Link
           href="/"
