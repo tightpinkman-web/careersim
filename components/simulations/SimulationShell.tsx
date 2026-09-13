@@ -33,8 +33,8 @@ const DECISION_WINDOW_SECONDS = 60;
 // out from the others, so nothing here can be read as a hint toward the "right" or "safe" choice.
 function choiceButtonClasses(isDark: boolean): string {
   return isDark
-    ? "border border-slate-700 bg-slate-800 text-slate-200 hover:border-indigo-500 hover:bg-slate-700"
-    : "border border-slate-300 bg-white text-slate-700 hover:border-indigo-400 hover:bg-slate-50";
+    ? "border border-slate-800 bg-slate-800 text-slate-200 hover:border-indigo-500 hover:bg-indigo-950/20"
+    : "border border-slate-200 bg-white text-slate-700 hover:border-indigo-500 hover:bg-indigo-50/50";
 }
 
 function formatHudKey(key: string) {
@@ -113,12 +113,12 @@ export default function SimulationShell({ state, onAction }: SimulationShellProp
         </span>
         <span
           className={cn(
-            "flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold tabular-nums",
+            "flex items-center gap-1 rounded-full border px-2.5 py-1 text-[10px] font-semibold tabular-nums transition-colors",
             secondsRemaining <= 15
-              ? "bg-amber-500/15 text-amber-600"
+              ? "border-amber-500/30 bg-amber-500/15 text-amber-600"
               : isDark
-                ? "bg-slate-800 text-slate-300"
-                : "bg-slate-100 text-slate-600"
+                ? "border-slate-700 bg-slate-800 text-slate-300"
+                : "border-slate-200 bg-slate-100 text-slate-600"
           )}
           title="Time taken on this step is factored into your final evaluation"
         >
@@ -170,10 +170,10 @@ export default function SimulationShell({ state, onAction }: SimulationShellProp
             onChange={(e) => setFreeform(e.target.value)}
             placeholder="Type a response or justification..."
             className={cn(
-              "min-w-[200px] flex-1 rounded-md border px-3 py-2 text-sm outline-none",
+              "min-w-[200px] flex-1 rounded-md border px-3 py-2 text-sm outline-none transition-shadow",
               isDark
-                ? "border-slate-700 bg-slate-800 text-slate-100 placeholder:text-slate-500 focus:border-indigo-500"
-                : "border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-400 focus:border-indigo-400"
+                ? "border-slate-700 bg-slate-800 text-slate-100 placeholder:text-slate-500 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
+                : "border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-400 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
             )}
           />
           {state.allowedActions.map((action) => (

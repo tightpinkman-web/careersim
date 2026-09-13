@@ -102,7 +102,7 @@ function AuthFormInner({ mode }: AuthFormProps) {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Full name"
-            className="w-full rounded-md border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none focus:border-indigo-400"
+            className="w-full rounded-md border border-slate-300 bg-white py-2.5 pl-9 pr-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-shadow focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
           />
         </div>
       )}
@@ -140,7 +140,7 @@ function AuthFormInner({ mode }: AuthFormProps) {
       <button
         type="submit"
         disabled={submitting}
-        className="flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-60"
+        className="flex items-center justify-center gap-2 rounded-md bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 disabled:opacity-60"
       >
         {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
         {submitting ? "Please wait..." : isSignup ? "Create Account" : "Log In"}
@@ -155,7 +155,7 @@ function AuthFormInner({ mode }: AuthFormProps) {
       <button
         type="button"
         onClick={handleGoogle}
-        className="flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+        className="flex items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
       >
         <svg className="h-4 w-4" viewBox="0 0 24 24">
           <path

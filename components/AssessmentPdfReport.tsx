@@ -1,4 +1,4 @@
-import { Document, Page, Text, View, StyleSheet, Font } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Font, Svg, Path, Circle, Rect, Defs, LinearGradient, Stop } from "@react-pdf/renderer";
 import type { SimulationMode } from "@/types/simulation";
 
 // @react-pdf/renderer's default hyphenation engine splits long words at line-wraps by inserting
@@ -78,9 +78,17 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
     marginBottom: 20,
   },
+  brandRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
   platformName: {
     fontSize: 16,
     fontWeight: 700,
+    color: COLORS.ink,
+  },
+  platformNameAccent: {
     color: COLORS.indigo,
   },
   reportTitle: {
@@ -236,9 +244,32 @@ function ReportHeader({
   const isChild = mode === "child";
   return (
     <View style={styles.headerRow}>
-      <View>
-        <Text style={styles.platformName}>AI Career Simulator</Text>
-        <Text style={styles.reportTitle}>Official Career Aptitude Assessment Report</Text>
+      <View style={styles.brandRow}>
+        <Svg width={18} height={18} viewBox="0 0 40 40">
+          <Defs>
+            <LinearGradient id="careerSimPdfLogo" x1="2" y1="38" x2="38" y2="2" gradientUnits="userSpaceOnUse">
+              <Stop offset="0%" stopColor={COLORS.indigo} />
+              <Stop offset="100%" stopColor="#14b8a6" />
+            </LinearGradient>
+          </Defs>
+          <Rect x="1" y="1" width="38" height="38" rx="11" fill="url(#careerSimPdfLogo)" />
+          <Path
+            d="M11 27L19.5 18.5L27 12"
+            stroke="white"
+            strokeWidth={2.5}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <Path d="M21 12H27V18" stroke="white" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
+          <Circle cx="11" cy="27" r="2.25" fill="white" />
+          <Circle cx="19.5" cy="18.5" r="2.25" fill="white" />
+        </Svg>
+        <View>
+          <Text style={styles.platformName}>
+            Career<Text style={styles.platformNameAccent}>Sim</Text>
+          </Text>
+          <Text style={styles.reportTitle}>Official Career Aptitude Assessment Report</Text>
+        </View>
       </View>
       <View style={styles.headerMetaBlock}>
         <Text style={styles.headerMetaLine}>Session ID: {sessionId}</Text>

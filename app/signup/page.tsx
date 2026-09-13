@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { UserPlus } from "lucide-react";
 import AuthForm from "@/components/AuthForm";
+import Logo from "@/components/Logo";
 
 export const metadata = { title: "Sign Up | AI Career Simulator" };
 
@@ -13,13 +13,13 @@ export default async function SignupPage({
   const loginHref = redirectTo ? `/login?redirectTo=${encodeURIComponent(redirectTo)}` : "/login";
 
   return (
-    <div className="flex min-h-full w-full items-center justify-center bg-slate-50 px-4 py-12">
-      <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="flex min-h-full w-full flex-col items-center justify-center bg-slate-50 px-4 py-12">
+      <Link href="/" className="mb-8 transition-opacity hover:opacity-80">
+        <Logo size={36} />
+      </Link>
+      <div className="w-full max-w-sm rounded-xl border border-slate-200 bg-white p-6 shadow-lg shadow-slate-200/60">
         <div className="text-center">
-          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
-            <UserPlus className="h-6 w-6" />
-          </span>
-          <h1 className="mt-3 text-xl font-bold text-slate-900">Create Your Account</h1>
+          <h1 className="text-xl font-bold text-slate-900">Create Your Account</h1>
           <p className="mt-1 text-sm text-slate-500">
             Save your simulation history and reports across devices.
           </p>
