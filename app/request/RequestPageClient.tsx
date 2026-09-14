@@ -13,6 +13,9 @@ export default function RequestPageClient() {
             REQUEST_A_SIMULATION
           </p>
           <h1 className="mt-2 text-2xl font-bold text-ink sm:text-3xl">Tell us the career you want tested</h1>
+          <p className="mt-2 font-mono text-xs font-medium text-slate-500">
+            Need a specific industry? Suggest new simulation scenarios for our build pipeline.
+          </p>
           <p className="mx-auto mt-2 max-w-lg text-sm text-slate-400">
             Counselors and students can request a new career track. We prioritize builds based on demand and fit
             for our AI Game Master format.

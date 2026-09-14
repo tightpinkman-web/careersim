@@ -31,6 +31,9 @@ model Student {
   supabaseAuthId  String   @unique @map("supabase_auth_id")
   email           String   @unique
   name            String
+  // Set only for a real Username + Password account (see lib/authStudent.ts) - null for
+  // anonymous/guest students, who are keyed purely by supabaseAuthId (`anon_<uuid>`).
+  username        String?  @unique
   createdAt       DateTime @default(now()) @map("created_at")
 
   simulationSessions SimulationSession[]

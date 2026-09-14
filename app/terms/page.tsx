@@ -27,10 +27,13 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-base font-semibold text-slate-900">No Accounts</h2>
+            <h2 className="text-base font-semibold text-slate-900">Accounts Are Optional</h2>
             <p className="mt-2">
-              This service does not require or offer accounts. Your simulation history is tied to an
-              anonymous identifier stored in your browser and is not portable across devices.
+              You can use this service without an account - your simulation history is then tied to an
+              anonymous identifier stored in your browser and is not portable across devices. You may
+              instead create a free account with a username and password (no email address required).
+              You are responsible for keeping your password confidential and for all activity under your
+              account.
             </p>
           </section>
 

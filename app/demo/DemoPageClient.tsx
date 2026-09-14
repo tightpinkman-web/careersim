@@ -275,13 +275,16 @@ export default function DemoPageClient() {
             AI_CAREER_SIMULATOR
           </p>
           <h1 className="mt-2 text-2xl font-bold text-ink sm:text-3xl">Choose a career to step into</h1>
+          <p className="mt-2 font-mono text-xs font-medium text-slate-500">
+            Instant access to 5 flagship scenarios — test drive right now.
+          </p>
           <p className="mx-auto mt-2 max-w-xl text-sm text-slate-400">
             Each simulation is a live, AI-driven scenario. Your decisions are scored against how a strong
             performer would actually handle the job.
           </p>
         </div>
 
-        <div className="mt-10 grid grid-cols-1 gap-px border border-hairline bg-hairline sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {CAREERS.map((career) => {
             const Icon = career.icon;
             return (
@@ -290,7 +293,7 @@ export default function DemoPageClient() {
                 onClick={() => setSelected(career)}
                 whileHover={{ y: -4 }}
                 transition={{ type: "spring", stiffness: 400, damping: 25 }}
-                className="flex flex-col items-start gap-3 bg-surface p-5 text-left transition-colors hover:bg-surface/60"
+                className="flex flex-col items-start gap-3 rounded-xl border border-slate-800 bg-slate-900/60 p-6 text-left transition-colors hover:border-signal hover:bg-slate-900/80"
               >
                 <span className="flex h-10 w-10 items-center justify-center border border-hairline text-signal">
                   <Icon className="h-5 w-5" />

@@ -99,6 +99,9 @@ export default function CatalogPageClient() {
             CAREER_CATALOG
           </p>
           <h1 className="mt-2 text-2xl font-bold text-ink sm:text-3xl">Every career on our roadmap</h1>
+          <p className="mt-2 font-mono text-xs font-medium text-slate-500">
+            Browse all 15+ career paths across tech, finance, law, and security.
+          </p>
           <p className="mx-auto mt-2 max-w-xl text-sm text-slate-400">
             Search live simulations and vote on which upcoming careers we build next.
           </p>

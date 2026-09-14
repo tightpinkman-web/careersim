@@ -1,4 +1,15 @@
-import { FileCheck2, ListChecks, Timer, ClipboardList, Mail, Phone, ArrowRight, PlayCircle, LibraryBig } from "lucide-react";
+import {
+  FileCheck2,
+  ClipboardList,
+  Mail,
+  Phone,
+  ArrowRight,
+  PlayCircle,
+  LibraryBig,
+  AlertTriangle,
+  Users,
+  GraduationCap,
+} from "lucide-react";
 import ContactForm from "@/components/ContactForm";
 import Button from "@/components/ui/Button";
 import Card, { BentoGrid } from "@/components/ui/Card";
@@ -12,23 +23,33 @@ const CONTACT_PHONE_DISPLAY = "(973) 940-9451";
 const PROCESS_STEPS = [
   {
     icon: ClipboardList,
-    label: "Student picks a career",
-    detail: "One of five roles: Venture Capital, Cybersecurity, Product Management, Corporate Law, or Quant Trading.",
+    label: "Select a Role",
+    detail: "Choose from roles like VC Associate, Quant Analyst, or Cybersecurity Responder.",
   },
   {
-    icon: Timer,
-    label: "Works a timed scenario",
-    detail: "A live, multi-step decision scenario with a countdown per step and real constraints to work within.",
-  },
-  {
-    icon: ListChecks,
-    label: "Decisions are scored",
-    detail: "Each choice is graded against 4 fixed competencies for that career, not a single pass/fail check.",
+    icon: AlertTriangle,
+    label: "Handle Live Worksite Incidents",
+    detail: "Make dynamic tactical decisions under real constraints, in a live AI-driven scenario.",
   },
   {
     icon: FileCheck2,
-    label: "Report is exported",
-    detail: "A PDF scorecard with the overall score, competency breakdown, strengths, and growth areas.",
+    label: "Receive Scorecards & Feedback",
+    detail: "A detailed competency matrix evaluated against industry benchmarks.",
+  },
+];
+
+const AUDIENCE_CARDS = [
+  {
+    icon: Users,
+    label: "For Career Counselors & Institutions",
+    detail:
+      "Run a pilot with your students, review their scored simulations, and evaluate career fit across five roles - no setup required on your end.",
+  },
+  {
+    icon: GraduationCap,
+    label: "For Independent Learners",
+    detail:
+      "Test-drive a real job before you commit to it. Jump into a live scenario, get scored the way a working professional would be, and walk away with a report.",
   },
 ];
 
@@ -52,7 +73,7 @@ export default function Home() {
           </p>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Button href="/demo" icon={<PlayCircle className="h-4 w-4 shrink-0" />} size="lg" fullWidth className="sm:w-auto">
-              Start Demo Simulation
+              Try Instant Demo (No Account Required)
             </Button>
             <Button
               href="/catalog"
@@ -62,7 +83,7 @@ export default function Home() {
               fullWidth
               className="sm:w-auto"
             >
-              Browse Catalog
+              Browse Full Career Catalog
             </Button>
             <Button
               href="/request"
@@ -83,7 +104,7 @@ export default function Home() {
       <section className="px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-5xl">
           <p className="font-mono text-xs font-semibold uppercase tracking-widest text-signal">HOW_IT_WORKS</p>
-          <h2 className="mt-2 text-2xl font-bold text-ink sm:text-3xl">From simulation to scorecard</h2>
+          <h2 className="mt-2 text-2xl font-bold text-ink sm:text-3xl">Three steps, start to scorecard</h2>
           <p className="mt-4 max-w-3xl text-sm leading-relaxed text-slate-400">
             Each simulation places a student in a live scenario generated for that career, with real
             constraints and a decision clock for every step. Decisions are graded against the same
@@ -92,7 +113,7 @@ export default function Home() {
           </p>
 
           <RevealGrid className="mt-8">
-            <BentoGrid className="grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+            <BentoGrid className="grid-cols-1 sm:grid-cols-3">
               {PROCESS_STEPS.map(({ icon: Icon, label, detail }, i) => (
                 <Card key={label} data-reveal-item bordered={false} padding="sm" className="bg-surface/50">
                   <div className="flex items-center gap-2">
@@ -106,6 +127,26 @@ export default function Home() {
                 </Card>
               ))}
             </BentoGrid>
+          </RevealGrid>
+        </div>
+      </section>
+
+      {/* Who it's for */}
+      <section className="border-t border-hairline px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-5xl">
+          <p className="font-mono text-xs font-semibold uppercase tracking-widest text-signal">WHO_ITS_FOR</p>
+          <h2 className="mt-2 text-2xl font-bold text-ink sm:text-3xl">Built for two kinds of visitors</h2>
+
+          <RevealGrid className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            {AUDIENCE_CARDS.map(({ icon: Icon, label, detail }) => (
+              <Card key={label} data-reveal-item padding="md">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center border border-hairline text-signal">
+                  <Icon className="h-5 w-5" />
+                </span>
+                <p className="text-sm font-semibold text-ink">{label}</p>
+                <p className="text-xs leading-relaxed text-slate-400">{detail}</p>
+              </Card>
+            ))}
           </RevealGrid>
         </div>
       </section>

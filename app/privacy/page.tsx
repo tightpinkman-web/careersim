@@ -21,17 +21,19 @@ export default function PrivacyPage() {
             <p className="mt-2">
               We collect only what is needed to run and improve your career simulations: the simulation
               transcripts and scores you generate, and an anonymous device identifier stored in your
-              browser so your in-progress and completed simulations remain accessible on that device. We
-              do not request or store any information beyond this, and there is no account or login of
-              any kind.
+              browser so your in-progress and completed simulations remain accessible on that device. An
+              account is optional - if you create one, we store only the username and (securely hashed)
+              password you choose, with no email address required. We do not request or store any
+              information beyond this.
             </p>
           </section>
 
           <section>
-            <h2 className="text-base font-semibold text-slate-900">No Cookies</h2>
+            <h2 className="text-base font-semibold text-slate-900">Cookies</h2>
             <p className="mt-2">
-              This site does not use accounts, logins, or any authentication cookies. We do not use
-              analytics cookies, advertising cookies, or any cross-site tracking cookies of any kind.
+              If you create an optional account, we set a single authentication cookie to keep you
+              signed in. We do not use analytics cookies, advertising cookies, or any cross-site tracking
+              cookies of any kind.
             </p>
           </section>
 
@@ -48,10 +50,11 @@ export default function PrivacyPage() {
             <h2 className="text-base font-semibold text-slate-900">Third-Party Processors</h2>
             <p className="mt-2">
               We use a small number of infrastructure providers strictly to operate the service:
-              Supabase (database hosting only), Google Gemini (to generate simulation content and
-              evaluations from your in-session responses), and Resend (to deliver transactional email
-              alerts you request). None of these providers are permitted to use your data for their own
-              advertising or model-training purposes under our agreements with them.
+              Supabase (database hosting and, for accounts you choose to create, authentication), Google
+              Gemini (to generate simulation content and evaluations from your in-session responses), and
+              Resend (to deliver transactional email alerts you request). None of these providers are
+              permitted to use your data for their own advertising or model-training purposes under our
+              agreements with them.
             </p>
           </section>
 
