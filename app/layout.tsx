@@ -54,7 +54,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} h-full overflow-x-hidden antialiased`}
     >
-      <body className="flex h-full min-h-[100dvh] flex-col overflow-x-hidden bg-slate-50">
+      <body className="flex h-full min-h-[100dvh] flex-col overflow-x-hidden bg-obsidian text-ink">
         <Navbar />
         <PageMain>{children}</PageMain>
       </body>

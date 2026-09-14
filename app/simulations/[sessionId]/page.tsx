@@ -78,8 +78,8 @@ export default function ActiveSimulationPage() {
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center bg-slate-100">
-        <div className="flex flex-col items-center gap-3 text-slate-500">
+      <div className="flex h-full items-center justify-center bg-obsidian font-display">
+        <div className="flex flex-col items-center gap-3 text-slate-400">
           <Loader2 className="h-6 w-6 animate-spin" />
           <p className="text-sm">Loading simulation session...</p>
         </div>
@@ -89,13 +89,13 @@ export default function ActiveSimulationPage() {
 
   if (error && !state) {
     return (
-      <div className="flex h-full items-center justify-center bg-slate-100">
-        <div className="flex max-w-sm flex-col items-center gap-3 text-center text-slate-600">
-          <AlertTriangle className="h-6 w-6 text-rose-500" />
+      <div className="flex h-full items-center justify-center bg-obsidian font-display">
+        <div className="flex max-w-sm flex-col items-center gap-3 text-center text-slate-300">
+          <AlertTriangle className="h-6 w-6 text-rose-400" />
           <p className="text-sm">{error}</p>
           <button
             onClick={retry}
-            className="rounded-md bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-indigo-700"
+            className="min-h-11 border border-signal bg-signal px-3 py-1.5 text-xs font-medium text-obsidian hover:opacity-90"
           >
             Retry
           </button>
@@ -107,9 +107,9 @@ export default function ActiveSimulationPage() {
   if (!state) return null;
 
   return (
-    <div className="relative flex h-full flex-col bg-slate-100">
+    <div className="relative flex h-full flex-col bg-obsidian font-display">
       {status === "COMPLETED" && (
-        <div className="flex items-center gap-3 border-b border-amber-200 bg-amber-50 px-4 py-2 text-xs text-amber-800">
+        <div className="flex items-center gap-3 border-b border-hairline bg-surface px-4 py-2 font-mono text-xs text-signal">
           <Trophy className="h-4 w-4 shrink-0" />
           <div>
             <span className="font-semibold">Simulation complete.</span>
@@ -120,7 +120,7 @@ export default function ActiveSimulationPage() {
       )}
 
       {error && (
-        <div className="flex items-center gap-2 border-b border-rose-200 bg-rose-50 px-4 py-2 text-xs text-rose-700">
+        <div className="flex items-center gap-2 border-b border-rose-900 bg-rose-950/40 px-4 py-2 text-xs text-rose-300">
           <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
           {error}
         </div>
@@ -135,16 +135,16 @@ export default function ActiveSimulationPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="absolute inset-0 z-50 flex items-center justify-center bg-slate-950/40 backdrop-blur-sm"
+              className="absolute inset-0 z-50 flex items-center justify-center bg-obsidian/60 backdrop-blur-sm"
             >
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="flex flex-col items-center gap-3 rounded-lg bg-white px-6 py-5 shadow-xl"
+                className="flex flex-col items-center gap-3 border border-hairline bg-surface px-6 py-5"
               >
-                <Loader2 className="h-6 w-6 animate-spin text-indigo-600" />
-                <p className="text-sm font-medium text-slate-700">Waiting for the Game Master...</p>
+                <Loader2 className="h-6 w-6 animate-spin text-signal" />
+                <p className="text-sm font-medium text-slate-300">Waiting for the Game Master...</p>
               </motion.div>
             </motion.div>
           )}

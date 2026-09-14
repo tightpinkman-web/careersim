@@ -263,41 +263,45 @@ export default function DemoPageClient() {
   };
 
   return (
-    <div className="min-h-full w-full bg-slate-50">
-      <div className="flex items-center gap-2 border-b border-indigo-100 bg-indigo-50 px-4 py-2.5 text-center text-xs font-medium text-indigo-800 sm:justify-center">
+    <div className="min-h-full w-full bg-obsidian font-display">
+      <div className="flex items-center gap-2 border-b border-hairline bg-surface px-4 py-2.5 text-center font-mono text-xs font-medium uppercase tracking-wide text-signal sm:justify-center">
         <Megaphone className="h-3.5 w-3.5 shrink-0" />
-        <span>Counselor Preview Environment: test our 5 flagship career simulations.</span>
+        <span>[COUNSELOR_PREVIEW_ENVIRONMENT] Test our 5 flagship career simulations.</span>
       </div>
 
       <div className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
         <div className="text-center">
-          <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">AI Career Simulator</p>
-          <h1 className="mt-2 text-2xl font-bold text-slate-900 sm:text-3xl">Choose a career to step into</h1>
-          <p className="mx-auto mt-2 max-w-xl text-sm text-slate-500">
+          <p className="font-mono text-xs font-semibold uppercase tracking-widest text-signal">
+            [AI_CAREER_SIMULATOR]
+          </p>
+          <h1 className="mt-2 text-2xl font-bold text-ink sm:text-3xl">Choose a career to step into</h1>
+          <p className="mx-auto mt-2 max-w-xl text-sm text-slate-400">
             Each simulation is a live, AI-driven scenario. Your decisions are scored against how a strong
             performer would actually handle the job.
           </p>
         </div>
 
-        <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 grid grid-cols-1 gap-px border border-hairline bg-hairline sm:grid-cols-2 lg:grid-cols-3">
           {CAREERS.map((career) => {
             const Icon = career.icon;
             return (
-              <button
+              <motion.button
                 key={career.careerType}
                 onClick={() => setSelected(career)}
-                className="flex flex-col items-start gap-3 rounded-xl border border-slate-200 bg-white p-5 text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-md"
+                whileHover={{ y: -4 }}
+                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                className="flex flex-col items-start gap-3 bg-surface p-5 text-left transition-colors hover:bg-surface/60"
               >
-                <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                <span className="flex h-10 w-10 items-center justify-center border border-hairline text-signal">
                   <Icon className="h-5 w-5" />
                 </span>
-                <h2 className="text-sm font-semibold text-slate-900">{career.title}</h2>
-                <p className="text-xs leading-relaxed text-slate-500">{career.tagline}</p>
-                <span className="mt-auto flex items-center gap-1 pt-2 text-xs font-medium text-indigo-600">
+                <h2 className="text-sm font-semibold text-ink">{career.title}</h2>
+                <p className="text-xs leading-relaxed text-slate-400">{career.tagline}</p>
+                <span className="mt-auto flex items-center gap-1 pt-2 font-mono text-xs font-medium text-signal">
                   View briefing
                   <ArrowRight className="h-3.5 w-3.5" />
                 </span>
-              </button>
+              </motion.button>
             );
           })}
         </div>
@@ -310,7 +314,7 @@ export default function DemoPageClient() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-obsidian/70 p-4"
             onClick={closeAll}
           >
             <motion.div
@@ -319,40 +323,40 @@ export default function DemoPageClient() {
               exit={{ opacity: 0, scale: 0.96, y: 8 }}
               transition={{ duration: 0.18 }}
               onClick={(e) => e.stopPropagation()}
-              className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl sm:p-8"
+              className="w-full max-w-lg border border-hairline bg-surface p-6 font-display sm:p-8"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600">
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center border border-hairline text-signal">
                     <selected.icon className="h-5 w-5" />
                   </span>
                   <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-wide text-indigo-600">
+                    <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-signal">
                       What you&apos;re stepping into
                     </p>
-                    <h2 className="text-lg font-bold text-slate-900">{selected.title}</h2>
+                    <h2 className="text-lg font-bold text-ink">{selected.title}</h2>
                   </div>
                 </div>
                 <button
                   onClick={closeAll}
-                  className="shrink-0 rounded-md p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                  className="shrink-0 border border-hairline p-1.5 text-slate-400 hover:border-signal hover:text-signal"
                   aria-label="Close"
                 >
                   <X className="h-4 w-4" />
                 </button>
               </div>
 
-              <p className="mt-4 text-sm leading-relaxed text-slate-600">{selected.tagline}</p>
+              <p className="mt-4 text-sm leading-relaxed text-slate-400">{selected.tagline}</p>
 
               <div className="mt-5">
-                <h3 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-700">
+                <h3 className="flex items-center gap-1.5 font-mono text-xs font-semibold uppercase tracking-wide text-slate-300">
                   <Target className="h-3.5 w-3.5" />
                   Key Mission &amp; Objectives
                 </h3>
                 <ul className="mt-2 space-y-1.5">
                   {selected.mission.map((item, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
-                      <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-indigo-400" />
+                    <li key={i} className="flex items-start gap-2 text-sm text-slate-300">
+                      <span className="mt-1.5 h-1 w-1 shrink-0 bg-signal" />
                       {item}
                     </li>
                   ))}
@@ -360,36 +364,35 @@ export default function DemoPageClient() {
               </div>
 
               <div className="mt-5">
-                <h3 className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-slate-700">
+                <h3 className="flex items-center gap-1.5 font-mono text-xs font-semibold uppercase tracking-wide text-slate-300">
                   <Sparkles className="h-3.5 w-3.5" />
                   Core Skills Evaluated
                 </h3>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {selected.skills.map((skill) => (
-                    <span
-                      key={skill}
-                      className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-600"
-                    >
+                    <span key={skill} className="border border-hairline px-2.5 py-1 font-mono text-xs font-medium text-slate-400">
                       {skill}
                     </span>
                   ))}
                 </div>
               </div>
 
-              <div className="mt-5 flex items-center gap-1.5 text-xs text-slate-500">
+              <div className="mt-5 flex items-center gap-1.5 font-mono text-xs text-slate-500">
                 <Clock className="h-3.5 w-3.5" />
-                Estimated duration: <span className="font-medium text-slate-700">{selected.duration}</span>
+                Estimated duration: <span className="font-medium text-slate-300">{selected.duration}</span>
               </div>
 
               <div className="mt-6">
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-700">Choose Your Mode</h3>
+                <h3 className="font-mono text-xs font-semibold uppercase tracking-wide text-slate-300">
+                  Choose Your Mode
+                </h3>
                 <div className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <button
                     onClick={() => setMode("child")}
-                    className="flex flex-col items-start gap-1 rounded-lg border border-slate-200 p-3 text-left transition-colors hover:border-emerald-300 hover:bg-emerald-50"
+                    className="flex min-h-11 flex-col items-start gap-1 border border-hairline p-3 text-left transition-colors hover:border-signal"
                   >
-                    <span className="flex items-center gap-1.5 text-sm font-semibold text-slate-900">
-                      <GraduationCap className="h-4 w-4 text-emerald-600" />
+                    <span className="flex items-center gap-1.5 text-sm font-semibold text-ink">
+                      <GraduationCap className="h-4 w-4 text-signal" />
                       Child / Aptitude Focus
                     </span>
                     <span className="text-xs text-slate-500">
@@ -398,10 +401,10 @@ export default function DemoPageClient() {
                   </button>
                   <button
                     onClick={() => setMode("professional")}
-                    className="flex flex-col items-start gap-1 rounded-lg border border-slate-200 p-3 text-left transition-colors hover:border-slate-400 hover:bg-slate-50"
+                    className="flex min-h-11 flex-col items-start gap-1 border border-hairline p-3 text-left transition-colors hover:border-signal"
                   >
-                    <span className="flex items-center gap-1.5 text-sm font-semibold text-slate-900">
-                      <Briefcase className="h-4 w-4 text-slate-700" />
+                    <span className="flex items-center gap-1.5 text-sm font-semibold text-ink">
+                      <Briefcase className="h-4 w-4 text-slate-300" />
                       Professional / Full Tech
                     </span>
                     <span className="text-xs text-slate-500">
@@ -412,7 +415,7 @@ export default function DemoPageClient() {
               </div>
 
               {error && (
-                <p className="mt-4 flex items-center gap-1.5 rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-700">
+                <p className="mt-4 flex items-center gap-1.5 border border-rose-900 bg-rose-950/40 px-3 py-2 text-xs text-rose-300">
                   <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
                   {error}
                 </p>
@@ -427,7 +430,7 @@ export default function DemoPageClient() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-obsidian/70 p-4"
             onClick={closeAll}
           >
             <PreSimPrepModal

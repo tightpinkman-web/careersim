@@ -249,17 +249,17 @@ export default function SimulationPreviewPage() {
   const state = DUMMY_STATES[activeMode];
 
   return (
-    <div className="flex h-full flex-col bg-slate-100">
+    <div className="flex h-full flex-col bg-obsidian font-display">
       {/* Floating mode switcher */}
       <div className="pointer-events-none absolute inset-x-0 top-3 z-50 flex justify-center">
-        <div className="pointer-events-auto flex items-center gap-1 rounded-md border border-slate-200 bg-white/95 p-1 shadow-lg backdrop-blur">
+        <div className="pointer-events-auto flex items-center gap-1 border border-hairline bg-surface/95 p-1 font-mono backdrop-blur">
           {MODES.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
               onClick={() => setActiveMode(id)}
               className={cn(
-                "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
-                activeMode === id ? "bg-indigo-600 text-white" : "text-slate-600 hover:bg-slate-100"
+                "flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium transition-colors",
+                activeMode === id ? "bg-signal text-obsidian" : "text-slate-400 hover:text-signal"
               )}
             >
               <Icon className="h-3.5 w-3.5" />

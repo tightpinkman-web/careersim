@@ -10,7 +10,7 @@ checked against it before merging.
 |---|---|---|---|
 | Display / headings / nav / buttons | `Space Grotesk` | `--font-display` | `font-display` |
 | Metadata, telemetry, shortcuts, step indicators, metrics | `JetBrains Mono` | `--font-mono` | `font-mono` |
-| Body copy (legacy light-theme pages not yet migrated) | `Geist Sans` | `--font-sans` | `font-sans` |
+| Body copy (unmigrated utility routes: login/signup/privacy/terms) | `Geist Sans` | `--font-sans` | `font-sans` |
 
 - Metadata is always uppercase, tracked-out (`tracking-wide`), and bracketed where it reads as a
   system value: `[SYS_ONLINE]`, `[TRACK: VC_ASSOCIATE]`, `[STEP: 02/05]`, `[1]`.
@@ -31,9 +31,10 @@ as "live" and "armed," not "success." It is spent sparingly: one accent per view
 amber AND a colored badge system competing for attention. Status other than "active/live" stays
 grayscale (`slate-400`/`slate-500` on dark, muted borders) rather than reaching for green/red/blue.
 
-These tokens are additive — legacy light-theme pages (Home, Demo, Request, History, Footer) keep
-their existing `--background`/`--foreground` light tokens and slate/indigo classes until migrated;
-this pass covers Navbar, SimulationShell, Catalog, and the Results scorecard only.
+`--background`/`--foreground` (the root CSS vars driving the plain `body` rule) now point at
+`obsidian`/`ink` too, so the whole site defaults to dark. Only `/login`, `/signup`, `/privacy`,
+and `/terms` were left out of this migration (unrequested utility/legal routes) — they keep their
+own light-themed wrapper `div`s, which now sit on a dark page-level gutter instead of a white one.
 
 ## 3. Visual Language
 
@@ -58,12 +59,23 @@ this pass covers Navbar, SimulationShell, Catalog, and the Results scorecard onl
 - Purple/pink gradients or generic corporate blue as an accent.
 - Elevated box-shadows as a substitute for a hairline border.
 
-## 5. Components covered by this pass
+**Known exception**: the Demo career-briefing and pre-sim prep screens (`DemoPageClient.tsx`,
+`PreSimPrepModal.tsx`) are still centered overlay modals, re-skinned dark rather than converted to
+inline panels — that's a bigger flow change than a theme migration and wasn't requested. Flag it if
+this constraint gets enforced literally in a future pass.
+
+## 5. Components covered
 
 - `components/Navbar.tsx` — header telemetry bar.
 - `components/simulations/SimulationShell.tsx` — tactical decision shell.
 - `app/catalog/CatalogPageClient.tsx` — bento catalog grid.
-- `components/results/ResultsDashboard.tsx` — data-dense scorecard.
+- `components/results/ResultsDashboard.tsx`, `components/results/EvaluationTrigger.tsx` — scorecard + pending-eval state.
+- `app/page.tsx`, `components/ContactForm.tsx` — landing page + contact form.
+- `app/demo/DemoPageClient.tsx`, `components/PreSimPrepModal.tsx` — demo career picker + briefing/prep modals.
+- `app/request/RequestPageClient.tsx`, `components/RequestForm.tsx` — request-a-career flow.
+- `app/history/page.tsx` — session history.
+- `app/simulations/[sessionId]/page.tsx`, `app/simulations/preview/page.tsx` — live shell wrapper + internal preview tool.
+- `components/Footer.tsx`, `components/Logo.tsx` (`inverted` variant), `app/layout.tsx`, `app/globals.css` — global shell.
 
-Everything else in the app intentionally retains its current light theme until a follow-up pass
-extends this system further.
+`/login`, `/signup`, `/privacy`, and `/terms` are the only remaining light-themed routes — out of
+scope for both design passes so far.

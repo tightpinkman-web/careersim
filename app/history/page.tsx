@@ -41,11 +41,11 @@ function formatDate(iso: string | null): string {
 }
 
 function scoreBadgeClasses(score: number | null): string {
-  if (score === null) return "bg-slate-100 text-slate-500";
-  if (score >= 80) return "bg-emerald-50 text-emerald-700";
-  if (score >= 60) return "bg-indigo-50 text-indigo-700";
-  if (score >= 40) return "bg-amber-50 text-amber-700";
-  return "bg-slate-100 text-slate-600";
+  if (score === null) return "border-hairline text-slate-500";
+  if (score >= 80) return "border-signal text-signal";
+  if (score >= 60) return "border-slate-500 text-slate-200";
+  if (score >= 40) return "border-slate-600 text-slate-400";
+  return "border-hairline text-slate-500";
 }
 
 export default function HistoryPage() {
@@ -94,15 +94,17 @@ export default function HistoryPage() {
   }, [sessions, sortBy, careerFilter, modeFilter]);
 
   return (
-    <div className="min-h-full w-full bg-slate-50">
+    <div className="min-h-full w-full bg-obsidian font-display">
       <div className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
         <div className="text-center">
-          <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+          <span className="mx-auto flex h-12 w-12 items-center justify-center border border-signal text-signal">
             <History className="h-6 w-6" />
           </span>
-          <p className="mt-3 text-xs font-semibold uppercase tracking-wide text-indigo-600">My Results &amp; Reports</p>
-          <h1 className="mt-2 text-2xl font-bold text-slate-900 sm:text-3xl">Completed Simulations</h1>
-          <p className="mx-auto mt-2 max-w-lg text-sm text-slate-500">
+          <p className="mt-3 font-mono text-xs font-semibold uppercase tracking-widest text-signal">
+            [MY_RESULTS_AND_REPORTS]
+          </p>
+          <h1 className="mt-2 text-2xl font-bold text-ink sm:text-3xl">Completed Simulations</h1>
+          <p className="mx-auto mt-2 max-w-lg text-sm text-slate-400">
             Every simulation you&apos;ve finished on this device, with your score, competency breakdown, and a
             downloadable report for each.
           </p>
@@ -111,11 +113,11 @@ export default function HistoryPage() {
         {/* Filter + sort controls */}
         <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
           <div className="flex items-center gap-2">
-            <label className="text-xs font-medium text-slate-500">Sort by</label>
+            <label className="font-mono text-xs uppercase tracking-wide text-slate-500">Sort by</label>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value as SortOption)}
-              className="rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-700 outline-none focus:border-indigo-400"
+              className="min-h-11 border border-hairline bg-surface px-2.5 py-1.5 text-sm text-ink outline-none focus:border-signal"
             >
               <option value="recent">Most Recent</option>
               <option value="highest">Highest Score</option>
@@ -123,11 +125,11 @@ export default function HistoryPage() {
             </select>
           </div>
           <div className="flex items-center gap-2">
-            <label className="text-xs font-medium text-slate-500">Career</label>
+            <label className="font-mono text-xs uppercase tracking-wide text-slate-500">Career</label>
             <select
               value={careerFilter}
               onChange={(e) => setCareerFilter(e.target.value as CareerFilter)}
-              className="rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-700 outline-none focus:border-indigo-400"
+              className="min-h-11 border border-hairline bg-surface px-2.5 py-1.5 text-sm text-ink outline-none focus:border-signal"
             >
               {CAREER_FILTER_OPTIONS.map((option) => (
                 <option key={option} value={option}>
@@ -137,11 +139,11 @@ export default function HistoryPage() {
             </select>
           </div>
           <div className="flex items-center gap-2">
-            <label className="text-xs font-medium text-slate-500">Mode</label>
+            <label className="font-mono text-xs uppercase tracking-wide text-slate-500">Mode</label>
             <select
               value={modeFilter}
               onChange={(e) => setModeFilter(e.target.value as ModeFilter)}
-              className="rounded-md border border-slate-300 bg-white px-2.5 py-1.5 text-xs text-slate-700 outline-none focus:border-indigo-400"
+              className="min-h-11 border border-hairline bg-surface px-2.5 py-1.5 text-sm text-ink outline-none focus:border-signal"
             >
               <option value="All">All Modes</option>
               <option value="child">Child / Aptitude Focus</option>
@@ -151,7 +153,7 @@ export default function HistoryPage() {
         </div>
 
         {error && (
-          <p className="mt-8 flex items-center justify-center gap-1.5 text-sm text-rose-600">
+          <p className="mt-8 flex items-center justify-center gap-1.5 text-sm text-rose-400">
             <AlertTriangle className="h-4 w-4 shrink-0" />
             {error}
           </p>
@@ -159,18 +161,18 @@ export default function HistoryPage() {
 
         {!sessions && !error && (
           <div className="mt-16 flex justify-center">
-            <Loader2 className="h-6 w-6 animate-spin text-slate-400" />
+            <Loader2 className="h-6 w-6 animate-spin text-slate-500" />
           </div>
         )}
 
         {sessions && sessions.length === 0 && (
           <div className="mt-16 flex flex-col items-center gap-3 text-center">
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-slate-400">
               You haven&apos;t completed a simulation on this device yet.
             </p>
             <Link
               href="/demo"
-              className="flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700"
+              className="flex min-h-11 items-center gap-2 border border-signal bg-signal px-4 py-2.5 text-sm font-semibold text-obsidian hover:opacity-90"
             >
               <PlayCircle className="h-4 w-4" />
               Try a Demo Simulation
@@ -179,22 +181,19 @@ export default function HistoryPage() {
         )}
 
         {sessions && sessions.length > 0 && visibleSessions.length === 0 && (
-          <p className="mt-16 text-center text-sm text-slate-400">No completed simulations match these filters.</p>
+          <p className="mt-16 text-center text-sm text-slate-500">No completed simulations match these filters.</p>
         )}
 
-        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 grid grid-cols-1 gap-px border border-hairline bg-hairline sm:grid-cols-2 lg:grid-cols-3">
           {visibleSessions.map((session) => {
             const isChild = session.mode === "child";
             return (
-              <div
-                key={session.id}
-                className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-5 shadow-sm"
-              >
+              <div key={session.id} className="flex flex-col gap-3 bg-surface p-5">
                 <div className="flex items-start justify-between gap-2">
-                  <h2 className="text-sm font-semibold text-slate-900">{CAREER_TITLES[session.careerType]}</h2>
+                  <h2 className="text-sm font-semibold text-ink">{CAREER_TITLES[session.careerType]}</h2>
                   <span
                     className={cn(
-                      "shrink-0 rounded-md px-2.5 py-1 text-xs font-bold",
+                      "shrink-0 border px-2.5 py-1 font-mono text-xs font-bold",
                       scoreBadgeClasses(session.overallScore)
                     )}
                   >
@@ -202,15 +201,15 @@ export default function HistoryPage() {
                   </span>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                <div className="flex flex-wrap items-center gap-2 font-mono text-xs text-slate-500">
                   <span className="flex items-center gap-1">
                     <Calendar className="h-3 w-3" />
                     {formatDate(session.completedAt)}
                   </span>
                   <span
                     className={cn(
-                      "flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-semibold",
-                      isChild ? "bg-emerald-50 text-emerald-700" : "bg-slate-800 text-white"
+                      "flex items-center gap-1 border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
+                      isChild ? "border-signal text-signal" : "border-hairline text-slate-400"
                     )}
                   >
                     {isChild ? <GraduationCap className="h-3 w-3" /> : <Briefcase className="h-3 w-3" />}

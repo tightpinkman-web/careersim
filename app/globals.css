@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #020617;
+  --foreground: #f8fafc;
 }
 
 @theme inline {
@@ -22,13 +22,9 @@
 }
 
 /*
- * No prefers-color-scheme override: this app is deliberately light-themed throughout, with
- * per-component explicit dark styling (e.g. the Cybersecurity/Quant views use bg-slate-950/
- * bg-black directly) where a dark surface is actually wanted. Letting the whole page flip to
- * dark colors based on OS preference fought that design - any element without its own explicit
- * text/background classes (which several form inputs didn't) would inherit near-white text on
- * a near-black body in dark mode, or worse, near-white text with no matching background change
- * on an explicitly light (bg-white) container, making it unreadable.
+ * No prefers-color-scheme override: the app is now dark (obsidian) by default site-wide, so OS
+ * light/dark preference has nothing to toggle - every surface already carries its own explicit
+ * background/text classes from the Command Console design system (see design.md).
  */
 
 body {
