@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { generateStructured, statusForGeminiError, describeGeminiError } from "@/lib/gemini";
 import { getGameMasterPrompt } from "@/lib/prompts/gameMasters";
-import { getAuthenticatedStudent } from "@/lib/authStudent";
 import { CAREER_STATE_SCHEMAS, type CareerTypeKey } from "@/lib/schemas/simulation";
 import { ageTierForMode, type AgeTier, type SimulationMode, type SimulationState } from "@/types/simulation";
 
@@ -19,9 +18,6 @@ interface StartRequestBody {
 }
 
 async function resolveStudent(body: StartRequestBody) {
-  const authenticatedStudent = await getAuthenticatedStudent();
-  if (authenticatedStudent) return authenticatedStudent;
-
   if (body.studentId) {
     const student = await prisma.student.findUnique({ where: { id: body.studentId } });
     if (!student) {

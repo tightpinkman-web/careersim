@@ -1,6 +1,6 @@
+import Link from "next/link";
 import { FileCheck2, ListChecks, Timer, ClipboardList, Mail, Phone, ArrowRight, PlayCircle, LibraryBig } from "lucide-react";
 import ContactForm from "@/components/ContactForm";
-import AuthGatedCta from "@/components/AuthGatedCta";
 
 const CONTACT_EMAIL = "tightpinkman@gmail.com";
 const CONTACT_PHONE = "9739409451";
@@ -48,27 +48,27 @@ export default function Home() {
             Management, Corporate Law, and Quant Trading.
           </p>
           <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <AuthGatedCta
+            <Link
               href="/demo"
               className="flex w-full items-center justify-center gap-2 rounded-md bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 sm:w-auto"
             >
               <PlayCircle className="h-4 w-4" />
               Start Demo Simulation
-            </AuthGatedCta>
-            <AuthGatedCta
+            </Link>
+            <Link
               href="/catalog"
               className="flex w-full items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50 sm:w-auto"
             >
               <LibraryBig className="h-4 w-4" />
               Browse Catalog
-            </AuthGatedCta>
-            <AuthGatedCta
+            </Link>
+            <Link
               href="/request"
               className="flex w-full items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition-colors hover:border-slate-300 hover:bg-slate-50 sm:w-auto"
             >
               Request Career
               <ArrowRight className="h-4 w-4" />
-            </AuthGatedCta>
+            </Link>
           </div>
         </div>
       </section>

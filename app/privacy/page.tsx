@@ -19,20 +19,18 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-base font-semibold text-slate-900">Data Minimization</h2>
             <p className="mt-2">
-              We collect only what is needed to run and improve your career simulations: your account
-              email and name (if you create an account), the simulation transcripts and scores you
-              generate, and, for guests, an anonymous device identifier stored in your browser so your
-              in-progress and completed simulations remain accessible without an account. We do not
-              request or store any information beyond this.
+              We collect only what is needed to run and improve your career simulations: the simulation
+              transcripts and scores you generate, and an anonymous device identifier stored in your
+              browser so your in-progress and completed simulations remain accessible on that device. We
+              do not request or store any information beyond this, and there is no account or login of
+              any kind.
             </p>
           </section>
 
           <section>
-            <h2 className="text-base font-semibold text-slate-900">Essential-Only Cookies</h2>
+            <h2 className="text-base font-semibold text-slate-900">No Cookies</h2>
             <p className="mt-2">
-              This site sets exactly one type of cookie: a strictly necessary session cookie issued by
-              our authentication provider (Supabase Auth) to keep you signed in. This cookie is
-              functional only: it identifies your logged-in session and nothing else. We do not use
+              This site does not use accounts, logins, or any authentication cookies. We do not use
               analytics cookies, advertising cookies, or any cross-site tracking cookies of any kind.
             </p>
           </section>
@@ -42,9 +40,7 @@ export default function PrivacyPage() {
             <p className="mt-2">
               We do not sell, rent, or share your personal data or simulation activity with third-party
               advertisers, data brokers, or analytics networks. Your simulation transcripts, scores, and
-              generated reports are used solely to provide the service back to you (and, where you are a
-              student connected to a counselor or school account, to share results within that
-              relationship).
+              generated reports are used solely to provide the service back to you.
             </p>
           </section>
 
@@ -52,19 +48,18 @@ export default function PrivacyPage() {
             <h2 className="text-base font-semibold text-slate-900">Third-Party Processors</h2>
             <p className="mt-2">
               We use a small number of infrastructure providers strictly to operate the service:
-              Supabase (authentication and database hosting), Google Gemini (to generate simulation
-              content and evaluations from your in-session responses), and Resend (to deliver
-              transactional email alerts you request). None of these providers are permitted to use your
-              data for their own advertising or model-training purposes under our agreements with them.
+              Supabase (database hosting only), Google Gemini (to generate simulation content and
+              evaluations from your in-session responses), and Resend (to deliver transactional email
+              alerts you request). None of these providers are permitted to use your data for their own
+              advertising or model-training purposes under our agreements with them.
             </p>
           </section>
 
           <section>
             <h2 className="text-base font-semibold text-slate-900">Your Choices</h2>
             <p className="mt-2">
-              You can delete your account and associated data at any time by contacting us. Guests using
-              the anonymous, no-account flow can clear their browser&apos;s local storage at any time to
-              remove their device identifier and disconnect from their prior simulation history.
+              You can clear your browser&apos;s local storage at any time to remove your device
+              identifier and disconnect from your prior simulation history.
             </p>
           </section>
 

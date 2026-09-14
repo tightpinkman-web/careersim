@@ -19,7 +19,7 @@ const cspHeader = [
   // module is bundled as a base64 data: URI and loaded via fetch() rather than a same-origin
   // request, and CSP's connect-src gates fetch() regardless of scheme - without it the browser
   // blocks the fetch outright ("Refused to connect ... violates ... connect-src").
-  `connect-src 'self' data: https://*.supabase.co https://generativelanguage.googleapis.com`,
+  `connect-src 'self' data: https://generativelanguage.googleapis.com`,
   `object-src 'none'`,
   `base-uri 'self'`,
   `form-action 'self'`,

@@ -27,13 +27,10 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-base font-semibold text-slate-900">Accounts</h2>
+            <h2 className="text-base font-semibold text-slate-900">No Accounts</h2>
             <p className="mt-2">
-              You may use the service without an account, in which case your simulation history is tied
-              to an anonymous identifier stored in your browser and is not portable across devices.
-              Creating an account lets you access your simulation history and reports from any device.
-              You are responsible for keeping your account credentials secure and for all activity under
-              your account.
+              This service does not require or offer accounts. Your simulation history is tied to an
+              anonymous identifier stored in your browser and is not portable across devices.
             </p>
           </section>
 

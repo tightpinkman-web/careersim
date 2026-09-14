@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@supabase/ssr";
 
 /**
  * In-memory sliding-window rate limiter, keyed by client IP.
@@ -51,40 +50,6 @@ function isGuardedApiRoute(pathname: string): boolean {
   return GUARDED_API_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(prefix));
 }
 
-/** Refreshes the Supabase auth session cookie against the request/response pair this proxy is
- *  already building (so a signed-in user's server components and API routes always see a valid
- *  session without a separate middleware file - this Next.js version supports only one proxy).
- *  Every page is public - guests fall through to the anonymous-session flow the app already
- *  supports (see lib/authStudent.ts) - this only keeps an optional session cookie fresh. */
-async function refreshSession(request: NextRequest): Promise<NextResponse> {
-  let response = NextResponse.next({ request });
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          for (const { name, value } of cookiesToSet) {
-            request.cookies.set(name, value);
-          }
-          response = NextResponse.next({ request });
-          for (const { name, value, options } of cookiesToSet) {
-            response.cookies.set(name, value, options);
-          }
-        },
-      },
-    }
-  );
-
-  await supabase.auth.getUser();
-
-  return response;
-}
-
 export async function proxy(request: NextRequest): Promise<NextResponse> {
   const pathname = request.nextUrl.pathname;
 
@@ -111,14 +76,15 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
     }
   }
 
-  return refreshSession(request);
+  return NextResponse.next({ request });
 }
 
 // Content-Security-Policy and the other static security headers live in next.config.ts, since
-// they no longer depend on a per-request nonce. This proxy now runs on nearly every route (not
-// just the guarded API routes above) so the Supabase auth cookie stays fresh across page loads;
+// they no longer depend on a per-request nonce. This proxy now runs on nearly every route, but
 // isGuardedApiRoute() scopes the abuse-prevention checks back down to just the routes that need
-// them.
+// them. Every page and API route is fully public - there is no session/auth concept left to
+// refresh here; guests are identified purely by the anonymousSessionId their browser generates
+// and persists in localStorage (see lib/anonymousSession.ts).
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
 };
