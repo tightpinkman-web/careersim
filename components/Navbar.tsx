@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Logo from "@/components/Logo";
+import { DURATION, EASE, gsap, prefersReducedMotion, useGSAP } from "@/lib/motion";
 
 const NAV_LINKS = [
   { href: "/demo", label: "Demo Sims" },
@@ -17,8 +18,26 @@ const NAV_LINKS = [
 export default function Navbar() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const isActive = (href: string) => pathname.startsWith(href);
+
+  useGSAP(
+    () => {
+      if (!menuRef.current) return;
+      if (prefersReducedMotion()) {
+        gsap.set(menuRef.current, { height: open ? "auto" : 0, opacity: open ? 1 : 0 });
+        return;
+      }
+      gsap.to(menuRef.current, {
+        height: open ? "auto" : 0,
+        opacity: open ? 1 : 0,
+        duration: DURATION.base,
+        ease: EASE.snap,
+      });
+    },
+    { dependencies: [open] }
+  );
 
   return (
     <header className="sticky top-0 z-40 shrink-0 border-b border-hairline bg-obsidian font-display">
@@ -29,7 +48,7 @@ export default function Navbar() {
           </Link>
           <span className="hidden items-center gap-1.5 border border-hairline px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-wider text-signal sm:inline-flex">
             <span className="h-1.5 w-1.5 shrink-0 bg-signal" aria-hidden="true" />
-            [SYS_ONLINE]
+            SYS_ONLINE
           </span>
         </div>
 
@@ -62,13 +81,15 @@ export default function Navbar() {
         </button>
       </div>
 
-      {open && (
-        <nav className="flex flex-col gap-1 border-t border-hairline px-6 py-3 sm:hidden">
+      <div ref={menuRef} className="overflow-hidden opacity-0 sm:hidden" style={{ height: 0 }}>
+        <nav className="flex flex-col gap-1 border-t border-hairline px-6 py-3">
           {NAV_LINKS.map((link) => (
             <Link
               key={link.href}
               href={link.href}
               onClick={() => setOpen(false)}
+              aria-hidden={!open}
+              tabIndex={open ? undefined : -1}
               className={cn(
                 "flex min-h-11 items-center px-3 text-sm font-medium tracking-wide transition-colors",
                 isActive(link.href) ? "border-l-2 border-signal text-signal" : "text-slate-400 hover:text-ink"
@@ -78,7 +99,7 @@ export default function Navbar() {
             </Link>
           ))}
         </nav>
-      )}
+      </div>
     </header>
   );
 }

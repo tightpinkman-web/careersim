@@ -103,7 +103,7 @@ export default function ResultsDashboard({
     <div className="min-h-screen bg-obsidian pb-24 font-display">
       <div className="mx-auto max-w-4xl px-4 py-8 sm:py-12">
         <p className="text-center font-mono text-xs font-semibold uppercase tracking-widest text-signal">
-          [{careerTitle} :: EVALUATION_MATRIX]
+          {careerTitle} :: EVALUATION_MATRIX
         </p>
 
         {/* Hero score card */}
@@ -160,7 +160,7 @@ export default function ResultsDashboard({
           <div className="flex items-center gap-2 border-b border-hairline px-4 py-3">
             <TrendingUp className="h-4 w-4 text-slate-500" />
             <h2 className="font-mono text-xs font-semibold uppercase tracking-widest text-slate-300">
-              [Competency Breakdown]
+              Competency Breakdown
             </h2>
           </div>
           <div>
@@ -180,7 +180,7 @@ export default function ResultsDashboard({
           >
             <h2 className="mb-3 flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-widest text-signal">
               <CheckCircle2 className="h-4 w-4" />
-              [Key Strengths]
+              Key Strengths
             </h2>
             <ul className="space-y-2.5">
               {keyStrengths.map((strength, i) => (
@@ -200,7 +200,7 @@ export default function ResultsDashboard({
           >
             <h2 className="mb-3 flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-widest text-slate-400">
               <TrendingUp className="h-4 w-4" />
-              [Areas for Development]
+              Areas for Development
             </h2>
             <ul className="space-y-2.5">
               {growthAreas.map((area, i) => (
@@ -222,7 +222,7 @@ export default function ResultsDashboard({
         >
           <h2 className="mb-2 flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-widest text-slate-300">
             <Compass className="h-4 w-4" />
-            [Career Reality Fit]
+            Career Reality Fit
           </h2>
           <p className="text-sm leading-relaxed text-slate-300">{careerFitSummary}</p>
         </motion.div>

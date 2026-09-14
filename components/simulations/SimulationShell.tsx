@@ -126,7 +126,7 @@ export default function SimulationShell({ state, onAction }: SimulationShellProp
         )}
       >
         <span className="border border-signal px-2 py-1 font-semibold uppercase tracking-wider text-signal">
-          [TRACK: {state.careerType}]
+          TRACK: {state.careerType}
         </span>
         <span
           className={cn(
@@ -134,7 +134,7 @@ export default function SimulationShell({ state, onAction }: SimulationShellProp
             isDark ? "border-slate-700 text-slate-300" : "border-slate-200 text-slate-600"
           )}
         >
-          [STEP: {String(state.currentStep ?? 1).padStart(2, "0")}]
+          STEP: {String(state.currentStep ?? 1).padStart(2, "0")}
         </span>
         <span
           className={cn(
@@ -209,7 +209,7 @@ export default function SimulationShell({ state, onAction }: SimulationShellProp
                   isDark ? "border-slate-700 text-slate-400" : "border-slate-300 text-slate-500"
                 )}
               >
-                [{index + 1}]
+                {index + 1}
               </span>
               <Send className="h-3.5 w-3.5 shrink-0 opacity-60" />
               <span className="flex-1">{action.label}</span>

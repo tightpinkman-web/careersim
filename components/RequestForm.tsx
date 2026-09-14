@@ -1,9 +1,11 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Loader2, CheckCircle2, AlertTriangle, ArrowLeft } from "lucide-react";
+import { Input } from "@/components/ui/Input";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
 
 function RequestFormInner() {
   const searchParams = useSearchParams();
@@ -41,10 +43,15 @@ function RequestFormInner() {
         <p className="max-w-sm text-sm text-slate-400">
           Thanks. We&apos;ll review your requested career simulation and follow up if we need more detail.
         </p>
-        <Link href="/" className="mt-2 flex items-center gap-1.5 text-sm font-medium text-signal hover:opacity-80">
-          <ArrowLeft className="h-3.5 w-3.5" />
+        <Button
+          href="/"
+          variant="secondary"
+          icon={<ArrowLeft className="h-4 w-4 shrink-0" />}
+          size="sm"
+          className="mt-2"
+        >
           Back to home
-        </Link>
+        </Button>
       </div>
     );
   }
@@ -55,12 +62,11 @@ function RequestFormInner() {
         <label className="mb-1 block font-mono text-xs font-medium uppercase tracking-wide text-slate-400">
           Career Title
         </label>
-        <input
+        <Input
           required
           value={careerTitle}
           onChange={(e) => setCareerTitle(e.target.value)}
           placeholder="e.g. Nurse Practitioner, Architect, Data Scientist"
-          className="min-h-11 w-full border border-hairline bg-obsidian px-3 py-2.5 text-base text-ink placeholder:text-slate-500 outline-none focus:border-signal"
         />
       </div>
 
@@ -71,14 +77,9 @@ function RequestFormInner() {
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={submitting}
-        className="mt-2 flex min-h-11 items-center justify-center gap-2 border border-signal bg-signal px-4 py-3 text-sm font-semibold text-obsidian transition-opacity hover:opacity-90 disabled:opacity-60"
-      >
-        {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+      <Button type="submit" disabled={submitting} loading={submitting} size="lg" className="mt-2">
         {submitting ? "Submitting..." : "Submit Request"}
-      </button>
+      </Button>
     </form>
   );
 }
@@ -87,7 +88,7 @@ function RequestFormInner() {
  *  useSearchParams, which Next requires to be inside Suspense during static rendering. */
 export default function RequestForm() {
   return (
-    <div className="mt-8 border border-hairline bg-surface p-6 sm:p-8">
+    <Card className="mt-8">
       <Suspense
         fallback={
           <div className="flex items-center justify-center py-12">
@@ -97,6 +98,6 @@ export default function RequestForm() {
       >
         <RequestFormInner />
       </Suspense>
-    </div>
+    </Card>
   );
 }

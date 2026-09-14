@@ -10,7 +10,7 @@ export default function RequestPageClient() {
             <ClipboardList className="h-6 w-6" />
           </span>
           <p className="mt-3 font-mono text-xs font-semibold uppercase tracking-widest text-signal">
-            [REQUEST_A_SIMULATION]
+            REQUEST_A_SIMULATION
           </p>
           <h1 className="mt-2 text-2xl font-bold text-ink sm:text-3xl">Tell us the career you want tested</h1>
           <p className="mx-auto mt-2 max-w-lg text-sm text-slate-400">

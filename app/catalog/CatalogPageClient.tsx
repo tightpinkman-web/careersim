@@ -1,11 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { Search, PlayCircle, ThumbsUp, Check, GraduationCap, Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CATALOG, type CatalogIndustry, type CatalogStatus, type CatalogVoteMap } from "@/lib/catalogData";
 import { getVotedCatalogIds, markCatalogIdVoted } from "@/lib/votedCatalogEntries";
+import { Input } from "@/components/ui/Input";
+import Button from "@/components/ui/Button";
+import Card, { BentoGrid } from "@/components/ui/Card";
+import { useStaggerReveal } from "@/hooks/useReveal";
 
 const INDUSTRY_PILLS: ("All" | CatalogIndustry)[] = ["All", "Tech", "Finance", "Legal", "Engineering", "Healthcare"];
 const STATUS_PILLS: { id: "All" | CatalogStatus; label: string }[] = [
@@ -86,12 +89,14 @@ export default function CatalogPageClient() {
     });
   }, [search, industry, status, votes]);
 
+  const gridRef = useStaggerReveal<HTMLDivElement>("[data-reveal-item]", [filtered.map((e) => e.id).join(",")]);
+
   return (
     <div className="min-h-full w-full bg-obsidian font-display">
       <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
         <div className="text-center">
           <p className="font-mono text-xs font-semibold uppercase tracking-widest text-signal">
-            [CAREER_CATALOG]
+            CAREER_CATALOG
           </p>
           <h1 className="mt-2 text-2xl font-bold text-ink sm:text-3xl">Every career on our roadmap</h1>
           <p className="mx-auto mt-2 max-w-xl text-sm text-slate-400">
@@ -101,12 +106,12 @@ export default function CatalogPageClient() {
 
         {/* Search */}
         <div className="relative mx-auto mt-8 max-w-lg">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
-          <input
+          <Search className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-slate-500" />
+          <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by title, description, or skill..."
-            className="w-full border border-hairline bg-surface py-2.5 pl-10 pr-4 text-sm text-ink outline-none placeholder:text-slate-500 focus:border-signal"
+            className="bg-surface py-2.5 pl-10 pr-4 text-sm"
           />
         </div>
 
@@ -147,13 +152,13 @@ export default function CatalogPageClient() {
         </div>
 
         <p className="text-center font-mono text-[11px] uppercase tracking-wide text-slate-500">
-          [{filtered.length} {filtered.length === 1 ? "career" : "careers"} found]
+          {filtered.length} {filtered.length === 1 ? "career" : "careers"} found
         </p>
 
         {/* Bento grid */}
-        <div className="mt-6 grid grid-cols-1 gap-px border border-hairline bg-hairline sm:grid-cols-2 lg:grid-cols-3">
+        <BentoGrid ref={gridRef} className="mt-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((entry) => (
-            <div key={entry.id} className="group flex h-full flex-col gap-3 bg-surface p-5 transition-colors hover:bg-surface/60">
+            <Card key={entry.id} data-reveal-item bordered={false} padding="sm" interactive className="group">
               <div className="flex items-start justify-between gap-2">
                 <div>
                   <span className="border border-hairline px-2 py-0.5 font-mono text-[10px] font-medium uppercase tracking-wide text-slate-400">
@@ -213,33 +218,41 @@ export default function CatalogPageClient() {
 
               <div className="mt-auto pt-2">
                 {entry.status === "live" ? (
-                  <Link
+                  <Button
                     href="/demo"
-                    className="flex min-h-11 w-full items-center justify-center gap-1.5 border border-signal bg-signal px-3 py-2 text-xs font-semibold uppercase tracking-wide text-obsidian transition-opacity hover:opacity-90"
+                    icon={<PlayCircle className="h-4 w-4 shrink-0" />}
+                    size="md"
+                    fullWidth
+                    className="text-xs uppercase"
                   >
-                    <PlayCircle className="h-3.5 w-3.5" />
                     Launch Simulation
-                  </Link>
+                  </Button>
                 ) : (
-                  <button
-                    type="button"
+                  <Button
                     onClick={() => handleVote(entry.id)}
                     disabled={votedIds.has(entry.id) || votingId === entry.id}
+                    icon={
+                      votedIds.has(entry.id) ? (
+                        <Check className="h-4 w-4 shrink-0" />
+                      ) : (
+                        <ThumbsUp className="h-4 w-4 shrink-0" />
+                      )
+                    }
+                    variant="secondary"
+                    size="md"
+                    fullWidth
                     className={cn(
-                      "flex min-h-11 w-full items-center justify-center gap-1.5 border px-3 py-2 text-xs font-semibold uppercase tracking-wide transition-colors disabled:cursor-not-allowed",
-                      votedIds.has(entry.id)
-                        ? "border-hairline text-slate-600"
-                        : "border-hairline text-slate-300 hover:border-signal hover:text-signal"
+                      "text-xs uppercase",
+                      votedIds.has(entry.id) && "text-slate-600 hover:border-hairline hover:text-slate-600"
                     )}
                   >
-                    {votedIds.has(entry.id) ? <Check className="h-3.5 w-3.5" /> : <ThumbsUp className="h-3.5 w-3.5" />}
                     {votedIds.has(entry.id) ? "Voted - Thanks!" : "Vote to Prioritize"}
-                  </button>
+                  </Button>
                 )}
               </div>
-            </div>
+            </Card>
           ))}
-        </div>
+        </BentoGrid>
 
         {filtered.length === 0 && (
           <p className="mt-12 text-center text-sm text-slate-500">No careers match your search or filters.</p>

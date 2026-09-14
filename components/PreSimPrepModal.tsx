@@ -1,8 +1,9 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, BookOpen, Target, Loader2, AlertTriangle, GraduationCap, Briefcase } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, Target, AlertTriangle, GraduationCap, Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useRevealOnMount } from "@/hooks/useReveal";
+import Button from "@/components/ui/Button";
 import type { SimulationMode } from "@/types/simulation";
 
 interface PreSimPrepModalProps {
@@ -29,13 +30,11 @@ export default function PreSimPrepModal({
   onConfirm,
 }: PreSimPrepModalProps) {
   const isChild = mode === "child";
+  const panelRef = useRevealOnMount<HTMLDivElement>({ y: 8, scale: 0.96, duration: 0.22 });
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.96, y: 8 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.96, y: 8 }}
-      transition={{ duration: 0.18 }}
+    <div
+      ref={panelRef}
       onClick={(e) => e.stopPropagation()}
       className="w-full max-w-lg border border-hairline bg-surface p-6 font-display sm:p-8"
     >
@@ -60,7 +59,7 @@ export default function PreSimPrepModal({
       </div>
 
       <p className="mt-4 font-mono text-[11px] font-semibold uppercase tracking-widest text-signal">
-        [PRE_SIM_PREP_SHEET]
+        PRE_SIM_PREP_SHEET
       </p>
       <h2 className="text-lg font-bold text-ink">{title}</h2>
 
@@ -103,14 +102,18 @@ export default function PreSimPrepModal({
         </p>
       )}
 
-      <button
+      <Button
         onClick={onConfirm}
         disabled={starting}
-        className="mt-6 flex min-h-11 w-full items-center justify-center gap-2 border border-signal bg-signal px-4 py-3 text-sm font-semibold text-obsidian transition-opacity hover:opacity-90 disabled:opacity-60"
+        loading={starting}
+        icon={<ArrowRight className="h-4 w-4 shrink-0" />}
+        iconPosition="right"
+        size="lg"
+        fullWidth
+        className="mt-6"
       >
-        {starting ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}
         {starting ? "Starting..." : "I'm Ready: Enter Simulation"}
-      </button>
-    </motion.div>
+      </Button>
+    </div>
   );
 }

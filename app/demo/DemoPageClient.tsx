@@ -266,13 +266,13 @@ export default function DemoPageClient() {
     <div className="min-h-full w-full bg-obsidian font-display">
       <div className="flex items-center gap-2 border-b border-hairline bg-surface px-4 py-2.5 text-center font-mono text-xs font-medium uppercase tracking-wide text-signal sm:justify-center">
         <Megaphone className="h-3.5 w-3.5 shrink-0" />
-        <span>[COUNSELOR_PREVIEW_ENVIRONMENT] Test our 5 flagship career simulations.</span>
+        <span>COUNSELOR_PREVIEW_ENVIRONMENT — Test our 5 flagship career simulations.</span>
       </div>
 
       <div className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8">
         <div className="text-center">
           <p className="font-mono text-xs font-semibold uppercase tracking-widest text-signal">
-            [AI_CAREER_SIMULATOR]
+            AI_CAREER_SIMULATOR
           </p>
           <h1 className="mt-2 text-2xl font-bold text-ink sm:text-3xl">Choose a career to step into</h1>
           <p className="mx-auto mt-2 max-w-xl text-sm text-slate-400">

@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
+import { CheckCircle2, AlertTriangle } from "lucide-react";
+import { Input, Textarea } from "@/components/ui/Input";
+import Button from "@/components/ui/Button";
 
 export default function ContactForm() {
   const [name, setName] = useState("");
@@ -44,33 +46,24 @@ export default function ContactForm() {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-      <input
-        required
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="Your name"
-        className="w-full border border-hairline bg-obsidian px-3 py-2.5 text-base text-ink placeholder:text-slate-500 outline-none focus:border-signal"
-      />
-      <input
+      <Input required value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" />
+      <Input
         required
         type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder="Email address"
-        className="w-full border border-hairline bg-obsidian px-3 py-2.5 text-base text-ink placeholder:text-slate-500 outline-none focus:border-signal"
       />
-      <input
+      <Input
         value={organization}
         onChange={(e) => setOrganization(e.target.value)}
         placeholder="Organization (optional)"
-        className="w-full border border-hairline bg-obsidian px-3 py-2.5 text-base text-ink placeholder:text-slate-500 outline-none focus:border-signal"
       />
-      <textarea
+      <Textarea
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         placeholder="How can we help?"
         rows={4}
-        className="w-full resize-none border border-hairline bg-obsidian px-3 py-2.5 text-base text-ink placeholder:text-slate-500 outline-none focus:border-signal"
       />
       {error && (
         <p className="flex items-center gap-1.5 text-xs text-rose-400">
@@ -78,14 +71,9 @@ export default function ContactForm() {
           {error}
         </p>
       )}
-      <button
-        type="submit"
-        disabled={submitting}
-        className="flex items-center justify-center gap-2 border border-signal bg-signal px-4 py-2.5 text-sm font-semibold text-obsidian transition-opacity hover:opacity-90 disabled:opacity-60"
-      >
-        {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+      <Button type="submit" disabled={submitting} loading={submitting}>
         {submitting ? "Sending..." : "Send Message"}
-      </button>
+      </Button>
     </form>
   );
 }
