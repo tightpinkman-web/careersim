@@ -4,15 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { CheckCircle2, TrendingUp, Compass, ArrowLeft } from "lucide-react";
-import {
-  ResponsiveContainer,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
-  Tooltip,
-} from "recharts";
 import { cn } from "@/lib/utils";
 import DownloadReportButton from "@/components/DownloadReportButton";
 import { CAREER_TITLES } from "@/lib/careerTitles";
@@ -40,21 +31,20 @@ function ScoreCircle({ score }: { score: number }) {
     return () => cancelAnimationFrame(frame);
   }, [score]);
 
-  const color = score >= 80 ? "#10b981" : score >= 60 ? "#6366f1" : score >= 40 ? "#f59e0b" : "#ef4444";
   const offset = SCORE_CIRCUMFERENCE * (1 - animatedScore / 100);
 
   return (
     <div className="relative flex h-40 w-40 shrink-0 items-center justify-center">
       <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
-        <circle cx="60" cy="60" r={SCORE_RADIUS} fill="none" stroke="#e2e8f0" strokeWidth="10" />
+        <circle cx="60" cy="60" r={SCORE_RADIUS} fill="none" stroke="#1e293b" strokeWidth="10" />
         <motion.circle
           cx="60"
           cy="60"
           r={SCORE_RADIUS}
           fill="none"
-          stroke={color}
+          stroke="#ffb800"
           strokeWidth="10"
-          strokeLinecap="round"
+          strokeLinecap="square"
           strokeDasharray={SCORE_CIRCUMFERENCE}
           initial={{ strokeDashoffset: SCORE_CIRCUMFERENCE }}
           animate={{ strokeDashoffset: offset }}
@@ -67,12 +57,31 @@ function ScoreCircle({ score }: { score: number }) {
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="text-3xl font-bold text-slate-900"
+          className="font-display text-3xl font-bold text-ink"
         >
           {score}
         </motion.span>
-        <span className="text-[10px] uppercase tracking-wide text-slate-400">/ 100</span>
+        <span className="font-mono text-[10px] uppercase tracking-widest text-slate-500">/ 100</span>
       </div>
+    </div>
+  );
+}
+
+function CompetencyBar({ dimension, value, delay }: { dimension: string; value: number; delay: number }) {
+  return (
+    <div className="grid grid-cols-[minmax(0,1fr)_3rem] items-center gap-3 border-b border-hairline px-4 py-3 last:border-b-0 sm:grid-cols-[10rem_minmax(0,1fr)_3rem]">
+      <span className="col-span-2 truncate font-mono text-[11px] uppercase tracking-wide text-slate-400 sm:col-span-1">
+        {dimension}
+      </span>
+      <div className="h-2 w-full overflow-hidden bg-slate-800">
+        <motion.div
+          className="h-full bg-signal"
+          initial={{ width: 0 }}
+          animate={{ width: `${value}%` }}
+          transition={{ duration: 0.9, delay, ease: "easeOut" }}
+        />
+      </div>
+      <span className="text-right font-mono text-xs font-semibold text-ink">{value}%</span>
     </div>
   );
 }
@@ -87,25 +96,25 @@ export default function ResultsDashboard({
   growthAreas,
   careerFitSummary,
 }: ResultsDashboardProps) {
-  const radarData = Object.entries(competencies).map(([dimension, value]) => ({ dimension, value }));
+  const competencyEntries = Object.entries(competencies);
   const careerTitle = CAREER_TITLES[careerType];
 
   return (
-    <div className="min-h-screen bg-slate-100 pb-24">
+    <div className="min-h-screen bg-obsidian pb-24 font-display">
       <div className="mx-auto max-w-4xl px-4 py-8 sm:py-12">
-        <p className="text-center text-xs font-semibold uppercase tracking-wide text-indigo-600">
-          {careerTitle} &middot; Career Aptitude Assessment
+        <p className="text-center font-mono text-xs font-semibold uppercase tracking-widest text-signal">
+          [{careerTitle} :: EVALUATION_MATRIX]
         </p>
 
         {/* Hero score card */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mt-4 flex flex-col items-center gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:flex-row sm:justify-center sm:gap-8"
+          className="mt-4 flex flex-col items-center gap-4 border border-hairline bg-surface p-6 sm:flex-row sm:justify-center sm:gap-8"
         >
           <ScoreCircle score={overallScore} />
           <div className="text-center sm:text-left">
-            <h1 className="text-xl font-bold text-slate-900">
+            <h1 className="text-xl font-bold text-ink">
               {overallScore >= 80
                 ? "Exceptional Performance"
                 : overallScore >= 60
@@ -114,7 +123,7 @@ export default function ResultsDashboard({
                     ? "Developing Performance"
                     : "Needs Significant Growth"}
             </h1>
-            <p className="mt-1 max-w-md text-sm text-slate-500">
+            <p className="mt-1 max-w-md text-sm text-slate-400">
               Your overall score reflects your decisions across the entire simulation, weighed against
               what a strong performer in this career would have done.
             </p>
@@ -141,53 +150,42 @@ export default function ResultsDashboard({
           />
         </motion.div>
 
-        {/* Competency radar */}
+        {/* Competency matrix - animated horizontal bars, 0 -> target rating on entrance */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="mt-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+          className="mt-6 border border-hairline bg-surface"
         >
-          <div className="mb-2 flex items-center gap-2">
+          <div className="flex items-center gap-2 border-b border-hairline px-4 py-3">
             <TrendingUp className="h-4 w-4 text-slate-500" />
-            <h2 className="text-sm font-semibold text-slate-700">Competency Breakdown</h2>
+            <h2 className="font-mono text-xs font-semibold uppercase tracking-widest text-slate-300">
+              [Competency Breakdown]
+            </h2>
           </div>
-          <div className="h-72 w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <RadarChart data={radarData} outerRadius="75%">
-                <PolarGrid stroke="#e2e8f0" />
-                <PolarAngleAxis dataKey="dimension" tick={{ fontSize: 11, fill: "#475569" }} />
-                <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 9, fill: "#94a3b8" }} />
-                <Radar
-                  name="Score"
-                  dataKey="value"
-                  stroke="#6366f1"
-                  fill="#6366f1"
-                  fillOpacity={0.35}
-                  isAnimationActive
-                />
-                <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} />
-              </RadarChart>
-            </ResponsiveContainer>
+          <div>
+            {competencyEntries.map(([dimension, value], i) => (
+              <CompetencyBar key={dimension} dimension={dimension} value={value} delay={0.15 + i * 0.08} />
+            ))}
           </div>
         </motion.div>
 
-        {/* Strengths / growth areas */}
-        <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
+        {/* Strengths / growth areas - dense matrix rows */}
+        <div className="mt-6 grid grid-cols-1 gap-px border border-hairline bg-hairline sm:grid-cols-2">
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
-            className="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 shadow-sm"
+            className="bg-surface p-6"
           >
-            <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-emerald-800">
+            <h2 className="mb-3 flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-widest text-signal">
               <CheckCircle2 className="h-4 w-4" />
-              Key Strengths Demonstrated
+              [Key Strengths]
             </h2>
             <ul className="space-y-2.5">
               {keyStrengths.map((strength, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-emerald-900">
-                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
+                <li key={i} className="flex items-start gap-2 text-sm text-slate-200">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 bg-signal" />
                   {strength}
                 </li>
               ))}
@@ -198,16 +196,16 @@ export default function ResultsDashboard({
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="rounded-2xl border border-amber-200 bg-amber-50 p-6 shadow-sm"
+            className="bg-surface p-6"
           >
-            <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold text-amber-800">
+            <h2 className="mb-3 flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-widest text-slate-400">
               <TrendingUp className="h-4 w-4" />
-              Areas for Development
+              [Areas for Development]
             </h2>
             <ul className="space-y-2.5">
               {growthAreas.map((area, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm text-amber-900">
-                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500" />
+                <li key={i} className="flex items-start gap-2 text-sm text-slate-200">
+                  <span className="mt-1.5 h-1.5 w-1.5 shrink-0 bg-slate-500" />
                   {area}
                 </li>
               ))}
@@ -220,23 +218,23 @@ export default function ResultsDashboard({
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
-          className="mt-6 rounded-2xl border border-indigo-200 bg-indigo-50 p-6 shadow-sm"
+          className="mt-6 border border-hairline bg-surface p-6"
         >
-          <h2 className="mb-2 flex items-center gap-2 text-sm font-semibold text-indigo-800">
+          <h2 className="mb-2 flex items-center gap-2 font-mono text-xs font-semibold uppercase tracking-widest text-slate-300">
             <Compass className="h-4 w-4" />
-            Career Reality Fit
+            [Career Reality Fit]
           </h2>
-          <p className="text-sm leading-relaxed text-indigo-950">{careerFitSummary}</p>
+          <p className="text-sm leading-relaxed text-slate-300">{careerFitSummary}</p>
         </motion.div>
       </div>
 
       {/* Bottom action bar */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur print:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-obsidian/95 px-4 py-3 backdrop-blur print:hidden">
         <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-center gap-3 sm:justify-between">
           <Link
             href="/"
             className={cn(
-              "flex items-center gap-2 rounded-md border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              "flex min-h-11 items-center gap-2 border border-hairline px-4 py-2.5 text-sm font-medium text-slate-300 hover:border-signal hover:text-signal"
             )}
           >
             <ArrowLeft className="h-4 w-4" />

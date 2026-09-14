@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import Navbar from "@/components/Navbar";
 import PageMain from "@/components/PageMain";
 import "./globals.css";
@@ -11,6 +11,16 @@ const geistSans = Geist({
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
+  subsets: ["latin"],
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
   subsets: ["latin"],
 });
 
@@ -42,9 +52,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} h-full overflow-x-hidden antialiased`}
     >
-      <body className="flex h-full flex-col bg-slate-50">
+      <body className="flex h-full min-h-[100dvh] flex-col overflow-x-hidden bg-slate-50">
         <Navbar />
         <PageMain>{children}</PageMain>
       </body>

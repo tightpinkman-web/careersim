@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useHotkeys } from "react-hotkeys-hook";
 import { Send, Clock, Gauge, DollarSign, Percent, Timer } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SimulationState } from "@/types/simulation";
@@ -28,13 +29,17 @@ const HUD_ICON: Record<string, React.ComponentType<{ className?: string }>> = {
 
 const DECISION_WINDOW_SECONDS = 60;
 
-// Every decision button gets the exact same treatment - a sleek slate border with a subtle
-// indigo hover accent - regardless of `action.kind` or position. No option should visually stand
+// Tactile spring used for every interactive choice affordance - one physical feel across the
+// whole decision shell rather than per-button tuning.
+const CHOICE_SPRING = { type: "spring" as const, stiffness: 400, damping: 25 };
+
+// Every decision option gets the exact same treatment - a hairline border with a signal-amber
+// hover/focus state - regardless of `action.kind` or position. No option should visually stand
 // out from the others, so nothing here can be read as a hint toward the "right" or "safe" choice.
 function choiceButtonClasses(isDark: boolean): string {
   return isDark
-    ? "border border-slate-800 bg-slate-800 text-slate-200 hover:border-indigo-500 hover:bg-indigo-950/20"
-    : "border border-slate-200 bg-white text-slate-700 hover:border-indigo-500 hover:bg-indigo-50/50";
+    ? "border-slate-800 bg-slate-900 text-slate-200 hover:border-signal focus-visible:border-signal"
+    : "border-slate-200 bg-white text-slate-700 hover:border-signal focus-visible:border-signal";
 }
 
 function formatHudKey(key: string) {
@@ -82,6 +87,18 @@ export default function SimulationShell({ state, onAction }: SimulationShellProp
     setFreeform("");
   };
 
+  // Numeric keys 1-4 trigger the corresponding decision option, mirroring the [1]-[4] badges.
+  useHotkeys(
+    "1,2,3,4",
+    (_event, handler) => {
+      const index = Number(handler.keys?.[0]) - 1;
+      const action = state.allowedActions[index];
+      if (action) handleAction(action.id);
+    },
+    { enableOnFormTags: false },
+    [state.allowedActions, secondsRemaining]
+  );
+
   const renderView = () => {
     switch (state.ui_mode) {
       case "VENTURE_CAPITAL":
@@ -104,18 +121,26 @@ export default function SimulationShell({ state, onAction }: SimulationShellProp
       {/* Top HUD */}
       <div
         className={cn(
-          "flex shrink-0 flex-wrap items-center gap-x-4 gap-y-1 border-b px-4 py-2 text-xs",
+          "flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1.5 border-b px-4 py-2 font-mono text-[11px]",
           isDark ? "border-slate-800 bg-slate-900 text-slate-300" : "border-slate-200 bg-white text-slate-600"
         )}
       >
-        <span className="rounded-md bg-indigo-600 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white">
-          Step {state.currentStep ?? 1}
+        <span className="border border-signal px-2 py-1 font-semibold uppercase tracking-wider text-signal">
+          [TRACK: {state.careerType}]
         </span>
         <span
           className={cn(
-            "flex items-center gap-1 rounded-md border px-2.5 py-1 text-[10px] font-semibold tabular-nums transition-colors",
+            "border px-2 py-1 font-semibold uppercase tracking-wider",
+            isDark ? "border-slate-700 text-slate-300" : "border-slate-200 text-slate-600"
+          )}
+        >
+          [STEP: {String(state.currentStep ?? 1).padStart(2, "0")}]
+        </span>
+        <span
+          className={cn(
+            "flex items-center gap-1 border px-2 py-1 font-semibold tabular-nums transition-colors",
             secondsRemaining <= 15
-              ? "border-amber-500/30 bg-amber-500/15 text-amber-600"
+              ? "border-signal/50 bg-signal/10 text-signal"
               : isDark
                 ? "border-slate-700 bg-slate-800 text-slate-300"
                 : "border-slate-200 bg-slate-100 text-slate-600"
@@ -125,7 +150,6 @@ export default function SimulationShell({ state, onAction }: SimulationShellProp
           <Timer className="h-3 w-3" />
           {formatCountdown(secondsRemaining)}
         </span>
-        <span className="font-medium">{state.careerType.replace(/_/g, " ")}</span>
         <div className="flex flex-wrap items-center gap-4 sm:ml-auto">
           {hudEntries.map(([key, value]) => {
             const Icon = HUD_ICON[key];
@@ -156,40 +180,53 @@ export default function SimulationShell({ state, onAction }: SimulationShellProp
         </AnimatePresence>
       </div>
 
-      {/* Unified action bar */}
+      {/* Tactical decision bar */}
       <div
         className={cn(
           "shrink-0 border-t px-4 py-3",
           isDark ? "border-slate-800 bg-slate-900" : "border-slate-200 bg-white"
         )}
       >
-        <p className={cn("mb-2 text-xs", isDark ? "text-slate-400" : "text-slate-500")}>{state.narrativePrompt}</p>
-        <div className="flex flex-wrap items-center gap-2">
+        <p className={cn("mb-3 text-xs", isDark ? "text-slate-400" : "text-slate-500")}>{state.narrativePrompt}</p>
+
+        <div className="flex flex-col gap-2">
+          {state.allowedActions.map((action, index) => (
+            <motion.button
+              key={action.id}
+              onClick={() => handleAction(action.id)}
+              title={action.description}
+              whileHover={{ x: 4 }}
+              whileTap={{ scale: 0.98 }}
+              transition={CHOICE_SPRING}
+              className={cn(
+                "flex min-h-11 w-full items-center gap-2.5 border px-3 py-2.5 text-left text-sm font-medium transition-colors",
+                choiceButtonClasses(isDark)
+              )}
+            >
+              <span
+                className={cn(
+                  "flex h-6 w-6 shrink-0 items-center justify-center border font-mono text-[10px] font-semibold",
+                  isDark ? "border-slate-700 text-slate-400" : "border-slate-300 text-slate-500"
+                )}
+              >
+                [{index + 1}]
+              </span>
+              <Send className="h-3.5 w-3.5 shrink-0 opacity-60" />
+              <span className="flex-1">{action.label}</span>
+            </motion.button>
+          ))}
+
           <input
             value={freeform}
             onChange={(e) => setFreeform(e.target.value)}
             placeholder="Type a response or justification..."
             className={cn(
-              "min-w-[200px] flex-1 rounded-md border px-3 py-2 text-sm outline-none transition-shadow",
+              "min-h-11 w-full border px-3 py-2 text-sm outline-none transition-colors",
               isDark
-                ? "border-slate-700 bg-slate-800 text-slate-100 placeholder:text-slate-500 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10"
-                : "border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-400 focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100"
+                ? "border-slate-700 bg-slate-800 text-slate-100 placeholder:text-slate-500 focus:border-signal"
+                : "border-slate-200 bg-slate-50 text-slate-800 placeholder:text-slate-400 focus:border-signal"
             )}
           />
-          {state.allowedActions.map((action) => (
-            <button
-              key={action.id}
-              onClick={() => handleAction(action.id)}
-              title={action.description}
-              className={cn(
-                "flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                choiceButtonClasses(isDark)
-              )}
-            >
-              <Send className="h-3.5 w-3.5" />
-              {action.label}
-            </button>
-          ))}
         </div>
       </div>
     </div>
