@@ -16,17 +16,28 @@ export async function GET(_request: Request, { params }: { params: Promise<{ ses
   });
 
   if (!session) {
-    return NextResponse.json({ error: "No session found for the given sessionId." }, { status: 404 });
+    return NextResponse.json(
+      { error: "No session found for the given sessionId.", code: "SESSION_NOT_FOUND" },
+      { status: 404 }
+    );
   }
 
   const latestLog = session.actionLogs[0];
   if (!latestLog) {
-    return NextResponse.json({ error: "Session has no recorded state yet." }, { status: 404 });
+    return NextResponse.json(
+      { error: "Session has no recorded state yet.", code: "SESSION_NOT_FOUND" },
+      { status: 404 }
+    );
   }
 
   return NextResponse.json({
     sessionId: session.id,
     status: session.status,
+    // mode/ageTier let the client reconstruct a legitimate /start request to transparently
+    // reconnect if this session is later lost server-side - see the recovery flow in
+    // app/simulations/[sessionId]/page.tsx.
+    mode: session.mode,
+    ageTier: session.ageTier,
     state: latestLog.returnedState as unknown as SimulationState,
   });
 }

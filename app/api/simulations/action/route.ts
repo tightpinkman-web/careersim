@@ -91,18 +91,27 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Request body must be valid JSON." }, { status: 400 });
+    return NextResponse.json(
+      { error: "Request body must be valid JSON.", code: "INVALID_REQUEST" },
+      { status: 400 }
+    );
   }
 
   const { sessionId, action, decisionTimeSeconds } = body;
   if (!sessionId || !action || !action.trim()) {
-    return NextResponse.json({ error: "sessionId and action are required." }, { status: 400 });
+    return NextResponse.json(
+      { error: "sessionId and action are required.", code: "INVALID_REQUEST" },
+      { status: 400 }
+    );
   }
   if (
     decisionTimeSeconds !== undefined &&
     (typeof decisionTimeSeconds !== "number" || !Number.isFinite(decisionTimeSeconds) || decisionTimeSeconds < 0)
   ) {
-    return NextResponse.json({ error: "decisionTimeSeconds must be a non-negative number." }, { status: 400 });
+    return NextResponse.json(
+      { error: "decisionTimeSeconds must be a non-negative number.", code: "INVALID_REQUEST" },
+      { status: 400 }
+    );
   }
 
   const session = await prisma.simulationSession.findUnique({
@@ -111,10 +120,16 @@ export async function POST(request: Request) {
   });
 
   if (!session) {
-    return NextResponse.json({ error: "No session found for the given sessionId." }, { status: 404 });
+    return NextResponse.json(
+      { error: "No session found for the given sessionId.", code: "SESSION_NOT_FOUND" },
+      { status: 404 }
+    );
   }
   if (session.status === "COMPLETED") {
-    return NextResponse.json({ error: "This simulation session has already concluded." }, { status: 409 });
+    return NextResponse.json(
+      { error: "This simulation session has already concluded.", code: "SESSION_COMPLETED" },
+      { status: 409 }
+    );
   }
 
   const careerType = session.careerType as CareerTypeKey;
@@ -143,7 +158,7 @@ export async function POST(request: Request) {
       if (!finalState) throw new Error("Stream ended without a final state.");
       state = finalState;
     } catch (err) {
-      send({ type: "error", error: describeGeminiError(err) });
+      send({ type: "error", error: describeGeminiError(err), code: "ENGINE_ERROR" });
       return;
     }
 

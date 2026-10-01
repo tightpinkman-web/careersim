@@ -18,6 +18,10 @@ interface SimulationShellProps {
    *  when this state was rendered to when they submitted - captured regardless of whether the
    *  60s countdown had run out. */
   onAction?: (actionId: string, freeformInput?: string, elapsedSeconds?: number) => void;
+  /** The action currently in flight (including through automatic retries and the manual
+   *  "[ RETRY STEP ]" CTA) - kept visually selected so the student can see their choice wasn't
+   *  lost, even while the parent page is still retrying the request behind the scenes. */
+  pendingActionId?: string | null;
 }
 
 const HUD_ICON: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -58,7 +62,7 @@ function formatCountdown(secondsRemaining: number): string {
   return overtime ? `+${clock}` : clock;
 }
 
-export default function SimulationShell({ state, onAction }: SimulationShellProps) {
+export default function SimulationShell({ state, onAction, pendingActionId }: SimulationShellProps) {
   const [freeform, setFreeform] = useState("");
   const [secondsRemaining, setSecondsRemaining] = useState(DECISION_WINDOW_SECONDS);
   const stepStartRef = useRef(0);
@@ -190,31 +194,38 @@ export default function SimulationShell({ state, onAction }: SimulationShellProp
         <p className={cn("mb-3 text-xs", isDark ? "text-slate-400" : "text-slate-500")}>{state.narrativePrompt}</p>
 
         <div className="flex flex-col gap-2">
-          {state.allowedActions.map((action, index) => (
-            <motion.button
-              key={action.id}
-              onClick={() => handleAction(action.id)}
-              title={action.description}
-              whileHover={{ x: 4 }}
-              whileTap={{ scale: 0.98 }}
-              transition={CHOICE_SPRING}
-              className={cn(
-                "flex min-h-11 w-full items-center gap-2.5 border px-3 py-2.5 text-left text-sm font-medium transition-colors",
-                choiceButtonClasses(isDark)
-              )}
-            >
-              <span
+          {state.allowedActions.map((action, index) => {
+            const isPending = action.id === pendingActionId;
+            return (
+              <motion.button
+                key={action.id}
+                onClick={() => handleAction(action.id)}
+                title={action.description}
+                whileHover={{ x: 4 }}
+                whileTap={{ scale: 0.98 }}
+                transition={CHOICE_SPRING}
                 className={cn(
-                  "flex h-6 w-6 shrink-0 items-center justify-center border font-mono text-[10px] font-semibold",
-                  isDark ? "border-slate-700 text-slate-400" : "border-slate-300 text-slate-500"
+                  "flex min-h-11 w-full items-center gap-2.5 border px-3 py-2.5 text-left text-sm font-medium transition-colors",
+                  isPending ? "border-signal bg-signal/10" : choiceButtonClasses(isDark)
                 )}
               >
-                {index + 1}
-              </span>
-              <Send className="h-3.5 w-3.5 shrink-0 opacity-60" />
-              <span className="flex-1">{action.label}</span>
-            </motion.button>
-          ))}
+                <span
+                  className={cn(
+                    "flex h-6 w-6 shrink-0 items-center justify-center border font-mono text-[10px] font-semibold",
+                    isPending
+                      ? "border-signal text-signal"
+                      : isDark
+                        ? "border-slate-700 text-slate-400"
+                        : "border-slate-300 text-slate-500"
+                  )}
+                >
+                  {index + 1}
+                </span>
+                <Send className="h-3.5 w-3.5 shrink-0 opacity-60" />
+                <span className="flex-1">{action.label}</span>
+              </motion.button>
+            );
+          })}
 
           <input
             value={freeform}
