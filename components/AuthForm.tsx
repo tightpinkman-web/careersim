@@ -6,12 +6,27 @@ import { Loader2, AlertTriangle, Lock, User } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { getAnonymousSessionId } from "@/lib/anonymousSession";
 import { safeRedirectPath } from "@/lib/safeRedirect";
-import { isValidUsername, usernameToInternalEmail } from "@/lib/username";
+import { isValidUsername, usernameToInternalEmail, usernameToLegacyInternalEmail } from "@/lib/username";
 import { Input } from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 
 interface AuthFormProps {
   mode: "login" | "signup";
+}
+
+/** True for a raw Supabase/GoTrue error about the *synthetic internal email itself* being
+ *  rejected (invalid format, unsupported domain, etc.) - as opposed to a normal app-level
+ *  message like "Incorrect username or password." or "That username is already taken." Also
+ *  catches the synthetic domains leaking into any message verbatim, as a backstop. */
+function isSyntheticEmailError(message: string): boolean {
+  const lower = message.toLowerCase();
+  if (lower.includes("@careersim.app") || lower.includes("@users.careersim-app.com")) return true;
+  return lower.includes("email") && (lower.includes("invalid") || lower.includes("not supported") || lower.includes("domain"));
+}
+
+/** Never let a raw Supabase error - or the synthetic email address itself - reach the UI. */
+function sanitizeAuthErrorMessage(message: string): string {
+  return isSyntheticEmailError(message) ? "INVALID_USERNAME // PLEASE USE ALPHANUMERIC CHARACTERS ONLY" : message;
 }
 
 function AuthFormInner({ mode }: AuthFormProps) {
@@ -65,7 +80,7 @@ function AuthFormInner({ mode }: AuthFormProps) {
           throw new Error(
             signUpError.message.toLowerCase().includes("already registered")
               ? "That username is already taken."
-              : signUpError.message
+              : sanitizeAuthErrorMessage(signUpError.message)
           );
         }
 
@@ -81,12 +96,23 @@ function AuthFormInner({ mode }: AuthFormProps) {
         router.push(redirectTo);
         router.refresh();
       } else {
-        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+        let { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+
+        // Backward-compatible fallback: if this account was created under the prior internal
+        // email domain (see LEGACY_INTERNAL_EMAIL_DOMAIN in lib/username.ts), the current-domain
+        // attempt above fails as "invalid credentials" (GoTrue doesn't distinguish "wrong
+        // password" from "no such user"). Retry once under the legacy domain before giving up.
+        if (signInError && signInError.message.toLowerCase().includes("invalid login credentials")) {
+          const legacyEmail = usernameToLegacyInternalEmail(trimmed);
+          const legacyResult = await supabase.auth.signInWithPassword({ email: legacyEmail, password });
+          signInError = legacyResult.error;
+        }
+
         if (signInError) {
           throw new Error(
             signInError.message.toLowerCase().includes("invalid login credentials")
               ? "Incorrect username or password."
-              : signInError.message
+              : sanitizeAuthErrorMessage(signInError.message)
           );
         }
         await syncStudent();
