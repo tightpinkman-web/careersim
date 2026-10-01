@@ -19,7 +19,8 @@ reference only - do not emit TypeScript, emit JSON):
   "payload": ${payloadShape},
   "isComplete"?: boolean,              // true ONLY when the scenario has reached a natural conclusion this turn
   "overallScore"?: number,             // 0-100, REQUIRED when isComplete is true, omitted otherwise
-  "feedbackSummary"?: string           // 2-4 sentence debrief of the student's performance, REQUIRED when isComplete is true, omitted otherwise
+  "feedbackSummary"?: string,          // 2-4 sentence debrief of the student's performance, REQUIRED when isComplete is true, omitted otherwise
+  "turnScore"?: number                 // 0-100, your own assessment of how well-reasoned the student's PREVIOUS decision was (the action that led to this turn). Omit only on turn 1, where there is no prior decision to grade.
 }
 
 Rules:
@@ -205,8 +206,29 @@ student has settled their position (held, reduced, or liquidated) with the resul
 overallScore/feedbackSummary on risk-adjusted decision-making under volatility, not raw pnl alone.`,
 };
 
-export function getGameMasterPrompt(careerType: CareerType, mode: SimulationMode): string {
+/**
+ * Appended to the system prompt only when the student has just landed two consecutive
+ * high turnScore decisions (see shouldEscalateDifficulty in app/api/simulations/action/route.ts).
+ * Asks the Game Master to raise scenario complexity and trade-off strictness for this turn
+ * onward, without resetting or restarting the scenario.
+ */
+export const DIFFICULTY_ESCALATION_INSTRUCTIONS = `
+DYNAMIC DIFFICULTY - ESCALATE
+The student has just made two consecutive strong, well-reasoned decisions (high turnScore on
+their last two turns). Raise the stakes starting this turn: introduce a sharper trade-off, a
+tighter constraint, a new complication, or a more ambiguous signal than you would by default -
+something that genuinely tests whether their strong performance holds up under more pressure.
+Do not break continuity with the scenario so far, and do not make this turn unfair or
+unwinnable - just meaningfully harder than the default difficulty curve.
+`;
+
+export function getGameMasterPrompt(
+  careerType: CareerType,
+  mode: SimulationMode,
+  options?: { escalateDifficulty?: boolean }
+): string {
   return `${SCENARIOS[careerType]}
 ${MODE_INSTRUCTIONS[mode]}
-${JSON_CONTRACT(careerType, PAYLOAD_SHAPES[careerType])}`;
+${JSON_CONTRACT(careerType, PAYLOAD_SHAPES[careerType])}
+${options?.escalateDifficulty ? DIFFICULTY_ESCALATION_INSTRUCTIONS : ""}`;
 }

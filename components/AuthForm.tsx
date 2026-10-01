@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, AlertTriangle, Lock, User } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { getAnonymousSessionId } from "@/lib/anonymousSession";
 import { safeRedirectPath } from "@/lib/safeRedirect";
 import { isValidUsername, usernameToInternalEmail } from "@/lib/username";
 import { Input } from "@/components/ui/Input";
@@ -26,9 +27,14 @@ function AuthFormInner({ mode }: AuthFormProps) {
 
   const syncStudent = async () => {
     try {
-      await fetch("/api/auth/sync-student", { method: "POST" });
+      await fetch("/api/auth/sync-student", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ anonymousSessionId: getAnonymousSessionId() }),
+      });
     } catch {
-      // Non-fatal - the next authenticated request (e.g. starting a simulation) will retry this.
+      // Non-fatal - the next authenticated request (e.g. starting a simulation) will retry this,
+      // just without the one-time anonymous-history backfill.
     }
   };
 

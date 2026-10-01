@@ -35,6 +35,7 @@ export default async function SimulationResultsPage({
       keyStrengths={session.keyStrengths}
       growthAreas={session.growthAreas}
       careerFitSummary={session.careerFitSummary!}
+      verificationHash={session.verificationHash}
     />
   );
 }

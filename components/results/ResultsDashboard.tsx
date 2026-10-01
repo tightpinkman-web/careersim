@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { CheckCircle2, TrendingUp, Compass, ArrowLeft } from "lucide-react";
+import { CheckCircle2, TrendingUp, Compass, ArrowLeft, Link2, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import DownloadReportButton from "@/components/DownloadReportButton";
 import { CAREER_TITLES } from "@/lib/careerTitles";
@@ -18,6 +18,36 @@ interface ResultsDashboardProps {
   keyStrengths: string[];
   growthAreas: string[];
   careerFitSummary: string;
+  /** Null until the Student has an evaluation with a generated verification hash (should always
+   *  be present alongside a populated evaluation - see app/api/simulations/evaluate/route.ts). */
+  verificationHash: string | null;
+}
+
+/** Lets a counselor/advisor/employer verify this scorecard's authenticity without logging in -
+ *  see app/verify/scorecard/[hash]/page.tsx. */
+function VerificationLink({ hash }: { hash: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const copyLink = async () => {
+    const url = `${window.location.origin}/verify/scorecard/${hash}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard API unavailable - nothing to fall back to here, the button just won't confirm.
+    }
+  };
+
+  return (
+    <button
+      onClick={copyLink}
+      className="flex min-h-11 items-center gap-2 border border-hairline px-4 py-2.5 text-sm font-medium text-slate-300 hover:border-signal hover:text-signal"
+    >
+      {copied ? <Check className="h-4 w-4" /> : <Link2 className="h-4 w-4" />}
+      {copied ? "Link copied" : "Copy verification link"}
+    </button>
+  );
 }
 
 const SCORE_RADIUS = 54;
@@ -95,6 +125,7 @@ export default function ResultsDashboard({
   keyStrengths,
   growthAreas,
   careerFitSummary,
+  verificationHash,
 }: ResultsDashboardProps) {
   const competencyEntries = Object.entries(competencies);
   const careerTitle = CAREER_TITLES[careerType];
@@ -240,6 +271,7 @@ export default function ResultsDashboard({
             <ArrowLeft className="h-4 w-4" />
             Try Another Career
           </Link>
+          {verificationHash && <VerificationLink hash={verificationHash} />}
           <DownloadReportButton
             sessionId={sessionId}
             careerTitle={careerTitle}

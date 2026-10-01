@@ -227,6 +227,9 @@ interface BaseSimulationState {
   overallScore?: number;
   /** Present when isComplete is true; mirrors SimulationSession.feedbackSummary. */
   feedbackSummary?: string;
+  /** Game Master's 0-100 self-assessment of the student's previous decision; omitted on turn 1.
+   *  Drives dynamic difficulty calibration - see app/api/simulations/action/route.ts. */
+  turnScore?: number;
 }
 
 export interface VCSimulationState extends BaseSimulationState {

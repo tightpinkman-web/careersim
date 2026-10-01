@@ -1,15 +1,20 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getAuthenticatedStudent } from "@/lib/authStudent";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const anonymousSessionId = searchParams.get("anonymousSessionId");
 
-  // Guests are looked up by the anonymousSessionId their browser generated and persisted in
-  // localStorage - there is no signed-in concept left, every student is a guest.
-  const student = anonymousSessionId
-    ? await prisma.student.findUnique({ where: { supabaseAuthId: `anon_${anonymousSessionId}` } })
-    : null;
+  // Signed-in users' history is read from their real Student row first (matching start/route.ts's
+  // resolution order, and the one-time anonymous-session backfill in sync-student/route.ts).
+  // Guests (no Supabase session) fall back to the anonymousSessionId their browser generated and
+  // persisted in localStorage.
+  const student =
+    (await getAuthenticatedStudent()) ??
+    (anonymousSessionId
+      ? await prisma.student.findUnique({ where: { supabaseAuthId: `anon_${anonymousSessionId}` } })
+      : null);
 
   if (!student) {
     return NextResponse.json({ sessions: [] });

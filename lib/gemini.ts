@@ -85,6 +85,86 @@ export async function generateStructured<S extends z.ZodTypeAny>(options: {
   return result.data;
 }
 
+/** Best-effort extraction of the (possibly still-incomplete) "narrativePrompt" string value from
+ *  a partial JSON buffer, for progressive streaming preview. Returns null rather than throwing
+ *  when the buffer doesn't yet contain a parseable value - callers should treat this as purely
+ *  cosmetic and fall back to a generic "thinking" indicator. Final correctness always comes from
+ *  the full JSON.parse + schema.safeParse pass once the stream completes, never from this. */
+function extractNarrativePreview(buffer: string): string | null {
+  const match = buffer.match(/"narrativePrompt"\s*:\s*"((?:[^"\\]|\\.)*)/);
+  if (!match) return null;
+  try {
+    return JSON.parse(`"${match[1]}"`);
+  } catch {
+    return null;
+  }
+}
+
+export type StructuredStreamEvent<S extends z.ZodTypeAny> =
+  | { type: "delta"; narrativePreview: string }
+  | { type: "done"; data: z.infer<S> };
+
+/**
+ * Streaming counterpart to generateStructured(), using @google/genai's native
+ * generateContentStream rather than the Vercel AI SDK (not a dependency of this project).
+ * Yields best-effort "delta" events with a progressively-revealed narrativePrompt preview as
+ * chunks arrive, purely for perceived-latency UI - the final "done" event's `data` is produced
+ * by running the SAME JSON.parse + schema.safeParse validation path as generateStructured(), so
+ * correctness guarantees are identical. Throws StructuredResponseError under the same conditions.
+ */
+export async function* generateStructuredStream<S extends z.ZodTypeAny>(options: {
+  system: string;
+  turns: ChatTurn[];
+  schema: S;
+  model?: string;
+  maxOutputTokens?: number;
+}): AsyncGenerator<StructuredStreamEvent<S>> {
+  const { system, turns, schema, model = GAME_MASTER_MODEL, maxOutputTokens = GAME_MASTER_MAX_TOKENS } = options;
+
+  const stream = await getGeminiClient().models.generateContentStream({
+    model,
+    contents: toGeminiContents(turns),
+    config: {
+      systemInstruction: system,
+      responseMimeType: "application/json",
+      responseJsonSchema: z.toJSONSchema(schema, { unrepresentable: "any" }),
+      maxOutputTokens,
+    },
+  });
+
+  let buffer = "";
+  let lastPreview = "";
+  for await (const chunk of stream) {
+    const text = chunk.text;
+    if (!text) continue;
+    buffer += text;
+
+    const preview = extractNarrativePreview(buffer);
+    if (preview && preview !== lastPreview) {
+      lastPreview = preview;
+      yield { type: "delta", narrativePreview: preview };
+    }
+  }
+
+  if (!buffer) {
+    throw new StructuredResponseError("Gemini returned an empty response.");
+  }
+
+  let raw: unknown;
+  try {
+    raw = JSON.parse(buffer);
+  } catch {
+    throw new StructuredResponseError("Gemini returned a response that was not valid JSON.");
+  }
+
+  const result = schema.safeParse(raw);
+  if (!result.success) {
+    throw new StructuredResponseError(`Gemini's response did not match the expected schema: ${result.error.message}`);
+  }
+
+  yield { type: "done", data: result.data };
+}
+
 export function statusForGeminiError(err: unknown): number {
   if (err instanceof StructuredResponseError) return 502;
   if (err instanceof ApiError) {

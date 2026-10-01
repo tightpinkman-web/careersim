@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import PreSimPrepModal from "@/components/PreSimPrepModal";
 import { getAnonymousSessionId } from "@/lib/anonymousSession";
+import { readSimulationStream } from "@/lib/sseClient";
 import { ageTierForMode, type CareerType, type SimulationMode } from "@/types/simulation";
 
 interface CareerInfo {
@@ -253,9 +254,8 @@ export default function DemoPageClient() {
           ageTier: ageTierForMode(mode),
         }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Failed to start the simulation.");
-      router.push(`/simulations/${data.sessionId}`);
+      const { sessionId } = await readSimulationStream(res);
+      router.push(`/simulations/${sessionId}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to start the simulation.");
       setStarting(false);

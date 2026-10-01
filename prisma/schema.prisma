@@ -58,6 +58,12 @@ model SimulationSession {
   keyStrengths      String[]          @default([]) @map("key_strengths")
   growthAreas       String[]          @default([]) @map("growth_areas")
   careerFitSummary  String?           @map("career_fit_summary")
+  // Unguessable public identifier for the B2B scorecard verification route
+  // (app/verify/scorecard/[hash]) - set once the full evaluation completes. Null until then.
+  verificationHash  String?           @unique @map("verification_hash")
+  // Partner/institutional attribution captured from a `?ref=` query param by proxy.ts at the
+  // time the session was started - null for organic traffic. See proxy.ts for capture logic.
+  partnerRef        String?           @map("partner_ref")
   startedAt         DateTime          @default(now()) @map("started_at")
   completedAt       DateTime?         @map("completed_at")
 

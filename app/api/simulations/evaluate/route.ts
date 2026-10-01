@@ -1,9 +1,17 @@
+import { createHash, randomBytes } from "crypto";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { generateStructured, statusForGeminiError, describeGeminiError } from "@/lib/gemini";
 import { buildEvaluationPrompt } from "@/lib/prompts/evaluation";
 import { EvaluationSchema } from "@/lib/schemas/evaluation";
 import type { CareerType, SimulationMode } from "@/types/simulation";
+
+/** Unguessable public id for the B2B scorecard verification route
+ *  (app/verify/scorecard/[hash]) - derived from random bytes, not from the session id or any
+ *  other guessable input, so knowing a sessionId never lets you derive or brute-force this. */
+function generateVerificationHash(): string {
+  return createHash("sha256").update(randomBytes(32)).digest("hex");
+}
 
 interface EvaluateRequestBody {
   sessionId?: string;
@@ -73,11 +81,13 @@ export async function POST(request: Request) {
       keyStrengths: evaluation.keyStrengths,
       growthAreas: evaluation.growthAreas,
       careerFitSummary: evaluation.careerFitSummary,
+      verificationHash: session.verificationHash ?? generateVerificationHash(),
     },
   });
 
   return NextResponse.json({
     sessionId: updated.id,
     evaluation,
+    verificationHash: updated.verificationHash,
   });
 }

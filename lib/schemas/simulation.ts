@@ -23,6 +23,10 @@ const baseFields = {
   isComplete: z.boolean().optional(),
   overallScore: z.number().min(0).max(100).optional(),
   feedbackSummary: z.string().optional(),
+  // Game Master's own 0-100 assessment of how well-reasoned the student's PREVIOUS decision was
+  // (the one that produced this turn) - omitted on turn 1, since there's no prior decision yet.
+  // Drives dynamic difficulty calibration in app/api/simulations/action/route.ts.
+  turnScore: z.number().min(0).max(100).optional(),
 };
 
 // ---------- Venture Capital ----------

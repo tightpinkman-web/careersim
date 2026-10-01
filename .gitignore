@@ -45,3 +45,6 @@ next-env.d.ts
 
 .vercel
 .env*
+
+# playwright MCP browser-testing artifacts (screenshots, console/page snapshots)
+.playwright-mcp/

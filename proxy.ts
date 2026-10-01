@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { PARTNER_REF_COOKIE, PARTNER_REF_MAX_AGE_SECONDS, sanitizePartnerRef } from "@/lib/partnerRef";
 
 /**
  * In-memory sliding-window rate limiter, keyed by client IP.
@@ -81,6 +82,22 @@ async function refreshSession(request: NextRequest): Promise<NextResponse> {
   );
 
   await supabase.auth.getUser();
+
+  // White-label partner/institutional tracking: persist `?ref=` into a cookie so it survives
+  // navigation to the page that actually starts a simulation (see lib/partnerRef.ts and
+  // app/api/simulations/start/route.ts, which reads this cookie onto the new session).
+  const rawRef = request.nextUrl.searchParams.get("ref");
+  if (rawRef) {
+    const sanitized = sanitizePartnerRef(rawRef);
+    if (sanitized) {
+      response.cookies.set(PARTNER_REF_COOKIE, sanitized, {
+        httpOnly: true,
+        sameSite: "lax",
+        maxAge: PARTNER_REF_MAX_AGE_SECONDS,
+        path: "/",
+      });
+    }
+  }
 
   return response;
 }

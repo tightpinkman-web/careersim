@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Search, PlayCircle, ThumbsUp, Check, GraduationCap, Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CATALOG, type CatalogIndustry, type CatalogStatus, type CatalogVoteMap } from "@/lib/catalogData";
@@ -17,31 +17,22 @@ const STATUS_PILLS: { id: "All" | CatalogStatus; label: string }[] = [
   { id: "in_development", label: "In Development" },
 ];
 
-export default function CatalogPageClient() {
+interface CatalogPageClientProps {
+  /** Server-rendered vote snapshot from app/catalog/page.tsx (cached for up to an hour via ISR).
+   *  Seeds initial state so there's no empty-then-populated flash; a real vote still updates
+   *  optimistically in the handler below, ahead of the next revalidation. */
+  initialVotes: CatalogVoteMap;
+}
+
+export default function CatalogPageClient({ initialVotes }: CatalogPageClientProps) {
   const [search, setSearch] = useState("");
   const [industry, setIndustry] = useState<"All" | CatalogIndustry>("All");
   const [status, setStatus] = useState<"All" | CatalogStatus>("All");
-  const [votes, setVotes] = useState<CatalogVoteMap>({});
+  const [votes, setVotes] = useState<CatalogVoteMap>(initialVotes);
   // Lazy initializer (not an effect) - reading localStorage here is a synchronous, one-time
   // read of already-existing browser state, not a subscription to an external system.
   const [votedIds, setVotedIds] = useState<Set<string>>(() => getVotedCatalogIds());
   const [votingId, setVotingId] = useState<string | null>(null);
-
-  useEffect(() => {
-    let ignore = false;
-    (async () => {
-      try {
-        const res = await fetch("/api/catalog/vote");
-        const data = await res.json();
-        if (!ignore && res.ok) setVotes(data.votes ?? {});
-      } catch {
-        // Vote counts are a nice-to-have on this page - fail silently and show 0s.
-      }
-    })();
-    return () => {
-      ignore = true;
-    };
-  }, []);
 
   const handleVote = async (catalogId: string) => {
     if (votingId || votedIds.has(catalogId)) return;

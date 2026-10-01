@@ -1,9 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { generateStructured, statusForGeminiError, describeGeminiError } from "@/lib/gemini";
+import { getAuthenticatedStudent } from "@/lib/authStudent";
+import { generateStructuredStream, describeGeminiError } from "@/lib/gemini";
 import { getGameMasterPrompt } from "@/lib/prompts/gameMasters";
 import { CAREER_STATE_SCHEMAS, type CareerTypeKey } from "@/lib/schemas/simulation";
+import { sseResponse } from "@/lib/sse";
 import { ageTierForMode, type AgeTier, type SimulationMode, type SimulationState } from "@/types/simulation";
+import { PARTNER_REF_COOKIE } from "@/lib/partnerRef";
 
 const VALID_CAREER_TYPES = Object.keys(CAREER_STATE_SCHEMAS) as CareerTypeKey[];
 const VALID_MODES: SimulationMode[] = ["child", "professional"];
@@ -17,7 +20,14 @@ interface StartRequestBody {
   ageTier?: string;
 }
 
+/** Prefers the real, signed-in Student (so a logged-in user's new sessions attach to their real
+ *  account instead of fragmenting back into a fresh anonymous row - see sync-student/route.ts
+ *  for the one-time backfill of any PRIOR anonymous sessions onto that same real account).
+ *  Falls back to the anonymous/guest flow only when there's no authenticated session. */
 async function resolveStudent(body: StartRequestBody) {
+  const authenticated = await getAuthenticatedStudent();
+  if (authenticated) return authenticated;
+
   if (body.studentId) {
     const student = await prisma.student.findUnique({ where: { id: body.studentId } });
     if (!student) {
@@ -48,7 +58,7 @@ class HttpError extends Error {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   let body: StartRequestBody;
   try {
     body = await request.json();
@@ -90,6 +100,8 @@ export async function POST(request: Request) {
     throw err;
   }
 
+  const partnerRef = request.cookies.get(PARTNER_REF_COOKIE)?.value ?? null;
+
   const session = await prisma.simulationSession.create({
     data: {
       studentId: student.id,
@@ -97,35 +109,50 @@ export async function POST(request: Request) {
       mode,
       ageTier,
       status: "IN_PROGRESS",
+      partnerRef,
     },
   });
 
-  let state: SimulationState;
-  try {
-    state = (await generateStructured({
-      system: getGameMasterPrompt(careerType, mode),
-      turns: [
-        {
-          role: "user",
-          text: "[SESSION_START] Begin the simulation. Establish the scenario and generate Step 1 (currentStep: 1).",
-        },
-      ],
-      schema: CAREER_STATE_SCHEMAS[careerType],
-    })) as SimulationState;
-  } catch (err) {
-    await prisma.simulationSession.delete({ where: { id: session.id } });
-    return NextResponse.json({ error: describeGeminiError(err) }, { status: statusForGeminiError(err) });
-  }
+  return sseResponse(async (send) => {
+    let state: SimulationState;
+    try {
+      const stream = generateStructuredStream({
+        system: getGameMasterPrompt(careerType, mode),
+        turns: [
+          {
+            role: "user",
+            text: "[SESSION_START] Begin the simulation. Establish the scenario and generate Step 1 (currentStep: 1).",
+          },
+        ],
+        schema: CAREER_STATE_SCHEMAS[careerType],
+      });
 
-  await prisma.actionLog.create({
-    data: {
-      sessionId: session.id,
-      stepSequence: state.currentStep,
-      studentInput: "[SESSION_START]",
-      returnedState: state as object,
-      decisionTag: "session_start",
-    },
+      let finalState: SimulationState | null = null;
+      for await (const event of stream) {
+        if (event.type === "delta") {
+          send({ type: "delta", narrativePreview: event.narrativePreview });
+        } else {
+          finalState = event.data as SimulationState;
+        }
+      }
+      if (!finalState) throw new Error("Stream ended without a final state.");
+      state = finalState;
+    } catch (err) {
+      await prisma.simulationSession.delete({ where: { id: session.id } });
+      send({ type: "error", error: describeGeminiError(err) });
+      return;
+    }
+
+    await prisma.actionLog.create({
+      data: {
+        sessionId: session.id,
+        stepSequence: state.currentStep,
+        studentInput: "[SESSION_START]",
+        returnedState: state as object,
+        decisionTag: "session_start",
+      },
+    });
+
+    send({ type: "done", sessionId: session.id, state });
   });
-
-  return NextResponse.json({ sessionId: session.id, state });
 }
