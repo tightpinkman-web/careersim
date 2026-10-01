@@ -6,7 +6,7 @@ import Card from "@/components/ui/Card";
 
 export const metadata: Metadata = {
   title: "Sign Up | AI Career Simulator",
-  description: "Create a username and password to track your simulation history - no email required.",
+  description: "Sign up with Google or email to track your simulation history across devices.",
 };
 
 export default function SignupPage() {
@@ -20,7 +20,7 @@ export default function SignupPage() {
           <p className="mt-3 font-mono text-xs font-semibold uppercase tracking-widest text-signal">SIGN_UP</p>
           <h1 className="mt-2 text-2xl font-bold text-ink">Create an account</h1>
           <p className="mx-auto mt-2 max-w-xs text-sm text-slate-400">
-            Just a username and password - no email address needed.
+            Continue with Google, or create an account with your email.
           </p>
         </div>
 

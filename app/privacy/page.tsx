@@ -22,9 +22,10 @@ export default function PrivacyPage() {
               We collect only what is needed to run and improve your career simulations: the simulation
               transcripts and scores you generate, and an anonymous device identifier stored in your
               browser so your in-progress and completed simulations remain accessible on that device. An
-              account is optional - if you create one, we store only the username and (securely hashed)
-              password you choose, with no email address required. We do not request or store any
-              information beyond this.
+              account is optional - if you create one via Google, we store the name, email, and avatar
+              your Google account provides; if you create one with email and password instead, we store
+              that email and a securely hashed password. We do not request or store any information
+              beyond this.
             </p>
           </section>
 

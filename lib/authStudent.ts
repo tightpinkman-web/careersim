@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
-import { internalEmailToUsername } from "@/lib/username";
 
 /**
  * Resolves the Student row for the currently signed-in Supabase user (from the request's session
@@ -12,6 +11,12 @@ import { internalEmailToUsername } from "@/lib/username";
  * visitor's by `anon_<uuid>`. This keeps SimulationSession's existing studentId relation as the
  * single link to "whoever ran this simulation," authenticated or not - see student_auth_bridge
  * in project memory for why there's no separate userId FK.
+ *
+ * `name` comes from whichever identity provider authenticated the user: Google OAuth populates
+ * `user_metadata.full_name`/`name` and `avatar_url`; direct email+password signups have neither,
+ * so this falls back to the email's local part. `username` is no longer set for new accounts
+ * (the synthetic-username auth scheme was removed in favor of Google OAuth + real email/password -
+ * see lib/username.ts's removal) but is left alone on any existing row so nothing regresses.
  */
 export async function getAuthenticatedStudent() {
   const supabase = await createClient();
@@ -21,17 +26,18 @@ export async function getAuthenticatedStudent() {
 
   if (!user || !user.email) return null;
 
-  const username =
-    (user.user_metadata?.username as string | undefined) || internalEmailToUsername(user.email) || undefined;
+  const displayName =
+    (user.user_metadata?.full_name as string | undefined) ||
+    (user.user_metadata?.name as string | undefined) ||
+    user.email.split("@")[0];
 
   return prisma.student.upsert({
     where: { supabaseAuthId: user.id },
-    update: { email: user.email, ...(username ? { username } : {}) },
+    update: { email: user.email, name: displayName },
     create: {
       supabaseAuthId: user.id,
       email: user.email,
-      username,
-      name: (user.user_metadata?.username as string | undefined) || user.email,
+      name: displayName,
     },
   });
 }

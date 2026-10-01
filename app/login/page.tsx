@@ -6,7 +6,7 @@ import Card from "@/components/ui/Card";
 
 export const metadata: Metadata = {
   title: "Sign In | AI Career Simulator",
-  description: "Sign in with your username and password to track your simulation history.",
+  description: "Sign in with Google or email to track your simulation history.",
 };
 
 export default function LoginPage() {

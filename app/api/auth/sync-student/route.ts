@@ -49,5 +49,5 @@ export async function POST(request: Request) {
     await backfillAnonymousHistory(body.anonymousSessionId, student.id);
   }
 
-  return NextResponse.json({ studentId: student.id, username: student.username });
+  return NextResponse.json({ studentId: student.id, name: student.name });
 }

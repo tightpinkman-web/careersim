@@ -31,9 +31,9 @@ export default function TermsPage() {
             <p className="mt-2">
               You can use this service without an account - your simulation history is then tied to an
               anonymous identifier stored in your browser and is not portable across devices. You may
-              instead create a free account with a username and password (no email address required).
-              You are responsible for keeping your password confidential and for all activity under your
-              account.
+              instead create a free account with Google or an email address and password. You are
+              responsible for keeping your account credentials confidential and for all activity under
+              your account.
             </p>
           </section>
 

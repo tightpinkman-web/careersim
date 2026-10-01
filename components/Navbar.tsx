@@ -8,8 +8,13 @@ import { cn } from "@/lib/utils";
 import Logo from "@/components/Logo";
 import Button from "@/components/ui/Button";
 import { createClient } from "@/lib/supabase/client";
-import { internalEmailToUsername } from "@/lib/username";
+import { getAnonymousSessionId } from "@/lib/anonymousSession";
 import { DURATION, EASE, gsap, prefersReducedMotion, useGSAP } from "@/lib/motion";
+
+interface SignedInProfile {
+  displayName: string;
+  avatarUrl: string | null;
+}
 
 const NAV_LINKS = [
   { href: "/demo", label: "Demo Sims", title: "Instant access to 5 flagship scenarios — test drive right now." },
@@ -30,27 +35,57 @@ export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [username, setUsername] = useState<string | null | undefined>(undefined);
+  const [profile, setProfile] = useState<SignedInProfile | null | undefined>(undefined);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const backfillTriggeredRef = useRef(false);
 
   const isActive = (href: string) => pathname.startsWith(href);
 
   useEffect(() => {
     const supabase = createClient();
 
-    const deriveUsername = (user: { email?: string | null; user_metadata?: Record<string, unknown> } | null) => {
+    const deriveProfile = (
+      user: { email?: string | null; user_metadata?: Record<string, unknown> } | null
+    ): SignedInProfile | null => {
       if (!user) return null;
-      return (user.user_metadata?.username as string | undefined) || internalEmailToUsername(user.email ?? "");
+      const displayName =
+        (user.user_metadata?.full_name as string | undefined) ||
+        (user.user_metadata?.name as string | undefined) ||
+        user.email?.split("@")[0] ||
+        "Account";
+      const avatarUrl =
+        (user.user_metadata?.avatar_url as string | undefined) ||
+        (user.user_metadata?.picture as string | undefined) ||
+        null;
+      return { displayName, avatarUrl };
     };
 
-    supabase.auth.getUser().then(({ data }) => setUsername(deriveUsername(data.user)));
+    supabase.auth.getUser().then(({ data }) => setProfile(deriveProfile(data.user)));
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUsername(deriveUsername(session?.user ?? null));
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      setProfile(deriveProfile(session?.user ?? null));
+
+      // Guest history backfill: fires once per freshly-established session, regardless of
+      // which auth path produced it (Google OAuth's redirect callback has no access to
+      // localStorage to do this itself - see app/auth/callback/route.ts - and the email/password
+      // form already triggers a sign-in event through this same listener). sync-student is
+      // idempotent (no-ops if there's no matching anonymous session), so this is safe even if
+      // AuthForm's own flows also land here.
+      if (event === "SIGNED_IN" && !backfillTriggeredRef.current) {
+        backfillTriggeredRef.current = true;
+        fetch("/api/auth/sync-student", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ anonymousSessionId: getAnonymousSessionId() }),
+        }).catch(() => {
+          // Non-fatal - history just won't be backfilled this time.
+        });
+      }
+      if (event === "SIGNED_OUT") backfillTriggeredRef.current = false;
     });
 
     return () => subscription.unsubscribe();
@@ -123,7 +158,7 @@ export default function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-3 sm:flex">
-          {username === undefined ? null : username ? (
+          {profile === undefined ? null : profile ? (
             <div ref={userMenuRef} className="relative">
               <button
                 type="button"
@@ -131,8 +166,13 @@ export default function Navbar() {
                 className="flex h-9 items-center gap-1.5 border border-hairline px-3 text-sm font-medium text-slate-300 hover:border-signal hover:text-signal"
                 aria-expanded={menuOpen}
               >
-                <User className="h-3.5 w-3.5" />
-                @{username}
+                {profile.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element -- external Google avatar URL, not a local/optimizable asset
+                  <img src={profile.avatarUrl} alt="" className="h-4 w-4 rounded-full" referrerPolicy="no-referrer" />
+                ) : (
+                  <User className="h-3.5 w-3.5" />
+                )}
+                {profile.displayName}
                 <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", menuOpen && "rotate-180")} />
               </button>
               {menuOpen && (
@@ -197,9 +237,9 @@ export default function Navbar() {
             </Link>
           ))}
           <div className="mt-2 flex flex-col gap-2 border-t border-hairline pt-3">
-            {username ? (
+            {profile ? (
               <>
-                <span className="px-3 text-xs font-medium text-slate-500">Signed in as @{username}</span>
+                <span className="px-3 text-xs font-medium text-slate-500">Signed in as {profile.displayName}</span>
                 <button
                   type="button"
                   onClick={() => {
