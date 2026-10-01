@@ -19,6 +19,12 @@ export async function GET(request: NextRequest) {
     if (!error) {
       return NextResponse.redirect(`${origin}${redirectTo}`);
     }
+    // Log server-side so a failure here (e.g. a misconfigured OAuth provider secret in the
+    // Supabase Dashboard) is visible in Vercel's runtime logs without having to cross-reference
+    // Supabase's own auth logs.
+    console.error("OAuth code exchange failed:", error.message);
+  } else {
+    console.error("OAuth callback hit with no `code` param.");
   }
 
   return NextResponse.redirect(`${origin}/login?error=auth_callback_failed`);
