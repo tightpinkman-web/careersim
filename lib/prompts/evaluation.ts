@@ -18,7 +18,7 @@ const DECISION_WINDOW_SECONDS = 60;
  * same underlying skill but in plain, jargon-free language appropriate for a 10th-12th grader
  * exploring the career, not yet working in it.
  */
-const CAREER_COMPETENCY_DIMENSIONS: Record<CareerType, Record<SimulationMode, [string, string, string, string]>> = {
+export const CAREER_COMPETENCY_DIMENSIONS: Record<CareerType, Record<SimulationMode, [string, string, string, string]>> = {
   VENTURE_CAPITAL: {
     professional: ["Unit Economics Analysis", "Risk Identification", "Thesis Articulation", "Speed"],
     child: ["Understanding the Numbers", "Spotting Red Flags", "Explaining Your Reasoning", "Decision Speed"],

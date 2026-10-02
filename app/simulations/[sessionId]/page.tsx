@@ -227,6 +227,11 @@ export default function ActiveSimulationPage() {
           if (mode && ageTier) saveSnapshot(sessionId, nextState, nextStatus, mode, ageTier);
           setSubmitting(false);
           setStreamingPreview(null);
+          if (nextStatus === "COMPLETED") {
+            // Let the student see the "Simulation complete" banner briefly before the page
+            // transitions to the full results/report view - no manual nav required.
+            setTimeout(() => router.push(`/simulations/${sessionId}/results`), 1200);
+          }
           return;
         } catch (err) {
           const displayError = toDisplayError(err, "Failed to submit your decision.");
@@ -241,7 +246,7 @@ export default function ActiveSimulationPage() {
         }
       }
     },
-    [sessionId, submitting, mode, ageTier]
+    [sessionId, submitting, mode, ageTier, router]
   );
 
   const retryStep = useCallback(() => {
@@ -249,6 +254,15 @@ export default function ActiveSimulationPage() {
     setShowRetryStepCta(false);
     handleAction(lastAction.actionId, lastAction.freeformInput, lastAction.elapsedSeconds);
   }, [lastAction, handleAction]);
+
+  // Covers the case where this page loads directly into an already-completed session (e.g. a
+  // resumed/reconnected session) rather than reaching completion via handleAction above.
+  useEffect(() => {
+    if (status === "COMPLETED") {
+      const timeout = setTimeout(() => router.push(`/simulations/${sessionId}/results`), 1200);
+      return () => clearTimeout(timeout);
+    }
+  }, [status, sessionId, router]);
 
   if (loading) {
     return (

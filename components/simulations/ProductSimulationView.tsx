@@ -142,7 +142,11 @@ export default function ProductSimulationView({ payload, narrativePrompt }: Prod
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                 <XAxis dataKey="stage" tick={{ fontSize: 11 }} stroke="#94a3b8" />
                 <YAxis tick={{ fontSize: 11 }} stroke="#94a3b8" />
-                <Tooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} />
+                <Tooltip
+                  contentStyle={{ fontSize: 12, borderRadius: 8, backgroundColor: "#ffffff", color: "#0f172a", border: "1px solid #e2e8f0" }}
+                  labelStyle={{ color: "#0f172a" }}
+                  itemStyle={{ color: "#0f172a" }}
+                />
                 <Area type="monotone" dataKey="users" stroke="#6366f1" fill="url(#funnelGradient)" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
@@ -162,10 +166,10 @@ export default function ProductSimulationView({ payload, narrativePrompt }: Prod
                   cursor={{ strokeDasharray: "3 3" }}
                   content={({ payload: p }) =>
                     p && p[0] ? (
-                      <div className="rounded-md bg-white p-2 text-xs shadow">
-                        <p className="font-medium">{p[0].payload.name}</p>
-                        <p>Impact: {p[0].payload.impact}</p>
-                        <p>Effort: {p[0].payload.effort}</p>
+                      <div className="rounded-md border border-slate-200 bg-white p-2 text-xs text-slate-900 shadow">
+                        <p className="font-medium text-slate-900">{p[0].payload.name}</p>
+                        <p className="text-slate-700">Impact: {p[0].payload.impact}</p>
+                        <p className="text-slate-700">Effort: {p[0].payload.effort}</p>
                       </div>
                     ) : null
                   }

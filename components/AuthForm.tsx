@@ -51,6 +51,9 @@ function AuthFormInner({ mode }: AuthFormProps) {
       provider: "google",
       options: {
         redirectTo: `${window.location.origin}/auth/callback?redirectTo=${encodeURIComponent(redirectTo)}`,
+        // Explicit false (same as the SDK default): we want the browser to actually navigate to
+        // Google's consent screen, not just hand back the authorization URL.
+        skipBrowserRedirect: false,
       },
     });
     if (oauthError) {
@@ -123,7 +126,13 @@ function AuthFormInner({ mode }: AuthFormProps) {
         variant="secondary"
         icon={!googleSubmitting ? <GoogleIcon className="h-4 w-4" /> : undefined}
       >
-        {googleSubmitting ? "Redirecting to Google..." : "Continue with Google"}
+        {googleSubmitting ? (
+          <span className="font-mono text-[11px] uppercase tracking-wide">
+            Redirecting to Google secure auth...
+          </span>
+        ) : (
+          "Continue with Google"
+        )}
       </Button>
 
       <div className="flex items-center gap-3 text-xs text-slate-500">
