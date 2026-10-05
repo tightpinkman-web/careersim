@@ -28,10 +28,14 @@ export function getGroqClient(): Groq {
   return client;
 }
 
-// Groq's LPU inference makes this the fastest model on their hosted catalog suitable for
-// structured JSON output - traded for Gemini's larger context/reasoning depth, which is why every
-// entry point here fails over to Gemini rather than erroring out.
-export const GROQ_GAME_MASTER_MODEL = "llama-3.1-8b-instant";
+// llama-3.1-8b-instant (this file's original choice) has been retired from Groq's hosted catalog -
+// confirmed 404 "model_not_found" against this account's actual /v1/models listing in production,
+// which was silently falling back to Gemini on every call. openai/gpt-oss-20b is Groq's fastest
+// model this account currently has access to that reliably supports `response_format:
+// json_object` for both streaming and non-streaming calls - verified directly against the Groq
+// API before switching. Re-check `/v1/models` before changing this again; Groq's catalog turns
+// over faster than most providers'.
+export const GROQ_GAME_MASTER_MODEL = "openai/gpt-oss-20b";
 export const GROQ_MAX_TOKENS = 8192;
 
 function toGroqMessages(system: string, turns: ChatTurn[]) {
