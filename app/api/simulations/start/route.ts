@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getAuthenticatedStudent } from "@/lib/authStudent";
 import { generateSimulationStream, describeLLMError } from "@/lib/llm/provider";
 import { getGameMasterPrompt } from "@/lib/prompts/gameMasters";
+import { setRedisSession, type CachedSimulationSession, type CachedTurn } from "@/lib/redis";
 import { CAREER_STATE_SCHEMAS, type CareerTypeKey } from "@/lib/schemas/simulation";
 import { sseResponse } from "@/lib/sse";
 import { ageTierForMode, type AgeTier, type SimulationMode, type SimulationState } from "@/types/simulation";
@@ -164,6 +165,27 @@ export async function POST(request: NextRequest) {
         decisionTag: "session_start",
       },
     });
+
+    const initialTurn: CachedTurn = {
+      stepSequence: state.currentStep,
+      studentInput: "[SESSION_START]",
+      returnedState: state,
+      decisionTag: "session_start",
+      decisionTimeSeconds: null,
+    };
+    const cachedSession: CachedSimulationSession = {
+      studentId: student.id,
+      careerType,
+      mode,
+      ageTier,
+      status: "IN_PROGRESS",
+      studentTier: student.tier,
+      turns: [initialTurn],
+    };
+    // Seeds the active-turn cache app/api/simulations/action/route.ts reads from - a no-op if
+    // Redis isn't configured, in which case action/route.ts transparently falls back to reading
+    // this session's ActionLog rows from Postgres instead.
+    await setRedisSession(session.id, cachedSession);
 
     send({ type: "done", sessionId: session.id, state });
   });

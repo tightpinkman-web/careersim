@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { generateStructured, statusForGeminiError, describeGeminiError } from "@/lib/gemini";
 import { buildEvaluationPrompt, CAREER_COMPETENCY_DIMENSIONS } from "@/lib/prompts/evaluation";
 import { EvaluationSchema, type Evaluation } from "@/lib/schemas/evaluation";
-import type { ActionLog } from "@prisma/client";
+import { getRedisSession, clearRedisSession, type CachedTurn } from "@/lib/redis";
 import type { CareerType, SimulationMode } from "@/types/simulation";
 
 /**
@@ -16,9 +16,9 @@ import type { CareerType, SimulationMode } from "@/types/simulation";
 function buildFallbackEvaluation(
   careerType: CareerType,
   mode: SimulationMode,
-  actionLogs: Pick<ActionLog, "returnedState">[]
+  turns: { returnedState: unknown }[]
 ): Evaluation {
-  const turnScores = actionLogs
+  const turnScores = turns
     .map((log) => (log.returnedState as { turnScore?: number } | null)?.turnScore)
     .filter((score): score is number => typeof score === "number");
 
@@ -77,26 +77,46 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "sessionId is required." }, { status: 400 });
   }
 
-  const session = await prisma.simulationSession.findUnique({
-    where: { id: sessionId },
-    include: { actionLogs: { orderBy: { stepSequence: "asc" } } },
-  });
-
+  const session = await prisma.simulationSession.findUnique({ where: { id: sessionId } });
   if (!session) {
     return NextResponse.json({ error: "No session found for the given sessionId." }, { status: 404 });
   }
-  if (session.actionLogs.length === 0) {
+
+  // The session's turn-by-turn history lives in Redis for the duration of an active run (see
+  // app/api/simulations/action/route.ts) - this is the one point that reads it back out and
+  // durably flushes it into Postgres. A cache miss (Redis not configured, a TTL eviction, or a
+  // session that only ever ran with Redis down) falls back to whatever ActionLog rows the action
+  // route already wrote directly, exactly as before Redis existed.
+  const cached = await getRedisSession(sessionId);
+  let turns: CachedTurn[];
+  if (cached && cached.turns.length > 0) {
+    turns = cached.turns;
+  } else {
+    const dbLogs = await prisma.actionLog.findMany({
+      where: { sessionId: session.id },
+      orderBy: { stepSequence: "asc" },
+    });
+    turns = dbLogs.map((log) => ({
+      stepSequence: log.stepSequence,
+      studentInput: log.studentInput,
+      returnedState: log.returnedState,
+      decisionTag: log.decisionTag,
+      decisionTimeSeconds: log.decisionTimeSeconds,
+    }));
+  }
+
+  if (turns.length === 0) {
     return NextResponse.json({ error: "This session has no recorded turns to evaluate." }, { status: 409 });
   }
 
   const { system, user } = buildEvaluationPrompt(
     session.careerType as CareerType,
     session.mode as SimulationMode,
-    session.actionLogs.map((log) => ({
-      stepSequence: log.stepSequence,
-      studentInput: log.studentInput,
-      returnedState: log.returnedState,
-      decisionTimeSeconds: log.decisionTimeSeconds,
+    turns.map((turn) => ({
+      stepSequence: turn.stepSequence,
+      studentInput: turn.studentInput,
+      returnedState: turn.returnedState,
+      decisionTimeSeconds: turn.decisionTimeSeconds,
     }))
   );
 
@@ -115,27 +135,42 @@ export async function POST(request: Request) {
     // Never surface a client-visible error on the final scorecard - fall back to a score
     // computed directly from the accumulated per-turn turnScore values instead.
     console.error("Evaluation generation failed, using fallback scorecard:", describeGeminiError(err), statusForGeminiError(err));
-    evaluation = buildFallbackEvaluation(
-      session.careerType as CareerType,
-      session.mode as SimulationMode,
-      session.actionLogs
-    );
+    evaluation = buildFallbackEvaluation(session.careerType as CareerType, session.mode as SimulationMode, turns);
     usedFallback = true;
   }
 
-  const updated = await prisma.simulationSession.update({
-    where: { id: session.id },
-    data: {
-      status: "COMPLETED",
-      completedAt: session.completedAt ?? new Date(),
-      overallScore: evaluation.overallScore,
-      competencies: evaluation.competencies,
-      keyStrengths: evaluation.keyStrengths,
-      growthAreas: evaluation.growthAreas,
-      careerFitSummary: evaluation.careerFitSummary,
-      verificationHash: session.verificationHash ?? generateVerificationHash(),
-    },
-  });
+  // Atomic flush: replace whatever ActionLog rows exist for this session with the authoritative
+  // turn history (from Redis, or re-written identically from the DB fallback above) and write the
+  // final scorecard, all in one transaction, so a crash mid-flush can never leave a session with a
+  // completed scorecard but a partial/duplicated turn history.
+  const [, , updated] = await prisma.$transaction([
+    prisma.actionLog.deleteMany({ where: { sessionId: session.id } }),
+    prisma.actionLog.createMany({
+      data: turns.map((turn) => ({
+        sessionId: session.id,
+        stepSequence: turn.stepSequence,
+        studentInput: turn.studentInput,
+        returnedState: turn.returnedState as object,
+        decisionTag: turn.decisionTag,
+        decisionTimeSeconds: turn.decisionTimeSeconds,
+      })),
+    }),
+    prisma.simulationSession.update({
+      where: { id: session.id },
+      data: {
+        status: "COMPLETED",
+        completedAt: session.completedAt ?? new Date(),
+        overallScore: evaluation.overallScore,
+        competencies: evaluation.competencies,
+        keyStrengths: evaluation.keyStrengths,
+        growthAreas: evaluation.growthAreas,
+        careerFitSummary: evaluation.careerFitSummary,
+        verificationHash: session.verificationHash ?? generateVerificationHash(),
+      },
+    }),
+  ]);
+
+  await clearRedisSession(sessionId);
 
   return NextResponse.json({
     sessionId: updated.id,

@@ -5,6 +5,13 @@ import { getGameMasterPrompt } from "@/lib/prompts/gameMasters";
 import { CAREER_STATE_SCHEMAS, type CareerTypeKey } from "@/lib/schemas/simulation";
 import { sseResponse } from "@/lib/sse";
 import { DEMO_STEP_CAP } from "@/lib/auth/entitlements";
+import {
+  getRedisSession,
+  setRedisSession,
+  isRedisConfigured,
+  type CachedSimulationSession,
+  type CachedTurn,
+} from "@/lib/redis";
 import type { SimulationMode, SimulationState } from "@/types/simulation";
 
 interface ActionRequestBody {
@@ -115,25 +122,71 @@ export async function POST(request: Request) {
     );
   }
 
-  const session = await prisma.simulationSession.findUnique({
-    where: { id: sessionId },
-    include: { actionLogs: { orderBy: { stepSequence: "asc" } }, student: true },
-  });
+  // Active-turn state lives in Redis (see lib/redis.ts) to keep the hot per-turn path off
+  // Postgres entirely - a cache hit here means zero database round trips until the session
+  // concludes and app/api/simulations/evaluate/route.ts flushes everything at once. A cache miss
+  // (first action after /start wrote the seed entry, a TTL eviction, or Redis not configured at
+  // all) falls back to reading - and re-seeding - from the database, same as before Redis existed.
+  const redisEnabled = isRedisConfigured();
+  let cached = redisEnabled ? await getRedisSession(sessionId) : null;
 
-  if (!session) {
-    return NextResponse.json(
-      { error: "No session found for the given sessionId.", code: "SESSION_NOT_FOUND" },
-      { status: 404 }
-    );
+  let turnHistory: CachedTurn[];
+  let studentTier: CachedSimulationSession["studentTier"];
+  let sessionStatus: CachedSimulationSession["status"];
+  let careerType: CareerTypeKey;
+  let mode: SimulationMode;
+
+  if (cached) {
+    turnHistory = cached.turns;
+    studentTier = cached.studentTier;
+    sessionStatus = cached.status;
+    careerType = cached.careerType as CareerTypeKey;
+    mode = cached.mode as SimulationMode;
+  } else {
+    const session = await prisma.simulationSession.findUnique({
+      where: { id: sessionId },
+      include: { actionLogs: { orderBy: { stepSequence: "asc" } }, student: true },
+    });
+
+    if (!session) {
+      return NextResponse.json(
+        { error: "No session found for the given sessionId.", code: "SESSION_NOT_FOUND" },
+        { status: 404 }
+      );
+    }
+
+    turnHistory = session.actionLogs.map((log) => ({
+      stepSequence: log.stepSequence,
+      studentInput: log.studentInput,
+      returnedState: log.returnedState,
+      decisionTag: log.decisionTag,
+      decisionTimeSeconds: log.decisionTimeSeconds,
+    }));
+    studentTier = session.student.tier;
+    sessionStatus = session.status;
+    careerType = session.careerType as CareerTypeKey;
+    mode = session.mode as SimulationMode;
+
+    cached = {
+      studentId: session.studentId,
+      careerType: session.careerType,
+      mode: session.mode,
+      ageTier: session.ageTier,
+      status: sessionStatus,
+      studentTier,
+      turns: turnHistory,
+    };
+    if (redisEnabled) await setRedisSession(sessionId, cached);
   }
-  if (session.status === "COMPLETED") {
+
+  if (sessionStatus === "COMPLETED") {
     return NextResponse.json(
       { error: "This simulation session has already concluded.", code: "SESSION_COMPLETED" },
       { status: 409 }
     );
   }
 
-  if (session.student.tier === "PUBLIC_DEMO" && session.actionLogs.length >= DEMO_STEP_CAP) {
+  if (studentTier === "PUBLIC_DEMO" && turnHistory.length >= DEMO_STEP_CAP) {
     return NextResponse.json(
       {
         error:
@@ -144,11 +197,8 @@ export async function POST(request: Request) {
     );
   }
 
-  const careerType = session.careerType as CareerTypeKey;
-  const mode = session.mode as SimulationMode;
-
-  const turns = buildTurns(session.actionLogs, action);
-  const escalateDifficulty = shouldEscalateDifficulty(session.actionLogs);
+  const turns = buildTurns(turnHistory, action);
+  const escalateDifficulty = shouldEscalateDifficulty(turnHistory);
 
   return sseResponse(async (send) => {
     let state: SimulationState;
@@ -183,33 +233,48 @@ export async function POST(request: Request) {
     state = { ...state, turnScore: metrics.turnScore };
 
     const nextStepSequence =
-      session.actionLogs.length > 0
-        ? session.actionLogs[session.actionLogs.length - 1].stepSequence + 1
-        : 1;
+      turnHistory.length > 0 ? turnHistory[turnHistory.length - 1].stepSequence + 1 : 1;
 
-    await prisma.actionLog.create({
-      data: {
-        sessionId: session.id,
-        stepSequence: nextStepSequence,
-        studentInput: action,
-        returnedState: state as object,
-        decisionTag: action.slice(0, 60),
-        decisionTimeSeconds: decisionTimeSeconds ?? null,
-      },
-    });
+    const newTurn: CachedTurn = {
+      stepSequence: nextStepSequence,
+      studentInput: action,
+      returnedState: state,
+      decisionTag: action.slice(0, 60),
+      decisionTimeSeconds: decisionTimeSeconds ?? null,
+    };
 
-    if (state.isComplete) {
-      await prisma.simulationSession.update({
-        where: { id: session.id },
+    if (redisEnabled && cached) {
+      // Skip the synchronous per-turn Postgres write entirely - the updated turn history lives in
+      // Redis until /evaluate durably flushes the whole session in one atomic batch.
+      cached.turns = [...turnHistory, newTurn];
+      if (state.isComplete) cached.status = "COMPLETED";
+      await setRedisSession(sessionId, cached);
+    } else {
+      // Redis unavailable - same direct-to-Postgres write this route used before Redis existed.
+      await prisma.actionLog.create({
         data: {
-          status: "COMPLETED",
-          completedAt: new Date(),
-          overallScore: state.overallScore ?? null,
-          feedbackSummary: state.feedbackSummary ?? null,
+          sessionId,
+          stepSequence: newTurn.stepSequence,
+          studentInput: newTurn.studentInput,
+          returnedState: newTurn.returnedState as object,
+          decisionTag: newTurn.decisionTag,
+          decisionTimeSeconds: newTurn.decisionTimeSeconds,
         },
       });
+
+      if (state.isComplete) {
+        await prisma.simulationSession.update({
+          where: { id: sessionId },
+          data: {
+            status: "COMPLETED",
+            completedAt: new Date(),
+            overallScore: state.overallScore ?? null,
+            feedbackSummary: state.feedbackSummary ?? null,
+          },
+        });
+      }
     }
 
-    send({ type: "done", sessionId: session.id, state });
+    send({ type: "done", sessionId, state });
   });
 }
