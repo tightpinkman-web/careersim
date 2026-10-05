@@ -3,40 +3,28 @@
 import { useState } from "react";
 import { Download, Loader2, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { SimulationMode } from "@/types/simulation";
 
 interface DownloadReportButtonProps {
   sessionId: string;
-  careerTitle: string;
-  mode: SimulationMode;
-  overallScore: number;
-  competencies: Record<string, number>;
-  keyStrengths: string[];
-  growthAreas: string[];
-  careerFitSummary: string;
   /** "prominent" is a larger, higher-contrast treatment for hero placements; "default" suits a
    *  toolbar or card. */
   variant?: "default" | "prominent";
 }
 
+interface ExportPdfResponse {
+  status: "ready";
+  pdfUrl: string;
+  error?: string;
+  code?: string;
+}
+
 /**
- * Generates the PDF entirely inside this click handler - @react-pdf/renderer and
- * AssessmentPdfReport are both dynamically imported here rather than statically at the top of
- * this file, so neither is part of the initial page bundle and neither ever renders during SSR
- * (avoiding both the bundle-size cost and any hydration-mismatch risk from a library that
- * assumes a browser environment).
+ * Delegates PDF generation entirely to app/api/simulations/export-pdf/route.ts (server-rendered,
+ * cached on Supabase Storage once per session) instead of rendering it client-side on every click.
+ * The first request for a session pays the render cost; every request after that - another click,
+ * a different tab, a page revisit - is a cache hit and the CDN URL comes back immediately.
  */
-export default function DownloadReportButton({
-  sessionId,
-  careerTitle,
-  mode,
-  overallScore,
-  competencies,
-  keyStrengths,
-  growthAreas,
-  careerFitSummary,
-  variant = "default",
-}: DownloadReportButtonProps) {
+export default function DownloadReportButton({ sessionId, variant = "default" }: DownloadReportButtonProps) {
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -45,33 +33,24 @@ export default function DownloadReportButton({
     setGenerating(true);
     setError(null);
     try {
-      const [{ pdf }, { default: AssessmentPdfReport }] = await Promise.all([
-        import("@react-pdf/renderer"),
-        import("@/components/AssessmentPdfReport"),
-      ]);
+      const res = await fetch("/api/simulations/export-pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId }),
+      });
+      const data: ExportPdfResponse = await res.json();
+      if (!res.ok || data.status !== "ready") {
+        throw new Error(data.error ?? "Failed to generate the PDF report.");
+      }
 
-      const blob = await pdf(
-        <AssessmentPdfReport
-          sessionId={sessionId}
-          careerTitle={careerTitle}
-          mode={mode}
-          generatedDate={new Date()}
-          overallScore={overallScore}
-          competencies={competencies}
-          keyStrengths={keyStrengths}
-          growthAreas={growthAreas}
-          careerFitSummary={careerFitSummary}
-        />
-      ).toBlob();
-
-      const url = URL.createObjectURL(blob);
+      // Direct CDN download - no client-side PDF re-render, no object URL to revoke.
       const link = document.createElement("a");
-      link.href = url;
+      link.href = data.pdfUrl;
       link.download = `Career_Aptitude_Report_${sessionId}.pdf`;
+      link.rel = "noopener";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      URL.revokeObjectURL(url);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to generate the PDF report.");
     } finally {
@@ -98,7 +77,11 @@ export default function DownloadReportButton({
         ) : (
           <Download className={isProminent ? "h-5 w-5" : "h-4 w-4"} />
         )}
-        {generating ? "Generating PDF..." : "Download Official Assessment Report (PDF)"}
+        {generating ? (
+          <span className="font-mono text-xs uppercase tracking-wide">COMPILING ENTERPRISE REPORT PDF...</span>
+        ) : (
+          "Download Official Assessment Report (PDF)"
+        )}
       </button>
       {error && (
         <p className="flex items-center gap-1 text-xs text-rose-600">

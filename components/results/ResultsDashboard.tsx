@@ -7,12 +7,11 @@ import { CheckCircle2, TrendingUp, Compass, ArrowLeft, Link2, Check } from "luci
 import { cn } from "@/lib/utils";
 import DownloadReportButton from "@/components/DownloadReportButton";
 import { CAREER_TITLES } from "@/lib/careerTitles";
-import type { CareerType, SimulationMode } from "@/types/simulation";
+import type { CareerType } from "@/types/simulation";
 
 interface ResultsDashboardProps {
   sessionId: string;
   careerType: CareerType;
-  mode: SimulationMode;
   overallScore: number;
   competencies: Record<string, number>;
   keyStrengths: string[];
@@ -119,7 +118,6 @@ function CompetencyBar({ dimension, value, delay }: { dimension: string; value: 
 export default function ResultsDashboard({
   sessionId,
   careerType,
-  mode,
   overallScore,
   competencies,
   keyStrengths,
@@ -168,17 +166,7 @@ export default function ResultsDashboard({
           transition={{ delay: 0.05 }}
           className="mt-6 flex justify-center"
         >
-          <DownloadReportButton
-            variant="prominent"
-            sessionId={sessionId}
-            careerTitle={careerTitle}
-            mode={mode}
-            overallScore={overallScore}
-            competencies={competencies}
-            keyStrengths={keyStrengths}
-            growthAreas={growthAreas}
-            careerFitSummary={careerFitSummary}
-          />
+          <DownloadReportButton variant="prominent" sessionId={sessionId} />
         </motion.div>
 
         {/* Competency matrix - animated horizontal bars, 0 -> target rating on entrance */}
@@ -272,16 +260,7 @@ export default function ResultsDashboard({
             Try Another Career
           </Link>
           {verificationHash && <VerificationLink hash={verificationHash} />}
-          <DownloadReportButton
-            sessionId={sessionId}
-            careerTitle={careerTitle}
-            mode={mode}
-            overallScore={overallScore}
-            competencies={competencies}
-            keyStrengths={keyStrengths}
-            growthAreas={growthAreas}
-            careerFitSummary={careerFitSummary}
-          />
+          <DownloadReportButton sessionId={sessionId} />
         </div>
       </div>
     </div>

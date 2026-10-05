@@ -89,6 +89,11 @@ model SimulationSession {
   // Unguessable public identifier for the B2B scorecard verification route
   // (app/verify/scorecard/[hash]) - set once the full evaluation completes. Null until then.
   verificationHash  String?           @unique @map("verification_hash")
+  // Public Supabase Storage URL for the server-rendered PDF scorecard (see
+  // app/api/simulations/export-pdf/route.ts and lib/storage/pdf.ts) - null until the PDF has been
+  // rendered and uploaded at least once. Acts as the cache key so a repeat export request never
+  // re-renders the PDF.
+  pdfUrl            String?           @map("pdf_url")
   // Partner/institutional attribution captured from a `?ref=` query param by proxy.ts at the
   // time the session was started - null for organic traffic. See proxy.ts for capture logic.
   partnerRef        String?           @map("partner_ref")

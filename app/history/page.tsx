@@ -223,16 +223,7 @@ export default function HistoryPage() {
                 </div>
 
                 <div className="mt-auto pt-2">
-                  <DownloadReportButton
-                    sessionId={session.id}
-                    careerTitle={CAREER_TITLES[session.careerType]}
-                    mode={session.mode}
-                    overallScore={session.overallScore ?? 0}
-                    competencies={session.competencies ?? {}}
-                    keyStrengths={session.keyStrengths}
-                    growthAreas={session.growthAreas}
-                    careerFitSummary={session.careerFitSummary ?? ""}
-                  />
+                  <DownloadReportButton sessionId={session.id} />
                 </div>
               </div>
             );
