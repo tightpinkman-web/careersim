@@ -4,6 +4,7 @@ import { generateStructuredStream, describeGeminiError, type ChatTurn } from "@/
 import { getGameMasterPrompt } from "@/lib/prompts/gameMasters";
 import { CAREER_STATE_SCHEMAS, type CareerTypeKey } from "@/lib/schemas/simulation";
 import { sseResponse } from "@/lib/sse";
+import { DEMO_STEP_CAP } from "@/lib/auth/entitlements";
 import type { SimulationMode, SimulationState } from "@/types/simulation";
 
 interface ActionRequestBody {
@@ -116,7 +117,7 @@ export async function POST(request: Request) {
 
   const session = await prisma.simulationSession.findUnique({
     where: { id: sessionId },
-    include: { actionLogs: { orderBy: { stepSequence: "asc" } } },
+    include: { actionLogs: { orderBy: { stepSequence: "asc" } }, student: true },
   });
 
   if (!session) {
@@ -129,6 +130,17 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { error: "This simulation session has already concluded.", code: "SESSION_COMPLETED" },
       { status: 409 }
+    );
+  }
+
+  if (session.student.tier === "PUBLIC_DEMO" && session.actionLogs.length >= DEMO_STEP_CAP) {
+    return NextResponse.json(
+      {
+        error:
+          "Your school is currently on the demo tier. Ask your counselor or Mindler representative for full enterprise access.",
+        code: "DEMO_CAP_REACHED",
+      },
+      { status: 403 }
     );
   }
 

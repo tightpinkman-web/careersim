@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Loader2, Trophy, History, RotateCcw } from "lucide-react";
+import { Loader2, Trophy, History, RotateCcw, Megaphone } from "lucide-react";
 import SimulationShell from "@/components/simulations/SimulationShell";
 import { readSimulationStream, SimulationStreamError } from "@/lib/sseClient";
 import { getAnonymousSessionId } from "@/lib/anonymousSession";
@@ -114,6 +114,7 @@ export default function ActiveSimulationPage() {
   const [lastAction, setLastAction] = useState<LastActionArgs | null>(null);
   const [showResumeCta, setShowResumeCta] = useState(false);
   const [showRetryStepCta, setShowRetryStepCta] = useState(false);
+  const [demoCapMessage, setDemoCapMessage] = useState<string | null>(null);
 
   /** Mints a brand-new, fully validated session via /api/simulations/start (never by trusting a
    *  client-asserted sessionId/state pair as history - see the Phase 1 writeup) seeded with the
@@ -235,6 +236,15 @@ export default function ActiveSimulationPage() {
           return;
         } catch (err) {
           const displayError = toDisplayError(err, "Failed to submit your decision.");
+          if (displayError.code === "DEMO_CAP_REACHED") {
+            // Permanent tier gate, not a transient failure - never retry, just surface the CTA.
+            setDemoCapMessage(displayError.message);
+            setSubmitting(false);
+            setStreamingPreview(null);
+            setPendingActionId(null);
+            setLastAction(null);
+            return;
+          }
           setError(displayError);
           if (attempt < MAX_AUTO_RETRIES) {
             await new Promise((resolve) => setTimeout(resolve, AUTO_RETRY_DELAY_MS));
@@ -340,7 +350,14 @@ export default function ActiveSimulationPage() {
         </div>
       )}
 
-      {showRetryStepCta && (
+      {demoCapMessage && (
+        <div className="flex items-center gap-3 border-b border-signal/50 bg-signal/10 px-4 py-3 font-mono text-xs text-signal">
+          <Megaphone className="h-4 w-4 shrink-0" />
+          <span>{demoCapMessage}</span>
+        </div>
+      )}
+
+      {showRetryStepCta && !demoCapMessage && (
         <div className="flex items-center justify-center gap-3 border-b border-hairline bg-surface px-4 py-2">
           <button
             onClick={retryStep}
@@ -363,7 +380,11 @@ export default function ActiveSimulationPage() {
       )}
 
       <div className="relative min-h-0 flex-1">
-        <SimulationShell state={state} onAction={handleAction} pendingActionId={pendingActionId} />
+        <SimulationShell
+          state={state}
+          onAction={demoCapMessage ? undefined : handleAction}
+          pendingActionId={pendingActionId}
+        />
 
         <AnimatePresence>
           {submitting && (

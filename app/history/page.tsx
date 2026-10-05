@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { getAnonymousSessionId } from "@/lib/anonymousSession";
 import { CAREER_TITLES } from "@/lib/careerTitles";
 import DownloadReportButton from "@/components/DownloadReportButton";
+import CohortKeyModal from "@/components/auth/CohortKeyModal";
 import type { CareerType, SimulationMode } from "@/types/simulation";
 
 interface HistorySession {
@@ -108,6 +109,10 @@ export default function HistoryPage() {
             Every simulation you&apos;ve finished on this device, with your score, competency breakdown, and a
             downloadable report for each.
           </p>
+        </div>
+
+        <div className="mt-6 flex justify-center">
+          <CohortKeyModal />
         </div>
 
         {/* Filter + sort controls */}

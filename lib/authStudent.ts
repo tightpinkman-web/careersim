@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { createClient } from "@/lib/supabase/server";
+import { resolveUserEntitlement } from "@/lib/auth/entitlements";
 
 /**
  * Resolves the Student row for the currently signed-in Supabase user (from the request's session
@@ -31,13 +32,27 @@ export async function getAuthenticatedStudent() {
     (user.user_metadata?.name as string | undefined) ||
     user.email.split("@")[0];
 
+  // Domain-based entitlement is re-checked on every login so a newly-whitelisted partner domain
+  // takes effect immediately. It only ever upgrades here - a non-matching domain never downgrades
+  // a student who separately unlocked ENTERPRISE_STUDENT via a cohort access key (see
+  // app/api/auth/cohort-key/route.ts), since this omits `inputAccessKey` entirely.
+  const domainEntitlement = await resolveUserEntitlement(user.email);
+  const domainUpgrade =
+    domainEntitlement.tier === "ENTERPRISE_STUDENT" ? domainEntitlement.organization : null;
+
   return prisma.student.upsert({
     where: { supabaseAuthId: user.id },
-    update: { email: user.email, name: displayName },
+    update: {
+      email: user.email,
+      name: displayName,
+      ...(domainUpgrade ? { tier: "ENTERPRISE_STUDENT", schoolId: domainUpgrade.id } : {}),
+    },
     create: {
       supabaseAuthId: user.id,
       email: user.email,
       name: displayName,
+      tier: domainUpgrade ? "ENTERPRISE_STUDENT" : "PUBLIC_DEMO",
+      schoolId: domainUpgrade?.id ?? null,
     },
   });
 }

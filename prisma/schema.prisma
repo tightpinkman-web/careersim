@@ -26,15 +26,43 @@ enum RequesterRole {
   STUDENT
 }
 
+enum StudentTier {
+  ENTERPRISE_STUDENT
+  PUBLIC_DEMO
+}
+
+/** A partner school/institution whitelisted for full enterprise access - either by email domain
+ *  (auto-granted on login, see lib/authStudent.ts) or by a shared cohort access key (self-service
+ *  upgrade via app/api/auth/cohort-key/route.ts for students on personal email domains). */
+model SchoolOrganization {
+  id          String   @id @default(uuid())
+  name        String
+  domains     String[]
+  accessKey   String?  @unique
+  partnerRef  String   @default("mindler")
+  maxStudents Int      @default(500)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  students Student[]
+
+  @@map("school_organizations")
+}
+
 model Student {
-  id              String   @id @default(uuid())
-  supabaseAuthId  String   @unique @map("supabase_auth_id")
-  email           String   @unique
+  id              String      @id @default(uuid())
+  supabaseAuthId  String      @unique @map("supabase_auth_id")
+  email           String      @unique
   name            String
   // Set only for a real Username + Password account (see lib/authStudent.ts) - null for
   // anonymous/guest students, who are keyed purely by supabaseAuthId (`anon_<uuid>`).
-  username        String?  @unique
-  createdAt       DateTime @default(now()) @map("created_at")
+  username        String?     @unique
+  // Entitlement tier gating simulation access - see lib/auth/entitlements.ts. Defaults to the
+  // capped public-demo tier; upgraded to ENTERPRISE_STUDENT by a matching email domain (on login)
+  // or a validated cohort access key (self-service, see app/api/auth/cohort-key/route.ts).
+  tier            StudentTier @default(PUBLIC_DEMO)
+  schoolId        String?     @map("school_id")
+  school          SchoolOrganization? @relation(fields: [schoolId], references: [id])
+  createdAt       DateTime    @default(now()) @map("created_at")
 
   simulationSessions SimulationSession[]
 
