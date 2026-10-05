@@ -1,16 +1,23 @@
 import { z } from "zod";
 
 /**
- * Zod mirror of types/simulation.ts, used both to generate the Gemini structured-output
- * JSON schema (responseJsonSchema) and to validate Gemini's response, so the JSON
- * response is guaranteed to match the SimulationState shape the frontend renders.
+ * Zod mirror of types/simulation.ts, used both to generate the structured-output JSON schema
+ * (Gemini's responseJsonSchema) and to validate the Game Master's response (Gemini or Groq - see
+ * lib/llm/provider.ts), so the JSON response is guaranteed to match the SimulationState shape the
+ * frontend renders.
+ *
+ * Every optional field below uses `.nullish()` rather than plain `.optional()`: Gemini omits a
+ * field it has nothing to say for, but Groq's openai/gpt-oss-20b instead emits it as an explicit
+ * JSON null - confirmed in production, where `.optional()` rejected `turnScore: null` and caused
+ * every Groq response to fail validation and silently fall back to Gemini. `.nullish()` accepts
+ * both shapes so neither provider's convention breaks validation.
  */
 
 export const AllowedActionSchema = z.object({
   id: z.string(),
   label: z.string(),
-  description: z.string().optional(),
-  kind: z.enum(["primary", "secondary", "danger"]).optional(),
+  description: z.string().nullish(),
+  kind: z.enum(["primary", "secondary", "danger"]).nullish(),
 });
 
 export const HudMetricsSchema = z.record(z.string(), z.union([z.string(), z.number()]));
@@ -20,13 +27,13 @@ const baseFields = {
   narrativePrompt: z.string(),
   allowedActions: z.array(AllowedActionSchema).min(1).max(5),
   hudMetrics: HudMetricsSchema,
-  isComplete: z.boolean().optional(),
-  overallScore: z.number().min(0).max(100).optional(),
-  feedbackSummary: z.string().optional(),
+  isComplete: z.boolean().nullish(),
+  overallScore: z.number().min(0).max(100).nullish(),
+  feedbackSummary: z.string().nullish(),
   // Game Master's own 0-100 assessment of how well-reasoned the student's PREVIOUS decision was
   // (the one that produced this turn) - omitted on turn 1, since there's no prior decision yet.
   // Drives dynamic difficulty calibration in app/api/simulations/action/route.ts.
-  turnScore: z.number().min(0).max(100).optional(),
+  turnScore: z.number().min(0).max(100).nullish(),
 };
 
 // ---------- Venture Capital ----------
@@ -38,21 +45,21 @@ const VCEmailSchema = z.object({
   preview: z.string(),
   body: z.string(),
   receivedAt: z.string(),
-  read: z.boolean().optional(),
-  attachments: z.array(z.string()).optional(),
+  read: z.boolean().nullish(),
+  attachments: z.array(z.string()).nullish(),
 });
 
 const VCDeckSlideSchema = z.object({
   id: z.string(),
   title: z.string(),
-  imageUrl: z.string().optional(),
+  imageUrl: z.string().nullish(),
   bullets: z.array(z.string()),
 });
 
 const VCFinancialMetricSchema = z.object({
   label: z.string(),
   value: z.string(),
-  trend: z.enum(["up", "down", "flat"]).optional(),
+  trend: z.enum(["up", "down", "flat"]).nullish(),
 });
 
 export const VCPayloadSchema = z.object({
@@ -85,7 +92,7 @@ const ThreatAlertSchema = z.object({
   source: z.string(),
   message: z.string(),
   timestamp: z.string(),
-  resolved: z.boolean().optional(),
+  resolved: z.boolean().nullish(),
 });
 
 export const CyberPayloadSchema = z.object({
@@ -108,9 +115,9 @@ export const CyberSimulationStateSchema = z.object({
 const KanbanCardSchema = z.object({
   id: z.string(),
   title: z.string(),
-  description: z.string().optional(),
-  priority: z.enum(["low", "medium", "high"]).optional(),
-  points: z.number().int().optional(),
+  description: z.string().nullish(),
+  priority: z.enum(["low", "medium", "high"]).nullish(),
+  points: z.number().int().nullish(),
 });
 
 const KanbanBoardSchema = z.object({
@@ -153,14 +160,14 @@ const ContractClauseSchema = z.object({
   id: z.string(),
   heading: z.string(),
   text: z.string(),
-  flagged: z.boolean().optional(),
+  flagged: z.boolean().nullish(),
   redline: z
     .object({
       original: z.string(),
       proposed: z.string(),
-      rationale: z.string().optional(),
+      rationale: z.string().nullish(),
     })
-    .optional(),
+    .nullish(),
 });
 
 const NegotiationMessageSchema = z.object({
@@ -191,7 +198,7 @@ const CandleSchema = z.object({
   high: z.number(),
   low: z.number(),
   close: z.number(),
-  volume: z.number().optional(),
+  volume: z.number().nullish(),
 });
 
 const OrderBookLevelSchema = z.object({
@@ -209,13 +216,13 @@ const NewsHeadlineSchema = z.object({
   headline: z.string(),
   source: z.string(),
   timestamp: z.string(),
-  sentiment: z.enum(["positive", "negative", "neutral"]).optional(),
+  sentiment: z.enum(["positive", "negative", "neutral"]).nullish(),
 });
 
 const QuantParametersSchema = z.object({
   stopLoss: z.number(),
   volatilityThreshold: z.number(),
-  positionSize: z.number().optional(),
+  positionSize: z.number().nullish(),
 });
 
 export const QuantPayloadSchema = z.object({
