@@ -1,4 +1,8 @@
-import Groq, { APIError as GroqAPIError } from "groq-sdk";
+import Groq, {
+  APIError as GroqAPIError,
+  RateLimitError as GroqRateLimitError,
+  APIConnectionTimeoutError as GroqTimeoutError,
+} from "groq-sdk";
 import { z } from "zod";
 import {
   generateStructuredStream as generateGeminiStream,
@@ -38,6 +42,50 @@ export function getGroqClient(): Groq {
 export const GROQ_GAME_MASTER_MODEL = "openai/gpt-oss-20b";
 export const GROQ_MAX_TOKENS = 8192;
 
+// A load test against production (150 concurrent VUs) showed requests that would normally finish
+// in 1-2s stretching to 13-20s+ under concurrency, well past what's reasonable for a provider
+// whose whole premise is low latency - almost certainly Groq rate-limiting under burst load, with
+// nothing failing fast enough to let the Gemini fallback kick in before the client (or Vercel's
+// 60s maxDuration) gave up instead. This caps every Groq call at 8s - comfortably above its normal
+// sub-2s response time, far below the 30s a client-side caller might wait - so a stalled or
+// rate-limited request fails fast into the Gemini fallback rather than hanging.
+const GROQ_REQUEST_TIMEOUT_MS = 8000;
+
+/** Logs a provider-level event with a consistent, greppable tag + ISO timestamp, so a rate-limit
+ *  spike or fallback storm shows up clearly in Vercel's log search instead of being buried in
+ *  generic stack traces. `[GROQ_RATE_LIMIT]` and `[GEMINI_FALLBACK]` are the two tags worth
+ *  alerting on; `[GROQ_TIMEOUT]` and `[GROQ_ERROR]` cover the other ways a Groq call can fail. */
+function logProviderEvent(tag: string, context: string, detail: string) {
+  console.warn(`${tag} ${new Date().toISOString()} context=${context} ${detail}`);
+}
+
+function isGroqRateLimit(err: unknown): boolean {
+  return err instanceof GroqRateLimitError || (err instanceof GroqAPIError && err.status === 429);
+}
+
+function isGroqTimeout(err: unknown): boolean {
+  return err instanceof GroqTimeoutError;
+}
+
+/** Logs the Groq-side failure under the right tag, then (for callers that fail over to Gemini)
+ *  logs the fallback itself under its own tag - called from both generateSimulationStream's and
+ *  evaluateTurnMetrics' catch blocks so the two call sites log identically. */
+function logGroqFailure(err: unknown, context: string, fallback: "gemini" | "deterministic") {
+  const message = err instanceof Error ? err.message : String(err);
+  if (isGroqRateLimit(err)) {
+    logProviderEvent("[GROQ_RATE_LIMIT]", context, `message="${message}"`);
+  } else if (isGroqTimeout(err)) {
+    logProviderEvent("[GROQ_TIMEOUT]", context, `timeoutMs=${GROQ_REQUEST_TIMEOUT_MS} message="${message}"`);
+  } else {
+    logProviderEvent("[GROQ_ERROR]", context, `message="${message}"`);
+  }
+  if (fallback === "gemini") {
+    logProviderEvent("[GEMINI_FALLBACK]", context, "reason=groq_failed");
+  } else {
+    logProviderEvent("[DETERMINISTIC_FALLBACK]", context, "reason=groq_failed");
+  }
+}
+
 function toGroqMessages(system: string, turns: ChatTurn[]) {
   return [
     { role: "system" as const, content: system },
@@ -61,13 +109,13 @@ function extractNarrativePreview(buffer: string): string | null {
 }
 
 /**
- * Streams a structured Game Master turn from Groq (llama-3.1-8b-instant), yielding the same
+ * Streams a structured Game Master turn from Groq (GROQ_GAME_MASTER_MODEL), yielding the same
  * `{type: "delta"}` / `{type: "done"}` event shape as lib/gemini.ts's generateStructuredStream, so
  * callers (app/api/simulations/start and action routes) can treat the two providers
- * interchangeably. On ANY failure - auth, rate limit, malformed JSON, schema mismatch, or a
- * mid-stream drop - this transparently fails over to the Gemini implementation instead of
- * throwing, so a Groq outage is never client-visible as an engine error by itself (only if BOTH
- * providers fail does the caller see a thrown StructuredResponseError/ApiError).
+ * interchangeably. On ANY failure - auth, rate limit, timeout (capped at GROQ_REQUEST_TIMEOUT_MS),
+ * malformed JSON, schema mismatch, or a mid-stream drop - this transparently fails over to the
+ * Gemini implementation instead of throwing, so a Groq outage is never client-visible as an engine
+ * error by itself (only if BOTH providers fail does the caller see a thrown error).
  */
 export async function* generateSimulationStream<S extends z.ZodTypeAny>(options: {
   system: string;
@@ -78,13 +126,16 @@ export async function* generateSimulationStream<S extends z.ZodTypeAny>(options:
   const { system, turns, schema, maxOutputTokens = GROQ_MAX_TOKENS } = options;
 
   try {
-    const stream = await getGroqClient().chat.completions.create({
-      model: GROQ_GAME_MASTER_MODEL,
-      messages: toGroqMessages(system, turns),
-      stream: true,
-      max_tokens: maxOutputTokens,
-      response_format: { type: "json_object" },
-    });
+    const stream = await getGroqClient().chat.completions.create(
+      {
+        model: GROQ_GAME_MASTER_MODEL,
+        messages: toGroqMessages(system, turns),
+        stream: true,
+        max_tokens: maxOutputTokens,
+        response_format: { type: "json_object" },
+      },
+      { timeout: GROQ_REQUEST_TIMEOUT_MS }
+    );
 
     let buffer = "";
     let lastPreview = "";
@@ -119,7 +170,7 @@ export async function* generateSimulationStream<S extends z.ZodTypeAny>(options:
     yield { type: "done", data: result.data };
     return;
   } catch (err) {
-    console.error("[lib/llm/provider] Groq stream failed, failing over to Gemini:", err);
+    logGroqFailure(err, "generateSimulationStream", "gemini");
   }
 
   yield* generateGeminiStream({ system, turns, schema, maxOutputTokens });
@@ -148,24 +199,27 @@ function deterministicTurnScore(lastChoice: string): TurnMetrics {
 }
 
 /**
- * Rapid, non-streaming turn evaluation via Groq (llama-3.1-8b-instant, `response_format:
+ * Rapid, non-streaming turn evaluation via Groq (GROQ_GAME_MASTER_MODEL, `response_format:
  * json_object`) - used to cheaply (re-)score the student's last decision independent of whatever
- * turnScore the main Game Master stream produced. Never throws: a Groq error, rate limit, or
- * malformed/out-of-schema response all fall back to deterministicTurnScore() instead of
+ * turnScore the main Game Master stream produced. Never throws: a Groq error, rate limit, timeout,
+ * or malformed/out-of-schema response all fall back to deterministicTurnScore() instead of
  * propagating a client-visible exception.
  */
 export async function evaluateTurnMetrics(history: ChatTurn[], lastChoice: string): Promise<TurnMetrics> {
   try {
-    const response = await getGroqClient().chat.completions.create({
-      model: GROQ_GAME_MASTER_MODEL,
-      messages: [
-        ...toGroqMessages(METRICS_SYSTEM_PROMPT, history),
-        { role: "user" as const, content: `The student's most recent choice: ${lastChoice}` },
-      ],
-      stream: false,
-      max_tokens: 256,
-      response_format: { type: "json_object" },
-    });
+    const response = await getGroqClient().chat.completions.create(
+      {
+        model: GROQ_GAME_MASTER_MODEL,
+        messages: [
+          ...toGroqMessages(METRICS_SYSTEM_PROMPT, history),
+          { role: "user" as const, content: `The student's most recent choice: ${lastChoice}` },
+        ],
+        stream: false,
+        max_tokens: 256,
+        response_format: { type: "json_object" },
+      },
+      { timeout: GROQ_REQUEST_TIMEOUT_MS }
+    );
 
     const text = response.choices[0]?.message?.content;
     if (!text) throw new StructuredResponseError("Groq returned an empty metrics response.");
@@ -177,7 +231,7 @@ export async function evaluateTurnMetrics(history: ChatTurn[], lastChoice: strin
     }
     return result.data;
   } catch (err) {
-    console.error("[lib/llm/provider] Groq turn evaluation failed, using deterministic fallback:", err);
+    logGroqFailure(err, "evaluateTurnMetrics", "deterministic");
     return deterministicTurnScore(lastChoice);
   }
 }
