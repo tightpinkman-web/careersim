@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { generateStructuredStream, describeGeminiError, type ChatTurn } from "@/lib/gemini";
+import { generateSimulationStream, evaluateTurnMetrics, describeLLMError, type ChatTurn } from "@/lib/llm/provider";
 import { getGameMasterPrompt } from "@/lib/prompts/gameMasters";
 import { CAREER_STATE_SCHEMAS, type CareerTypeKey } from "@/lib/schemas/simulation";
 import { sseResponse } from "@/lib/sse";
@@ -153,7 +153,7 @@ export async function POST(request: Request) {
   return sseResponse(async (send) => {
     let state: SimulationState;
     try {
-      const stream = generateStructuredStream({
+      const stream = generateSimulationStream({
         system: getGameMasterPrompt(careerType, mode, { escalateDifficulty }),
         turns,
         schema: CAREER_STATE_SCHEMAS[careerType],
@@ -170,9 +170,17 @@ export async function POST(request: Request) {
       if (!finalState) throw new Error("Stream ended without a final state.");
       state = finalState;
     } catch (err) {
-      send({ type: "error", error: describeGeminiError(err), code: "ENGINE_ERROR" });
+      send({ type: "error", error: describeLLMError(err), code: "ENGINE_ERROR" });
       return;
     }
+
+    // Rapid, independently-sourced re-score of the decision that just produced this turn -
+    // overrides the main Game Master stream's own self-assessed turnScore when available, since
+    // it's cheaper to re-run and keeps difficulty escalation (shouldEscalateDifficulty above)
+    // from depending solely on one model's self-grading. Never blocks the response: on any
+    // failure evaluateTurnMetrics already resolves to a deterministic fallback score.
+    const metrics = await evaluateTurnMetrics(turns.slice(0, -1), action);
+    state = { ...state, turnScore: metrics.turnScore };
 
     const nextStepSequence =
       session.actionLogs.length > 0

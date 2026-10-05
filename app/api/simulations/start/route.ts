@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedStudent } from "@/lib/authStudent";
-import { generateStructuredStream, describeGeminiError } from "@/lib/gemini";
+import { generateSimulationStream, describeLLMError } from "@/lib/llm/provider";
 import { getGameMasterPrompt } from "@/lib/prompts/gameMasters";
 import { CAREER_STATE_SCHEMAS, type CareerTypeKey } from "@/lib/schemas/simulation";
 import { sseResponse } from "@/lib/sse";
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest) {
   return sseResponse(async (send) => {
     let state: SimulationState;
     try {
-      const stream = generateStructuredStream({
+      const stream = generateSimulationStream({
         system: getGameMasterPrompt(careerType, mode),
         turns: [
           {
@@ -151,7 +151,7 @@ export async function POST(request: NextRequest) {
       state = finalState;
     } catch (err) {
       await prisma.simulationSession.delete({ where: { id: session.id } });
-      send({ type: "error", error: describeGeminiError(err), code: "ENGINE_ERROR" });
+      send({ type: "error", error: describeLLMError(err), code: "ENGINE_ERROR" });
       return;
     }
 
