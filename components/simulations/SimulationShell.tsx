@@ -11,6 +11,7 @@ import CyberSimulationView from "@/components/simulations/CyberSimulationView";
 import ProductSimulationView from "@/components/simulations/ProductSimulationView";
 import LawSimulationView from "@/components/simulations/LawSimulationView";
 import QuantSimulationView from "@/components/simulations/QuantSimulationView";
+import WorkspaceShell, { type CrisisAnchor, type WorkspaceChatMessage, type WorkspaceEmail } from "@/components/workspace/WorkspaceShell";
 
 interface SimulationShellProps {
   state: SimulationState;
@@ -60,6 +61,53 @@ function formatCountdown(secondsRemaining: number): string {
   const s = abs % 60;
   const clock = `${m}:${s.toString().padStart(2, "0")}`;
   return overtime ? `+${clock}` : clock;
+}
+
+/** VENTURE_CAPITAL already generates a real mock inbox (payload.emails) - reuse it as the
+ *  WorkspaceShell's email pane instead of inventing a second, contradictory one. Every other
+ *  career track has no inbox concept, so it renders an empty pane. */
+function deriveWorkspaceEmails(state: SimulationState): WorkspaceEmail[] {
+  if (state.ui_mode !== "VENTURE_CAPITAL") return [];
+  return state.payload.emails.map((email) => ({
+    id: email.id,
+    from: email.from,
+    subject: email.subject,
+    preview: email.preview,
+    receivedAt: email.receivedAt,
+    attachments: email.attachments ?? undefined,
+  }));
+}
+
+/** Seeds the Team Chat pane with one contextual message per step, so the thread isn't empty before
+ *  any interruption ping fires. Keyed off state.currentStep by the caller so a new step always
+ *  gets a fresh seed instead of appending forever. */
+function deriveSeedMessages(state: SimulationState): WorkspaceChatMessage[] {
+  return [
+    {
+      id: `seed-${state.currentStep}`,
+      channel: "general",
+      author: "Team Lead",
+      text: state.narrativePrompt,
+      timestamp: new Date().toISOString(),
+    },
+  ];
+}
+
+/** Flags a step as crisis-grade - triggering WorkspaceShell's live countdown anchor - when the
+ *  current payload itself signals urgency (an unresolved high/critical cyber alert, or a negative
+ *  news headline moving the market). Returns null for every ordinary step. */
+function deriveCrisisAnchor(state: SimulationState): CrisisAnchor | null {
+  if (state.ui_mode === "CYBERSECURITY") {
+    const hasActiveCriticalAlert = state.payload.alerts.some(
+      (alert) => !alert.resolved && (alert.severity === "high" || alert.severity === "critical")
+    );
+    if (hasActiveCriticalAlert) return { label: "CONTAINMENT WINDOW", durationSeconds: 180 };
+  }
+  if (state.ui_mode === "QUANT_TRADING") {
+    const hasNegativeNews = state.payload.news.some((headline) => headline.sentiment === "negative");
+    if (hasNegativeNews) return { label: "LIQUIDITY CRUNCH", durationSeconds: 180 };
+  }
+  return null;
 }
 
 export default function SimulationShell({ state, onAction, pendingActionId }: SimulationShellProps) {
@@ -168,20 +216,28 @@ export default function SimulationShell({ state, onAction, pendingActionId }: Si
         </div>
       </div>
 
-      {/* Mode-specific view with animated transitions */}
-      <div className="relative min-h-0 flex-1 overflow-hidden p-3">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={state.ui_mode}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
-            className="h-full min-h-0"
-          >
-            {renderView()}
-          </motion.div>
-        </AnimatePresence>
+      {/* OS workspace shell: team chat + email tool panes wrapping the mode-specific canvas */}
+      <div className="relative min-h-0 flex-1 overflow-hidden">
+        <WorkspaceShell
+          stepKey={state.currentStep}
+          isDark={isDark}
+          emails={deriveWorkspaceEmails(state)}
+          seedMessages={deriveSeedMessages(state)}
+          crisis={deriveCrisisAnchor(state)}
+        >
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={state.ui_mode}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -12 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              className="h-full min-h-0"
+            >
+              {renderView()}
+            </motion.div>
+          </AnimatePresence>
+        </WorkspaceShell>
       </div>
 
       {/* Tactical decision bar */}
