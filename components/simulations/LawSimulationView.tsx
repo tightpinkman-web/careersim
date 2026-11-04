@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FileText, MessageSquare, X, Send, PenLine } from "lucide-react";
+import { FileText, MessageSquare, X, Send, PenLine, FileSearch } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { LawPayload, NegotiationMessage } from "@/types/simulation";
+import LegalWorkbench from "@/components/simulations/LegalWorkbench";
 
 interface LawSimulationViewProps {
   payload: LawPayload;
@@ -17,6 +18,7 @@ export default function LawSimulationView({ payload, narrativePrompt }: LawSimul
   const [chatOpen, setChatOpen] = useState(false);
   const [messages, setMessages] = useState<NegotiationMessage[]>(negotiationThread);
   const [draft, setDraft] = useState("");
+  const [workbenchOpen, setWorkbenchOpen] = useState(false);
 
   const sendMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,6 +138,37 @@ export default function LawSimulationView({ payload, narrativePrompt }: LawSimul
                 <Send className="h-3.5 w-3.5" />
               </button>
             </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Risk scanner / counter-proposal workbench toggle + drawer */}
+      {!workbenchOpen && (
+        <button
+          onClick={() => setWorkbenchOpen(true)}
+          className="absolute bottom-4 left-4 flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2.5 text-xs font-medium text-white shadow-lg hover:bg-slate-800"
+        >
+          <FileSearch className="h-4 w-4" />
+          Workbench
+        </button>
+      )}
+      <AnimatePresence>
+        {workbenchOpen && (
+          <motion.div
+            initial={{ x: -360, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -360, opacity: 0 }}
+            transition={{ type: "tween", duration: 0.2 }}
+            className="absolute inset-y-0 left-0 flex w-full max-w-sm flex-col overflow-hidden rounded-r-lg border border-slate-200 bg-white shadow-2xl"
+          >
+            <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-3">
+              <FileSearch className="h-4 w-4 text-slate-500" />
+              <h2 className="text-sm font-semibold text-slate-700">Workbench</h2>
+              <button onClick={() => setWorkbenchOpen(false)} className="ml-auto rounded p-1 hover:bg-slate-100">
+                <X className="h-4 w-4 text-slate-500" />
+              </button>
+            </div>
+            <LegalWorkbench payload={payload} />
           </motion.div>
         )}
       </AnimatePresence>

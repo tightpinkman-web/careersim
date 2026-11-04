@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, LineChart as LineChartIcon, CandlestickChart } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { TrendingUp, TrendingDown, LineChart as LineChartIcon, CandlestickChart, SlidersHorizontal, X } from "lucide-react";
+import QuantWorkbench from "@/components/simulations/QuantWorkbench";
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -28,6 +29,7 @@ export default function QuantSimulationView({ payload, narrativePrompt }: QuantS
   const [chartMode, setChartMode] = useState<"candle" | "line">("candle");
   const [stopLoss, setStopLoss] = useState(parameters.stopLoss);
   const [volatilityThreshold, setVolatilityThreshold] = useState(parameters.volatilityThreshold);
+  const [workbenchOpen, setWorkbenchOpen] = useState(false);
 
   const chartData = useMemo(
     () =>
@@ -48,7 +50,7 @@ export default function QuantSimulationView({ payload, narrativePrompt }: QuantS
   );
 
   return (
-    <div className="grid h-full min-h-0 grid-cols-1 gap-3 overflow-hidden bg-slate-950 p-3 text-slate-200 xl:grid-cols-[2fr_1fr]">
+    <div className="relative grid h-full min-h-0 grid-cols-1 gap-3 overflow-hidden bg-slate-950 p-3 text-slate-200 xl:grid-cols-[2fr_1fr]">
       {/* Left: chart + parameters */}
       <div className="flex min-h-0 flex-col gap-3">
         <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-slate-800 bg-slate-900">
@@ -219,6 +221,37 @@ export default function QuantSimulationView({ payload, narrativePrompt }: QuantS
           {narrativePrompt}
         </p>
       </div>
+
+      {/* Market-making workbench toggle + drawer */}
+      {!workbenchOpen && (
+        <button
+          onClick={() => setWorkbenchOpen(true)}
+          className="absolute bottom-4 left-4 flex items-center gap-2 rounded-md bg-slate-800 px-4 py-2.5 text-xs font-medium text-white shadow-lg hover:bg-slate-700"
+        >
+          <SlidersHorizontal className="h-4 w-4" />
+          Workbench
+        </button>
+      )}
+      <AnimatePresence>
+        {workbenchOpen && (
+          <motion.div
+            initial={{ x: -360, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -360, opacity: 0 }}
+            transition={{ type: "tween", duration: 0.2 }}
+            className="absolute inset-y-0 left-0 flex w-full max-w-sm flex-col overflow-hidden rounded-r-lg border border-slate-800 shadow-2xl"
+          >
+            <div className="flex items-center gap-2 border-b border-slate-800 bg-slate-900 px-4 py-3">
+              <SlidersHorizontal className="h-4 w-4 text-slate-300" />
+              <h2 className="text-sm font-semibold text-slate-200">Workbench</h2>
+              <button onClick={() => setWorkbenchOpen(false)} className="ml-auto rounded p-1 hover:bg-slate-800">
+                <X className="h-4 w-4 text-slate-400" />
+              </button>
+            </div>
+            <QuantWorkbench payload={payload} />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BarChart3, GitCommitHorizontal } from "lucide-react";
+import { BarChart3, GitCommitHorizontal, CalendarRange, X } from "lucide-react";
+import PMWorkbench from "@/components/simulations/PMWorkbench";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -41,6 +42,7 @@ export default function ProductSimulationView({ payload, narrativePrompt }: Prod
   const { board, funnelData, prioritizationMatrix, conversionRate } = payload;
   const [columns, setColumns] = useState(board.columns);
   const [draggingId, setDraggingId] = useState<string | null>(null);
+  const [workbenchOpen, setWorkbenchOpen] = useState(false);
 
   const moveCard = (cardId: string, to: KanbanColumnId) => {
     setColumns((prev) => {
@@ -63,7 +65,7 @@ export default function ProductSimulationView({ payload, narrativePrompt }: Prod
   };
 
   return (
-    <div className="grid h-full grid-cols-1 gap-4 overflow-hidden lg:grid-cols-2">
+    <div className="relative grid h-full grid-cols-1 gap-4 overflow-hidden lg:grid-cols-2">
       {/* Left: Kanban */}
       <div className="flex min-h-0 flex-col rounded-lg border border-slate-200 bg-white shadow-sm">
         <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-3">
@@ -184,6 +186,37 @@ export default function ProductSimulationView({ payload, narrativePrompt }: Prod
           {narrativePrompt}
         </p>
       </div>
+
+      {/* Sprint planning / stakeholder-priority workbench toggle + drawer */}
+      {!workbenchOpen && (
+        <button
+          onClick={() => setWorkbenchOpen(true)}
+          className="absolute bottom-4 left-4 flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2.5 text-xs font-medium text-white shadow-lg hover:bg-slate-800"
+        >
+          <CalendarRange className="h-4 w-4" />
+          Workbench
+        </button>
+      )}
+      <AnimatePresence>
+        {workbenchOpen && (
+          <motion.div
+            initial={{ x: -360, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -360, opacity: 0 }}
+            transition={{ type: "tween", duration: 0.2 }}
+            className="absolute inset-y-0 left-0 flex w-full max-w-sm flex-col overflow-hidden rounded-r-lg border border-slate-200 bg-white shadow-2xl"
+          >
+            <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-3">
+              <CalendarRange className="h-4 w-4 text-slate-500" />
+              <h2 className="text-sm font-semibold text-slate-700">Workbench</h2>
+              <button onClick={() => setWorkbenchOpen(false)} className="ml-auto rounded p-1 hover:bg-slate-100">
+                <X className="h-4 w-4 text-slate-500" />
+              </button>
+            </div>
+            <PMWorkbench payload={payload} />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

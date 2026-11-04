@@ -2,9 +2,10 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ShieldAlert, Terminal as TerminalIcon, Activity, ChevronsRight } from "lucide-react";
+import { ShieldAlert, Terminal as TerminalIcon, Activity, ChevronsRight, Network, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CyberPayload, TerminalLine } from "@/types/simulation";
+import CyberWorkbench from "@/components/simulations/CyberWorkbench";
 
 interface CyberSimulationViewProps {
   payload: CyberPayload;
@@ -22,6 +23,7 @@ export default function CyberSimulationView({ payload, narrativePrompt }: CyberS
   const { systemHealth, activeIncidents, terminalLines, alerts, currentDirectory } = payload;
   const [command, setCommand] = useState("");
   const [localLines, setLocalLines] = useState<TerminalLine[]>(terminalLines);
+  const [workbenchOpen, setWorkbenchOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -42,7 +44,7 @@ export default function CyberSimulationView({ payload, narrativePrompt }: CyberS
     systemHealth >= 70 ? "bg-emerald-500" : systemHealth >= 40 ? "bg-amber-500" : "bg-rose-500";
 
   return (
-    <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-slate-800 bg-black text-emerald-400 md:flex-row">
+    <div className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-slate-800 bg-black text-emerald-400 md:flex-row">
       <div className="flex min-h-0 flex-1 flex-col">
         {/* Header: SOC system health */}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-slate-800 bg-slate-950 px-4 py-3">
@@ -134,6 +136,37 @@ export default function CyberSimulationView({ payload, narrativePrompt }: CyberS
           </AnimatePresence>
         </div>
       </div>
+
+      {/* SIEM / network topology workbench toggle + drawer */}
+      {!workbenchOpen && (
+        <button
+          onClick={() => setWorkbenchOpen(true)}
+          className="absolute bottom-4 left-4 flex items-center gap-2 rounded-md bg-slate-800 px-4 py-2.5 text-xs font-medium text-emerald-300 shadow-lg hover:bg-slate-700"
+        >
+          <Network className="h-4 w-4" />
+          Workbench
+        </button>
+      )}
+      <AnimatePresence>
+        {workbenchOpen && (
+          <motion.div
+            initial={{ y: 360, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 360, opacity: 0 }}
+            transition={{ type: "tween", duration: 0.2 }}
+            className="absolute inset-x-0 bottom-0 flex h-3/4 flex-col overflow-hidden rounded-t-lg border border-slate-800 shadow-2xl"
+          >
+            <div className="flex items-center gap-2 border-b border-slate-800 bg-slate-950 px-4 py-3">
+              <Network className="h-4 w-4 text-slate-300" />
+              <h2 className="text-sm font-semibold text-slate-200">Workbench</h2>
+              <button onClick={() => setWorkbenchOpen(false)} className="ml-auto rounded p-1 hover:bg-slate-800">
+                <X className="h-4 w-4 text-slate-400" />
+              </button>
+            </div>
+            <CyberWorkbench payload={payload} />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

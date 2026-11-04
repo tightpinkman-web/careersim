@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Paperclip, ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Mail, Paperclip, ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Minus, Calculator, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { VCPayload, VCEmail } from "@/types/simulation";
+import VCWorkbench from "@/components/simulations/VCWorkbench";
 
 interface VCSimulationViewProps {
   payload: VCPayload;
@@ -16,12 +17,13 @@ export default function VCSimulationView({ payload, narrativePrompt }: VCSimulat
   const [selectedEmailId, setSelectedEmailId] = useState<string | null>(emails[0]?.id ?? null);
   const [memo, setMemo] = useState(memoDraft);
   const [slideIndex, setSlideIndex] = useState(0);
+  const [workbenchOpen, setWorkbenchOpen] = useState(false);
 
   const selectedEmail: VCEmail | undefined = emails.find((e) => e.id === selectedEmailId);
   const activeSlide = deckSlides[slideIndex];
 
   return (
-    <div className="grid h-full grid-cols-1 gap-4 overflow-hidden md:grid-cols-2">
+    <div className="relative grid h-full grid-cols-1 gap-4 overflow-hidden md:grid-cols-2">
       {/* Left column: inbox + memo */}
       <div className="flex min-h-0 flex-col gap-4">
         <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -176,6 +178,37 @@ export default function VCSimulationView({ payload, narrativePrompt }: VCSimulat
           {narrativePrompt}
         </p>
       </div>
+
+      {/* Unit-economics workbench toggle + drawer */}
+      {!workbenchOpen && (
+        <button
+          onClick={() => setWorkbenchOpen(true)}
+          className="absolute bottom-4 left-4 flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2.5 text-xs font-medium text-white shadow-lg hover:bg-slate-800"
+        >
+          <Calculator className="h-4 w-4" />
+          Workbench
+        </button>
+      )}
+      <AnimatePresence>
+        {workbenchOpen && (
+          <motion.div
+            initial={{ x: -360, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: -360, opacity: 0 }}
+            transition={{ type: "tween", duration: 0.2 }}
+            className="absolute inset-y-0 left-0 flex w-full max-w-sm flex-col overflow-hidden rounded-r-lg border border-slate-200 bg-white shadow-2xl"
+          >
+            <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-3">
+              <Calculator className="h-4 w-4 text-slate-500" />
+              <h2 className="text-sm font-semibold text-slate-700">Workbench</h2>
+              <button onClick={() => setWorkbenchOpen(false)} className="ml-auto rounded p-1 hover:bg-slate-100">
+                <X className="h-4 w-4 text-slate-500" />
+              </button>
+            </div>
+            <VCWorkbench payload={payload} />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
