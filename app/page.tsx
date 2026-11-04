@@ -2,7 +2,6 @@ import {
   FileCheck2,
   ClipboardList,
   Mail,
-  Phone,
   ArrowRight,
   PlayCircle,
   LibraryBig,
@@ -17,8 +16,6 @@ import Reveal from "@/components/motion/Reveal";
 import RevealGrid from "@/components/motion/RevealGrid";
 
 const CONTACT_EMAIL = "tightpinkman@gmail.com";
-const CONTACT_PHONE = "9739409451";
-const CONTACT_PHONE_DISPLAY = "(973) 940-9451";
 
 const PROCESS_STEPS = [
   {
@@ -167,13 +164,6 @@ export default function Home() {
               >
                 <Mail className="h-4 w-4 text-slate-500" />
                 {CONTACT_EMAIL}
-              </a>
-              <a
-                href={`tel:${CONTACT_PHONE}`}
-                className="flex items-center gap-2 text-sm font-medium text-slate-300 transition-colors hover:text-signal"
-              >
-                <Phone className="h-4 w-4 text-slate-500" />
-                {CONTACT_PHONE_DISPLAY}
               </a>
             </div>
           </div>
