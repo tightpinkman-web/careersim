@@ -382,6 +382,7 @@ export default function ActiveSimulationPage() {
       <div className="relative min-h-0 flex-1">
         <SimulationShell
           state={state}
+          sessionId={sessionId}
           onAction={demoCapMessage ? undefined : handleAction}
           pendingActionId={pendingActionId}
         />

@@ -6,10 +6,14 @@ import { ShieldAlert, Terminal as TerminalIcon, Activity, ChevronsRight, Network
 import { cn } from "@/lib/utils";
 import type { CyberPayload, TerminalLine } from "@/types/simulation";
 import CyberWorkbench from "@/components/simulations/CyberWorkbench";
+import { recordInformationGather } from "@/lib/telemetry/tracker";
 
 interface CyberSimulationViewProps {
   payload: CyberPayload;
   narrativePrompt: string;
+  /** When set, inspecting a threat-feed alert is logged as an information-gathering interaction
+   *  (lib/telemetry/tracker.ts) for the Counselor Debrief Pack. */
+  sessionId?: string;
 }
 
 const severityColor: Record<string, string> = {
@@ -19,7 +23,7 @@ const severityColor: Record<string, string> = {
   critical: "text-rose-400 border-rose-500/30 bg-rose-500/10",
 };
 
-export default function CyberSimulationView({ payload, narrativePrompt }: CyberSimulationViewProps) {
+export default function CyberSimulationView({ payload, narrativePrompt, sessionId }: CyberSimulationViewProps) {
   const { systemHealth, activeIncidents, terminalLines, alerts, currentDirectory } = payload;
   const [command, setCommand] = useState("");
   const [localLines, setLocalLines] = useState<TerminalLine[]>(terminalLines);
@@ -116,11 +120,12 @@ export default function CyberSimulationView({ payload, narrativePrompt }: CyberS
             {alerts.map((alert) => (
               <motion.div
                 key={alert.id}
+                onClick={() => sessionId && recordInformationGather(sessionId, "log", alert.id)}
                 initial={{ opacity: 0, x: 12 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0 }}
                 className={cn(
-                  "rounded-md border px-3 py-2 text-xs",
+                  "cursor-pointer rounded-md border px-3 py-2 text-xs",
                   severityColor[alert.severity],
                   alert.resolved && "opacity-40"
                 )}

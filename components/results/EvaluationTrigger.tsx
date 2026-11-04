@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Sparkles, AlertTriangle } from "lucide-react";
+import { getTelemetrySnapshot, clearTelemetry } from "@/lib/telemetry/tracker";
 
 interface EvaluationTriggerProps {
   sessionId: string;
@@ -20,10 +21,11 @@ export default function EvaluationTrigger({ sessionId }: EvaluationTriggerProps)
       const res = await fetch("/api/simulations/evaluate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId }),
+        body: JSON.stringify({ sessionId, telemetry: getTelemetrySnapshot(sessionId) }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to generate evaluation.");
+      clearTelemetry(sessionId);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to generate evaluation.");

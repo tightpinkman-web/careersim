@@ -97,6 +97,18 @@ model SimulationSession {
   // Partner/institutional attribution captured from a `?ref=` query param by proxy.ts at the
   // time the session was started - null for organic traffic. See proxy.ts for capture logic.
   partnerRef        String?           @map("partner_ref")
+  // Aggregated micro-behavioral telemetry (lib/telemetry/tracker.ts's TelemetrySnapshot) submitted
+  // alongside the final /evaluate call - decision-timing stats, information-gathering interaction
+  // counts (emails/logs/exhibits opened), and strategic-pivot frequency. Null for any session
+  // completed before this field existed, or if the client never flushed a snapshot. Feeds
+  // components/results/CounselorDebriefReport.tsx's Cognitive Profile Mapping and Guided Discussion
+  // Prompts - never the student-facing AssessmentPdfReport.
+  telemetry         Json?             @map("telemetry")
+  // Public Supabase Storage URL for the server-rendered Counselor Debrief Pack PDF (see
+  // app/api/simulations/export-counselor-debrief/route.tsx) - null until rendered at least once.
+  // Separate from `pdfUrl` (the student-facing AssessmentPdfReport) since the two reports have
+  // different audiences and different cache lifecycles.
+  counselorDebriefUrl String?         @map("counselor_debrief_url")
   startedAt         DateTime          @default(now()) @map("started_at")
   completedAt       DateTime?         @map("completed_at")
 

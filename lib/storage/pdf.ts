@@ -24,6 +24,10 @@ function objectPath(sessionId: string): string {
   return `${sessionId}.pdf`;
 }
 
+function debriefObjectPath(sessionId: string): string {
+  return `${sessionId}-debrief.pdf`;
+}
+
 /**
  * Uploads a rendered PDF buffer to `scorecards/${sessionId}.pdf` (overwriting any prior render for
  * this session, since `upsert: true` makes export-pdf/route.ts idempotent against retries) and
@@ -65,6 +69,42 @@ export async function getScorecardPDFUrl(sessionId: string): Promise<string | nu
     return publicUrlData.publicUrl;
   } catch (err) {
     console.error("[lib/storage/pdf] getScorecardPDFUrl failed:", err);
+    return null;
+  }
+}
+
+/** Same upload path as uploadScorecardPDF, but to `${sessionId}-debrief.pdf` - the counselor-only
+ *  companion report (components/results/CounselorDebriefReport.tsx), kept in the same public bucket
+ *  since both documents are only ever reachable via their own unguessable URL, never listed. */
+export async function uploadCounselorDebriefPDF(sessionId: string, pdfBuffer: Buffer): Promise<string> {
+  const supabase = getStorageClient();
+  const path = debriefObjectPath(sessionId);
+
+  const { error } = await supabase.storage.from(SCORECARDS_BUCKET).upload(path, pdfBuffer, {
+    contentType: "application/pdf",
+    upsert: true,
+  });
+  if (error) {
+    throw new Error(`Failed to upload counselor debrief PDF to Supabase Storage: ${error.message}`);
+  }
+
+  const { data } = supabase.storage.from(SCORECARDS_BUCKET).getPublicUrl(path);
+  return data.publicUrl;
+}
+
+/** Same existence check as getScorecardPDFUrl, for the counselor debrief's object path. */
+export async function getCounselorDebriefPDFUrl(sessionId: string): Promise<string | null> {
+  const supabase = getStorageClient();
+  const path = debriefObjectPath(sessionId);
+
+  try {
+    const { data, error } = await supabase.storage.from(SCORECARDS_BUCKET).list("", { search: path });
+    if (error || !data?.some((entry) => entry.name === path)) return null;
+
+    const { data: publicUrlData } = supabase.storage.from(SCORECARDS_BUCKET).getPublicUrl(path);
+    return publicUrlData.publicUrl;
+  } catch (err) {
+    console.error("[lib/storage/pdf] getCounselorDebriefPDFUrl failed:", err);
     return null;
   }
 }

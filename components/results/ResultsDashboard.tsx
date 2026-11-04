@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { CheckCircle2, TrendingUp, Compass, ArrowLeft, Link2, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import DownloadReportButton from "@/components/DownloadReportButton";
+import CounselorDebriefButton from "@/components/CounselorDebriefButton";
 import { CAREER_TITLES } from "@/lib/careerTitles";
 import type { CareerType } from "@/types/simulation";
 
@@ -260,7 +261,10 @@ export default function ResultsDashboard({
             Try Another Career
           </Link>
           {verificationHash && <VerificationLink hash={verificationHash} />}
-          <DownloadReportButton sessionId={sessionId} />
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <CounselorDebriefButton sessionId={sessionId} />
+            <DownloadReportButton sessionId={sessionId} />
+          </div>
         </div>
       </div>
     </div>

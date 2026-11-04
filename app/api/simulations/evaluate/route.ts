@@ -62,6 +62,12 @@ function generateVerificationHash(): string {
 
 interface EvaluateRequestBody {
   sessionId?: string;
+  /** Aggregated client-side telemetry snapshot (lib/telemetry/tracker.ts's TelemetrySnapshot) -
+   *  optional and opaque to this route, which only persists it verbatim onto
+   *  SimulationSession.telemetry for components/results/CounselorDebriefReport.tsx to read. Never
+   *  validated against a strict schema since it's purely observational, not something the
+   *  evaluation logic itself depends on. */
+  telemetry?: unknown;
 }
 
 export async function POST(request: Request) {
@@ -72,7 +78,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Request body must be valid JSON." }, { status: 400 });
   }
 
-  const { sessionId } = body;
+  const { sessionId, telemetry } = body;
   if (!sessionId) {
     return NextResponse.json({ error: "sessionId is required." }, { status: 400 });
   }
@@ -166,6 +172,7 @@ export async function POST(request: Request) {
         growthAreas: evaluation.growthAreas,
         careerFitSummary: evaluation.careerFitSummary,
         verificationHash: session.verificationHash ?? generateVerificationHash(),
+        telemetry: telemetry !== undefined ? (telemetry as object) : undefined,
       },
     }),
   ]);

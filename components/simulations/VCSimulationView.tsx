@@ -6,13 +6,18 @@ import { Mail, Paperclip, ChevronLeft, ChevronRight, TrendingUp, TrendingDown, M
 import { cn } from "@/lib/utils";
 import type { VCPayload, VCEmail } from "@/types/simulation";
 import VCWorkbench from "@/components/simulations/VCWorkbench";
+import { recordInformationGather } from "@/lib/telemetry/tracker";
 
 interface VCSimulationViewProps {
   payload: VCPayload;
   narrativePrompt: string;
+  /** When set, opening an email or paging through the deck is logged as an information-gathering
+   *  interaction (lib/telemetry/tracker.ts) for the Counselor Debrief Pack. Omitted entirely in
+   *  the static /simulations/preview sandbox, where there's no real session to attribute it to. */
+  sessionId?: string;
 }
 
-export default function VCSimulationView({ payload, narrativePrompt }: VCSimulationViewProps) {
+export default function VCSimulationView({ payload, narrativePrompt, sessionId }: VCSimulationViewProps) {
   const { emails, memoDraft, deckSlides, financialMetrics, startupName } = payload;
   const [selectedEmailId, setSelectedEmailId] = useState<string | null>(emails[0]?.id ?? null);
   const [memo, setMemo] = useState(memoDraft);
@@ -37,7 +42,10 @@ export default function VCSimulationView({ payload, narrativePrompt }: VCSimulat
               {emails.map((email) => (
                 <li key={email.id}>
                   <button
-                    onClick={() => setSelectedEmailId(email.id)}
+                    onClick={() => {
+                      setSelectedEmailId(email.id);
+                      if (sessionId) recordInformationGather(sessionId, "email", email.id);
+                    }}
                     className={cn(
                       "w-full border-b border-slate-100 px-3 py-2 text-left transition-colors",
                       selectedEmailId === email.id ? "bg-indigo-50" : "hover:bg-slate-50"
@@ -139,14 +147,22 @@ export default function VCSimulationView({ payload, narrativePrompt }: VCSimulat
             {deckSlides.length > 1 && (
               <>
                 <button
-                  onClick={() => setSlideIndex((i) => Math.max(0, i - 1))}
+                  onClick={() => {
+                    const nextIndex = Math.max(0, slideIndex - 1);
+                    setSlideIndex(nextIndex);
+                    if (sessionId && deckSlides[nextIndex]) recordInformationGather(sessionId, "exhibit", deckSlides[nextIndex].id);
+                  }}
                   disabled={slideIndex === 0}
                   className="absolute left-2 top-1/2 -translate-y-1/2 rounded-md bg-white/10 p-1.5 disabled:opacity-30"
                 >
                   <ChevronLeft className="h-4 w-4" />
                 </button>
                 <button
-                  onClick={() => setSlideIndex((i) => Math.min(deckSlides.length - 1, i + 1))}
+                  onClick={() => {
+                    const nextIndex = Math.min(deckSlides.length - 1, slideIndex + 1);
+                    setSlideIndex(nextIndex);
+                    if (sessionId && deckSlides[nextIndex]) recordInformationGather(sessionId, "exhibit", deckSlides[nextIndex].id);
+                  }}
                   disabled={slideIndex === deckSlides.length - 1}
                   className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md bg-white/10 p-1.5 disabled:opacity-30"
                 >

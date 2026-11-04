@@ -12,9 +12,13 @@ import ProductSimulationView from "@/components/simulations/ProductSimulationVie
 import LawSimulationView from "@/components/simulations/LawSimulationView";
 import QuantSimulationView from "@/components/simulations/QuantSimulationView";
 import WorkspaceShell, { type CrisisAnchor, type WorkspaceChatMessage, type WorkspaceEmail } from "@/components/workspace/WorkspaceShell";
+import { recordDecisionTiming, recordStrategicPivot } from "@/lib/telemetry/tracker";
 
 interface SimulationShellProps {
   state: SimulationState;
+  /** Needed only to key micro-behavioral telemetry (lib/telemetry/tracker.ts) to the right
+   *  sessionStorage bucket - never sent anywhere from inside this component itself. */
+  sessionId: string;
   /** elapsedSeconds is how long the student took to respond to the current step, measured from
    *  when this state was rendered to when they submitted - captured regardless of whether the
    *  60s countdown had run out. */
@@ -110,10 +114,15 @@ function deriveCrisisAnchor(state: SimulationState): CrisisAnchor | null {
   return null;
 }
 
-export default function SimulationShell({ state, onAction, pendingActionId }: SimulationShellProps) {
+export default function SimulationShell({ state, sessionId, onAction, pendingActionId }: SimulationShellProps) {
   const [freeform, setFreeform] = useState("");
   const [secondsRemaining, setSecondsRemaining] = useState(DECISION_WINDOW_SECONDS);
   const stepStartRef = useRef(0);
+  // Tracks the `kind` of the last action the student actually submitted, purely to detect
+  // strategic pivots (lib/telemetry/tracker.ts) - a consecutive change in action kind (e.g.
+  // "primary" -> "danger") is recorded as a pivot. Not reset on step change: a pivot is about the
+  // transition between two real decisions, regardless of how many steps apart they are.
+  const lastActionKindRef = useRef<string | null>(null);
   const hudEntries = Object.entries(state.hudMetrics).filter(([, v]) => v !== undefined);
 
   const isDark = state.ui_mode === "CYBERSECURITY" || state.ui_mode === "QUANT_TRADING";
@@ -135,6 +144,14 @@ export default function SimulationShell({ state, onAction, pendingActionId }: Si
     // Derived from the already-ticking countdown state rather than a fresh Date.now() call, so
     // this stays a pure read (at most ~1s of rounding, which is fine for this purpose).
     const elapsedSeconds = Math.max(0, DECISION_WINDOW_SECONDS - secondsRemaining);
+    recordDecisionTiming(sessionId, state.currentStep, elapsedSeconds);
+
+    const actionKind = state.allowedActions.find((a) => a.id === actionId)?.kind ?? "unspecified";
+    if (lastActionKindRef.current && lastActionKindRef.current !== actionKind) {
+      recordStrategicPivot(sessionId, state.currentStep, lastActionKindRef.current, actionKind);
+    }
+    lastActionKindRef.current = actionKind;
+
     onAction?.(actionId, freeform.trim() || undefined, elapsedSeconds);
     setFreeform("");
   };
@@ -154,13 +171,13 @@ export default function SimulationShell({ state, onAction, pendingActionId }: Si
   const renderView = () => {
     switch (state.ui_mode) {
       case "VENTURE_CAPITAL":
-        return <VCSimulationView payload={state.payload} narrativePrompt={state.narrativePrompt} />;
+        return <VCSimulationView payload={state.payload} narrativePrompt={state.narrativePrompt} sessionId={sessionId} />;
       case "CYBERSECURITY":
-        return <CyberSimulationView payload={state.payload} narrativePrompt={state.narrativePrompt} />;
+        return <CyberSimulationView payload={state.payload} narrativePrompt={state.narrativePrompt} sessionId={sessionId} />;
       case "PRODUCT_MANAGEMENT":
         return <ProductSimulationView payload={state.payload} narrativePrompt={state.narrativePrompt} />;
       case "CORPORATE_LAW":
-        return <LawSimulationView payload={state.payload} narrativePrompt={state.narrativePrompt} />;
+        return <LawSimulationView payload={state.payload} narrativePrompt={state.narrativePrompt} sessionId={sessionId} />;
       case "QUANT_TRADING":
         return <QuantSimulationView payload={state.payload} narrativePrompt={state.narrativePrompt} />;
       default:

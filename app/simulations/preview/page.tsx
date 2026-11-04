@@ -272,6 +272,7 @@ export default function SimulationPreviewPage() {
       <div className="flex-1 pt-16">
         <SimulationShell
           state={state}
+          sessionId="preview"
           onAction={(actionId, freeformInput) => {
             console.log("[preview] action:", actionId, "input:", freeformInput);
           }}

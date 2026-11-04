@@ -6,13 +6,17 @@ import { FileText, MessageSquare, X, Send, PenLine, FileSearch } from "lucide-re
 import { cn } from "@/lib/utils";
 import type { LawPayload, NegotiationMessage } from "@/types/simulation";
 import LegalWorkbench from "@/components/simulations/LegalWorkbench";
+import { recordInformationGather } from "@/lib/telemetry/tracker";
 
 interface LawSimulationViewProps {
   payload: LawPayload;
   narrativePrompt: string;
+  /** When set, opening a clause's redline detail is logged as an information-gathering
+   *  interaction (lib/telemetry/tracker.ts) for the Counselor Debrief Pack. */
+  sessionId?: string;
 }
 
-export default function LawSimulationView({ payload, narrativePrompt }: LawSimulationViewProps) {
+export default function LawSimulationView({ payload, narrativePrompt, sessionId }: LawSimulationViewProps) {
   const { documentTitle, clauses, negotiationThread } = payload;
   const [activeClauseId, setActiveClauseId] = useState<string | null>(null);
   const [chatOpen, setChatOpen] = useState(false);
@@ -45,7 +49,11 @@ export default function LawSimulationView({ payload, narrativePrompt }: LawSimul
             <div key={clause.id}>
               <h3 className="mb-1 text-sm font-semibold text-slate-800">{clause.heading}</h3>
               <p
-                onClick={() => clause.redline && setActiveClauseId(clause.id)}
+                onClick={() => {
+                  if (!clause.redline) return;
+                  setActiveClauseId(clause.id);
+                  if (sessionId) recordInformationGather(sessionId, "exhibit", clause.id);
+                }}
                 className={cn(
                   "text-sm leading-relaxed text-slate-700",
                   clause.flagged && "cursor-pointer rounded bg-rose-50 px-1 decoration-rose-400 decoration-2 underline underline-offset-4",
