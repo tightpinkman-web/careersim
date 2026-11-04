@@ -23,6 +23,11 @@ export interface CachedSimulationSession {
   status: "IN_PROGRESS" | "COMPLETED";
   studentTier: "ENTERPRISE_STUDENT" | "PUBLIC_DEMO";
   turns: CachedTurn[];
+  /** Deterministic State Engine's running numeric state (see lib/simulation/state-machine.ts),
+   *  carried alongside the narrative turn history so app/api/simulations/action/route.ts can apply
+   *  the next turn's state_delta without re-deriving it from scratch. Optional so older cache
+   *  entries written before this field existed still deserialize cleanly. */
+  deterministicState?: import("@/lib/simulation/state-machine").DeterministicState;
 }
 
 const SESSION_TTL_SECONDS = 86400; // 24 hours

@@ -2,9 +2,12 @@ import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedStudent } from "@/lib/authStudent";
 import { generateSimulationStream, describeLLMError } from "@/lib/llm/provider";
+import { requestDecisionTurn } from "@/lib/llm/schemas";
 import { getGameMasterPrompt } from "@/lib/prompts/gameMasters";
 import { setRedisSession, type CachedSimulationSession, type CachedTurn } from "@/lib/redis";
 import { CAREER_STATE_SCHEMAS, type CareerTypeKey } from "@/lib/schemas/simulation";
+import { INITIAL_DETERMINISTIC_STATE, applyStateDelta } from "@/lib/simulation/state-machine";
+import { annotateWithReplay } from "@/lib/simulation/replay";
 import { sseResponse } from "@/lib/sse";
 import { ageTierForMode, type AgeTier, type SimulationMode, type SimulationState } from "@/types/simulation";
 import { PARTNER_REF_COOKIE } from "@/lib/partnerRef";
@@ -156,12 +159,36 @@ export async function POST(request: NextRequest) {
       return;
     }
 
+    // Deterministic State Engine (lib/simulation/state-machine.ts): a second, independent Groq call
+    // under the rigid DecisionTurnSchema (lib/llm/schemas.ts) extracts this turn's numeric
+    // state_delta + a replayable decision-node id, separate from the free-form narrative payload
+    // above. Never blocks or fails the turn - requestDecisionTurn always resolves, falling back to
+    // a no-op delta on any error.
+    const decisionTurn = await requestDecisionTurn(
+      [{ role: "user", text: "[SESSION_START] Begin the simulation." }],
+      "[SESSION_START]",
+      state.currentStep
+    );
+    const { state: deterministicState, violations } = applyStateDelta(
+      INITIAL_DETERMINISTIC_STATE,
+      decisionTurn.state_delta,
+      decisionTurn.narrative_flavor
+    );
+    if (violations.length > 0) {
+      console.warn(
+        `[STATE_ENGINE_VIOLATION] session=${session.id} step=${state.currentStep} ${violations
+          .map((v) => `${v.rule}: ${v.message}`)
+          .join("; ")}`
+      );
+    }
+    const annotatedState = annotateWithReplay(state, decisionTurn.next_node_id, deterministicState, decisionTurn.trigger_event);
+
     await prisma.actionLog.create({
       data: {
         sessionId: session.id,
         stepSequence: state.currentStep,
         studentInput: "[SESSION_START]",
-        returnedState: state as object,
+        returnedState: annotatedState as object,
         decisionTag: "session_start",
       },
     });
@@ -169,7 +196,7 @@ export async function POST(request: NextRequest) {
     const initialTurn: CachedTurn = {
       stepSequence: state.currentStep,
       studentInput: "[SESSION_START]",
-      returnedState: state,
+      returnedState: annotatedState,
       decisionTag: "session_start",
       decisionTimeSeconds: null,
     };
@@ -181,6 +208,7 @@ export async function POST(request: NextRequest) {
       status: "IN_PROGRESS",
       studentTier: student.tier,
       turns: [initialTurn],
+      deterministicState,
     };
     // Seeds the active-turn cache app/api/simulations/action/route.ts reads from - a no-op if
     // Redis isn't configured, in which case action/route.ts transparently falls back to reading

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { generateSimulationStream, evaluateTurnMetrics, describeLLMError, type ChatTurn } from "@/lib/llm/provider";
+import { requestDecisionTurn } from "@/lib/llm/schemas";
 import { getGameMasterPrompt } from "@/lib/prompts/gameMasters";
 import { CAREER_STATE_SCHEMAS, type CareerTypeKey } from "@/lib/schemas/simulation";
 import { sseResponse } from "@/lib/sse";
@@ -12,6 +13,8 @@ import {
   type CachedSimulationSession,
   type CachedTurn,
 } from "@/lib/redis";
+import { INITIAL_DETERMINISTIC_STATE, applyStateDelta } from "@/lib/simulation/state-machine";
+import { annotateWithReplay, getLastStateSnapshot } from "@/lib/simulation/replay";
 import type { SimulationMode, SimulationState } from "@/types/simulation";
 
 interface ActionRequestBody {
@@ -179,6 +182,14 @@ export async function POST(request: Request) {
     if (redisEnabled) await setRedisSession(sessionId, cached);
   }
 
+  // Deterministic State Engine's running numeric state (lib/simulation/state-machine.ts) picks up
+  // where the last turn left off: from the cache when present, otherwise reconstructed from the
+  // last logged turn's replay annotation (lib/simulation/replay.ts), falling back to the baseline
+  // for a session with no prior annotation at all (e.g. started before this layer existed).
+  const priorDeterministicState =
+    cached.deterministicState ??
+    (turnHistory.length > 0 ? getLastStateSnapshot(turnHistory[turnHistory.length - 1].returnedState) : INITIAL_DETERMINISTIC_STATE);
+
   if (sessionStatus === "COMPLETED") {
     return NextResponse.json(
       { error: "This simulation session has already concluded.", code: "SESSION_COMPLETED" },
@@ -235,10 +246,30 @@ export async function POST(request: Request) {
     const nextStepSequence =
       turnHistory.length > 0 ? turnHistory[turnHistory.length - 1].stepSequence + 1 : 1;
 
+    // Second, independent Groq call under the rigid DecisionTurnSchema (lib/llm/schemas.ts)
+    // extracts this turn's numeric state_delta + a replayable decision-node id. Applying it is the
+    // Deterministic State Engine's job (lib/simulation/state-machine.ts), not the narrative Game
+    // Master's - the two are deliberately decoupled so engine state can never desync from whatever
+    // the narrative prose claims. Never blocks or fails the turn.
+    const decisionTurn = await requestDecisionTurn(turns.slice(0, -1), action, nextStepSequence);
+    const { state: deterministicState, violations } = applyStateDelta(
+      priorDeterministicState,
+      decisionTurn.state_delta,
+      decisionTurn.narrative_flavor
+    );
+    if (violations.length > 0) {
+      console.warn(
+        `[STATE_ENGINE_VIOLATION] session=${sessionId} step=${nextStepSequence} ${violations
+          .map((v) => `${v.rule}: ${v.message}`)
+          .join("; ")}`
+      );
+    }
+    const persistedState = annotateWithReplay(state, decisionTurn.next_node_id, deterministicState, decisionTurn.trigger_event);
+
     const newTurn: CachedTurn = {
       stepSequence: nextStepSequence,
       studentInput: action,
-      returnedState: state,
+      returnedState: persistedState,
       decisionTag: action.slice(0, 60),
       decisionTimeSeconds: decisionTimeSeconds ?? null,
     };
@@ -247,6 +278,7 @@ export async function POST(request: Request) {
       // Skip the synchronous per-turn Postgres write entirely - the updated turn history lives in
       // Redis until /evaluate durably flushes the whole session in one atomic batch.
       cached.turns = [...turnHistory, newTurn];
+      cached.deterministicState = deterministicState;
       if (state.isComplete) cached.status = "COMPLETED";
       await setRedisSession(sessionId, cached);
     } else {
