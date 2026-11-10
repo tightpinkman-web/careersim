@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Sparkles, AlertTriangle } from "lucide-react";
 import { getTelemetrySnapshot, clearTelemetry } from "@/lib/telemetry/tracker";
+import { getVCTelemetrySnapshot, clearVCTelemetry } from "@/lib/telemetry/vc-tracker";
 
 interface EvaluationTriggerProps {
   sessionId: string;
@@ -21,11 +22,20 @@ export default function EvaluationTrigger({ sessionId }: EvaluationTriggerProps)
       const res = await fetch("/api/simulations/evaluate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId, telemetry: getTelemetrySnapshot(sessionId) }),
+        body: JSON.stringify({
+          sessionId,
+          // VC telemetry (lib/telemetry/vc-tracker.ts) rides along as `vc` inside the same JSON
+          // blob rather than its own request field or DB column - SimulationSession.telemetry is
+          // already a schema-free Json column, so no migration is needed to carry it. It's a
+          // no-op/all-null snapshot for every non-VC career, since nothing was ever recorded under
+          // that sessionId's vc-telemetry namespace.
+          telemetry: { ...getTelemetrySnapshot(sessionId), vc: getVCTelemetrySnapshot(sessionId) },
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to generate evaluation.");
       clearTelemetry(sessionId);
+      clearVCTelemetry(sessionId);
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to generate evaluation.");

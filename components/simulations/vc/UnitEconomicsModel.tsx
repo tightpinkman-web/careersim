@@ -5,6 +5,7 @@ import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tool
 import { Gauge } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { STARTUP_IDS, STARTUP_NAMES, INITIAL_VC_STATE, type StartupId } from "@/lib/simulation/vc-engine";
+import { recordModelTweak } from "@/lib/telemetry/vc-tracker";
 
 const PROJECTION_MONTHS = 24;
 
@@ -16,7 +17,7 @@ const PROJECTION_MONTHS = 24;
  * churn to drive a two-line "Base vs. Stressed" cumulative-retained-value chart, so a diligence
  * assumption can be pressure-tested against a downturn scenario rather than just its happy path.
  */
-export default function UnitEconomicsModel() {
+export default function UnitEconomicsModel({ sessionId }: { sessionId?: string }) {
   const [selectedId, setSelectedId] = useState<StartupId>(STARTUP_IDS[0]);
   const financials = INITIAL_VC_STATE.startups[selectedId];
 
@@ -96,9 +97,39 @@ export default function UnitEconomicsModel() {
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Slider label="CAC" value={cac} display={`₹${cac.toLocaleString("en-IN")}`} min={10_000} max={500_000} step={5_000} onChange={setCac} accent="accent-indigo-500" />
-          <Slider label="LTV" value={ltv} display={`₹${ltv.toLocaleString("en-IN")}`} min={50_000} max={2_000_000} step={10_000} onChange={setLtv} accent="accent-emerald-500" />
-          <Slider label="Annual Churn" value={annualChurnPct} display={`${annualChurnPct}%`} min={1} max={60} step={1} onChange={setAnnualChurnPct} accent="accent-rose-500" />
+          <Slider
+            label="CAC"
+            value={cac}
+            display={`₹${cac.toLocaleString("en-IN")}`}
+            min={10_000}
+            max={500_000}
+            step={5_000}
+            onChange={setCac}
+            onCommit={() => sessionId && recordModelTweak(sessionId)}
+            accent="accent-indigo-500"
+          />
+          <Slider
+            label="LTV"
+            value={ltv}
+            display={`₹${ltv.toLocaleString("en-IN")}`}
+            min={50_000}
+            max={2_000_000}
+            step={10_000}
+            onChange={setLtv}
+            onCommit={() => sessionId && recordModelTweak(sessionId)}
+            accent="accent-emerald-500"
+          />
+          <Slider
+            label="Annual Churn"
+            value={annualChurnPct}
+            display={`${annualChurnPct}%`}
+            min={1}
+            max={60}
+            step={1}
+            onChange={setAnnualChurnPct}
+            onCommit={() => sessionId && recordModelTweak(sessionId)}
+            accent="accent-rose-500"
+          />
           <Slider
             label="Payback Target"
             value={paybackTargetMonths}
@@ -107,6 +138,7 @@ export default function UnitEconomicsModel() {
             max={36}
             step={1}
             onChange={setPaybackTargetMonths}
+            onCommit={() => sessionId && recordModelTweak(sessionId)}
             accent="accent-slate-500"
           />
         </div>
@@ -120,6 +152,7 @@ export default function UnitEconomicsModel() {
             max={100}
             step={5}
             onChange={setStressPct}
+            onCommit={() => sessionId && recordModelTweak(sessionId)}
             accent="accent-amber-500"
           />
         </div>
@@ -150,6 +183,7 @@ function Slider({
   max,
   step,
   onChange,
+  onCommit,
   accent,
 }: {
   label: string;
@@ -159,6 +193,10 @@ function Slider({
   max: number;
   step: number;
   onChange: (value: number) => void;
+  /** Fired on pointer/key release rather than on every drag tick, so slider-driven telemetry
+   *  (lib/telemetry/vc-tracker.ts's recordModelTweak) counts deliberate commits instead of dozens
+   *  of continuous onChange events per drag. */
+  onCommit?: () => void;
   accent: string;
 }) {
   return (
@@ -174,6 +212,8 @@ function Slider({
         step={step}
         value={value}
         onChange={(e) => onChange(parseFloat(e.target.value))}
+        onPointerUp={onCommit}
+        onKeyUp={onCommit}
         className={cn("w-full", accent)}
       />
     </div>

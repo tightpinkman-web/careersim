@@ -13,6 +13,7 @@ import LawSimulationView from "@/components/simulations/LawSimulationView";
 import QuantSimulationView from "@/components/simulations/QuantSimulationView";
 import WorkspaceShell, { type CrisisAnchor, type WorkspaceChatMessage, type WorkspaceEmail } from "@/components/workspace/WorkspaceShell";
 import { recordDecisionTiming, recordStrategicPivot } from "@/lib/telemetry/tracker";
+import { recordFomoResponse } from "@/lib/telemetry/vc-tracker";
 
 interface SimulationShellProps {
   state: SimulationState;
@@ -145,6 +146,9 @@ export default function SimulationShell({ state, sessionId, onAction, pendingAct
     // this stays a pure read (at most ~1s of rounding, which is fine for this purpose).
     const elapsedSeconds = Math.max(0, DECISION_WINDOW_SECONDS - secondsRemaining);
     recordDecisionTiming(sessionId, state.currentStep, elapsedSeconds);
+    // Resolves any pending VC Inbound Hub FOMO alert (lib/telemetry/vc-tracker.ts) against this
+    // real decision - a no-op for every non-VC track, since no FOMO trigger was ever recorded.
+    recordFomoResponse(sessionId);
 
     const actionKind = state.allowedActions.find((a) => a.id === actionId)?.kind ?? "unspecified";
     if (lastActionKindRef.current && lastActionKindRef.current !== actionKind) {

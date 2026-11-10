@@ -12,6 +12,7 @@ import {
   formatINR,
   type StartupId,
 } from "@/lib/simulation/vc-engine";
+import { recordModelTweak } from "@/lib/telemetry/vc-tracker";
 
 const CR = 1_00_00_000;
 const MAX_BOARD_SEATS = 2;
@@ -29,7 +30,7 @@ const RISK_REDUCTION_PER_BOARD_SEAT = 4;
  * invents, so pushing for a lower valuation cap visibly increases ownership % the same way it would
  * in a real cap-table model.
  */
-export default function TermSheetBuilder() {
+export default function TermSheetBuilder({ sessionId }: { sessionId?: string }) {
   const [selectedId, setSelectedId] = useState<StartupId>(STARTUP_IDS[0]);
   const baseFinancials = INITIAL_VC_STATE.startups[selectedId];
 
@@ -57,6 +58,10 @@ export default function TermSheetBuilder() {
   const ownershipPct = calculateOwnershipPct(investmentCr * CR, proposedFinancials);
   const financialRiskDelta = calculateRiskDelta(proposedFinancials);
   const riskDelta = Math.max(0, financialRiskDelta - boardSeats * RISK_REDUCTION_PER_BOARD_SEAT);
+
+  function commitTweak() {
+    if (sessionId) recordModelTweak(sessionId);
+  }
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -110,6 +115,8 @@ export default function TermSheetBuilder() {
               step={5}
               value={valuationCapCr}
               onChange={(e) => setValuationCapCr(parseFloat(e.target.value))}
+              onPointerUp={commitTweak}
+              onKeyUp={commitTweak}
               className="w-full accent-indigo-500"
             />
           </div>
@@ -126,6 +133,8 @@ export default function TermSheetBuilder() {
               step={1}
               value={investmentCr}
               onChange={(e) => setInvestmentCr(parseFloat(e.target.value))}
+              onPointerUp={commitTweak}
+              onKeyUp={commitTweak}
               className="w-full accent-emerald-500"
             />
           </div>
@@ -136,7 +145,10 @@ export default function TermSheetBuilder() {
               {([1, 2] as const).map((option) => (
                 <button
                   key={option}
-                  onClick={() => setLiquidationPreference(option)}
+                  onClick={() => {
+                    setLiquidationPreference(option);
+                    commitTweak();
+                  }}
                   className={cn(
                     "flex-1 rounded-md border px-3 py-2 text-xs font-medium transition-colors",
                     liquidationPreference === option
@@ -156,7 +168,10 @@ export default function TermSheetBuilder() {
               {Array.from({ length: MAX_BOARD_SEATS + 1 }, (_, n) => n).map((n) => (
                 <button
                   key={n}
-                  onClick={() => setBoardSeats(n)}
+                  onClick={() => {
+                    setBoardSeats(n);
+                    commitTweak();
+                  }}
                   className={cn(
                     "flex-1 rounded-md border px-3 py-2 text-xs font-medium transition-colors",
                     boardSeats === n ? "border-slate-900 bg-slate-900 text-white" : "border-slate-200 text-slate-600 hover:bg-slate-50"

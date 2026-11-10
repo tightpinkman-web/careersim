@@ -6,6 +6,7 @@ import CounselorDebriefReport from "@/components/results/CounselorDebriefReport"
 import { CAREER_TITLES } from "@/lib/careerTitles";
 import type { CareerType, SimulationMode } from "@/types/simulation";
 import type { TelemetrySnapshot } from "@/lib/telemetry/tracker";
+import type { VCTelemetrySnapshot } from "@/lib/telemetry/vc-tracker";
 
 interface ExportDebriefRequestBody {
   sessionId?: string;
@@ -66,6 +67,7 @@ export async function POST(request: Request) {
   }
 
   const careerType = session.careerType as CareerType;
+  const telemetry = (session.telemetry as (TelemetrySnapshot & { vc?: VCTelemetrySnapshot }) | null) ?? null;
   const element = (
     <CounselorDebriefReport
       sessionId={session.id}
@@ -76,7 +78,8 @@ export async function POST(request: Request) {
       competencies={session.competencies as Record<string, number>}
       keyStrengths={session.keyStrengths}
       growthAreas={session.growthAreas}
-      telemetry={(session.telemetry as TelemetrySnapshot | null) ?? null}
+      telemetry={telemetry}
+      vcTelemetry={telemetry?.vc ?? null}
     />
   );
 

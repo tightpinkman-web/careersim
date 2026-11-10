@@ -1,6 +1,7 @@
 import { Document, Page, Text, View, StyleSheet, Font, Svg, Path, Rect } from "@react-pdf/renderer";
 import type { SimulationMode } from "@/types/simulation";
 import type { TelemetrySnapshot } from "@/lib/telemetry/tracker";
+import type { VCTelemetrySnapshot } from "@/lib/telemetry/vc-tracker";
 
 // Same fix as components/AssessmentPdfReport.tsx - duplicated rather than imported since these are
 // two independently-rendered @react-pdf/renderer documents and the fix is a two-line Font call, not
@@ -44,6 +45,11 @@ export interface CounselorDebriefReportProps {
    *  /evaluate call - null for a session that completed before this field existed, or if the
    *  client never had anything to flush (e.g. sessionStorage was unavailable throughout). */
   telemetry: TelemetrySnapshot | null;
+  /** VC Associate-track-only micro-behavioral telemetry (lib/telemetry/vc-tracker.ts) - null for
+   *  every other career, or a VC session where nothing was ever recorded. Drives the Non-Consensus
+   *  Index and its own guided reflection prompts on page 2, additively alongside the generic
+   *  telemetry section above rather than replacing it. */
+  vcTelemetry?: VCTelemetrySnapshot | null;
 }
 
 const COLORS = {
@@ -213,6 +219,58 @@ function buildDiscussionPrompts(telemetry: TelemetrySnapshot | null, growthAreas
   return prompts;
 }
 
+/**
+ * Non-Consensus Index (0-100): a VC-specific coaching heuristic, not a real finance methodology -
+ * it rewards the three concrete signals that distinguish a structure-first, conviction-driven
+ * analyst from one who follows momentum: holding a thesis under the Managing Partner's pushback
+ * (lib/simulation/vc/PartnerDefense.tsx), not reacting instantly to the Inbound Hub's FOMO rival
+ * term-sheet alert, and reaching for ownership/structure math (the Term Sheet Builder) before
+ * anything else. Returns null when there's no VC telemetry to score at all.
+ */
+function calculateNonConsensusIndex(vc: VCTelemetrySnapshot): number {
+  let score = 0;
+  if (vc.partnerConvictionHeld === true) score += 40;
+  if (vc.fomoPanicLatencySeconds === null || vc.fomoPanicLatencySeconds >= 15) score += 30;
+  if (vc.openedCapTableFirst === true) score += 30;
+  return score;
+}
+
+/** Guided reflection prompts specific to the VC track's own telemetry drop-offs, appended after the
+ *  generic discussion prompts above rather than replacing them. */
+function buildVCDiscussionPrompts(vc: VCTelemetrySnapshot): DiscussionPrompt[] {
+  const prompts: DiscussionPrompt[] = [];
+
+  if (vc.partnerConvictionHeld === false) {
+    prompts.push({
+      text: "This student revised their valuation/terms as soon as the Managing Partner pushed back in the Defense Room. Ask them to separate what changed their mind: new information the partner raised, or just social pressure from a senior voice disagreeing.",
+    });
+  } else if (vc.partnerConvictionHeld === true) {
+    prompts.push({
+      text: "This student held their position under the Managing Partner's critique. Ask them to defend that same thesis again, out loud, as if the critique had been even sharper - was their conviction earned, or stubborn?",
+    });
+  }
+
+  if (vc.fomoPanicLatencySeconds !== null && vc.fomoPanicLatencySeconds < 15) {
+    prompts.push({
+      text: `This student made their next move just ${vc.fomoPanicLatencySeconds}s after the rival term-sheet FOMO alert fired. Ask what specifically they re-evaluated in that window - or whether the alert itself made the decision for them.`,
+    });
+  }
+
+  if (vc.openedCapTableFirst === false) {
+    prompts.push({
+      text: "This student opened another tool before the Term Sheet Builder's ownership/structure math. Ask them to walk through what they were trying to establish first, and whether it's the sequence they'd use on a real deal.",
+    });
+  }
+
+  if (vc.modelTweaksCount >= 8) {
+    prompts.push({
+      text: `This student iterated on their own unit-economics/term-sheet model ${vc.modelTweaksCount} times. Ask which single tweak changed their read on the deal the most.`,
+    });
+  }
+
+  return prompts;
+}
+
 function ReportHeader({ sessionId, generatedDate }: { sessionId: string; generatedDate: Date }) {
   return (
     <View style={styles.headerRow}>
@@ -258,11 +316,22 @@ export default function CounselorDebriefReport({
   competencies,
   growthAreas,
   telemetry,
+  vcTelemetry,
 }: CounselorDebriefReportProps) {
   const technicalPressureScore = averageMatching(competencies, TECHNICAL_PRESSURE_PATTERN, overallScore);
   const stakeholderCommunicationScore = averageMatching(competencies, STAKEHOLDER_COMMUNICATION_PATTERN, overallScore);
   const competencyEntries = Object.entries(competencies);
   const discussionPrompts = buildDiscussionPrompts(telemetry, growthAreas);
+
+  // Only a real VC session has any of these three signals - a non-VC career, or a VC session where
+  // nothing was ever recorded, leaves hasVcSignal false so the section below is omitted entirely
+  // rather than showing a misleading "Non-Consensus Index: 0".
+  const hasVcSignal = Boolean(
+    vcTelemetry &&
+      (vcTelemetry.partnerConvictionHeld !== null || vcTelemetry.fomoPanicLatencySeconds !== null || vcTelemetry.modelTweaksCount > 0)
+  );
+  const nonConsensusIndex = hasVcSignal && vcTelemetry ? calculateNonConsensusIndex(vcTelemetry) : null;
+  const vcDiscussionPrompts = hasVcSignal && vcTelemetry ? buildVCDiscussionPrompts(vcTelemetry) : [];
 
   return (
     <Document title={`Counselor Debrief Pack - ${sanitizeText(careerTitle)}`} author="AI Career Simulator" subject="Counselor Debrief Pack">
@@ -333,11 +402,43 @@ export default function CounselorDebriefReport({
           <Text style={styles.sectionSubtitle}>No telemetry was captured for this session.</Text>
         )}
 
+        {hasVcSignal && vcTelemetry && (
+          <>
+            <Text style={styles.sectionTitle}>Non-Consensus Index</Text>
+            <Text style={styles.sectionSubtitle}>
+              A VC-track coaching heuristic (not a real finance methodology) rewarding conviction under pushback, a
+              measured (non-panicked) reaction to FOMO pressure, and a structure-first analytical approach.
+            </Text>
+            <View style={styles.statGrid}>
+              <View style={styles.statCard}>
+                <Text style={styles.statValue}>{nonConsensusIndex}/100</Text>
+                <Text style={styles.statLabel}>Non-Consensus Index</Text>
+              </View>
+              <View style={styles.statCard}>
+                <Text style={styles.statValue}>
+                  {vcTelemetry.partnerConvictionHeld === null ? "N/A" : vcTelemetry.partnerConvictionHeld ? "Held" : "Revised"}
+                </Text>
+                <Text style={styles.statLabel}>Conviction Under Pushback</Text>
+              </View>
+              <View style={styles.statCard}>
+                <Text style={styles.statValue}>
+                  {vcTelemetry.fomoPanicLatencySeconds === null ? "N/A" : `${vcTelemetry.fomoPanicLatencySeconds}s`}
+                </Text>
+                <Text style={styles.statLabel}>FOMO Reaction Time</Text>
+              </View>
+              <View style={styles.statCard}>
+                <Text style={styles.statValue}>{vcTelemetry.modelTweaksCount}</Text>
+                <Text style={styles.statLabel}>Model Tweaks</Text>
+              </View>
+            </View>
+          </>
+        )}
+
         <Text style={styles.sectionTitle}>Guided Discussion Prompts</Text>
         <Text style={styles.sectionSubtitle}>
           Tailored to this student&apos;s specific telemetry drop-offs - use these to open a 1:1 debrief, not as a script.
         </Text>
-        {discussionPrompts.map((prompt, i) => (
+        {[...discussionPrompts, ...vcDiscussionPrompts].map((prompt, i) => (
           <View key={i} style={styles.promptCard}>
             <Text style={styles.promptIndex}>Discussion Prompt {i + 1}</Text>
             <Text style={styles.promptText}>{sanitizeText(prompt.text)}</Text>

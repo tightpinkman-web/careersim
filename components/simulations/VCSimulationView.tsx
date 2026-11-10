@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Paperclip, ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Minus, Calculator, Inbox, Database, Gauge, FileSignature, X } from "lucide-react";
+import { Mail, Paperclip, ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Minus, Calculator, Inbox, Database, Gauge, FileSignature, Gavel, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { VCPayload, VCEmail } from "@/types/simulation";
 import VCWorkbench from "@/components/simulations/VCWorkbench";
@@ -12,9 +12,12 @@ import SlackInterrupt from "@/components/simulations/vc/SlackInterrupt";
 import DataRoomCanvas from "@/components/simulations/vc/DataRoomCanvas";
 import UnitEconomicsModel from "@/components/simulations/vc/UnitEconomicsModel";
 import TermSheetBuilder from "@/components/simulations/vc/TermSheetBuilder";
+import PartnerDefense from "@/components/simulations/vc/PartnerDefense";
 import { recordInformationGather } from "@/lib/telemetry/tracker";
+import { recordToolOpened, type VcToolId } from "@/lib/telemetry/vc-tracker";
+import type { StartupId } from "@/lib/simulation/vc-engine";
 
-type DrawerKind = "workbench" | "dataroom" | "unitEconomics" | "inbound" | "termsheet" | null;
+type DrawerKind = VcToolId | null;
 
 const LEFT_DRAWER_TOOLS: Array<{ id: DrawerKind; label: string; icon: typeof Calculator }> = [
   { id: "workbench", label: "Workbench", icon: Calculator },
@@ -25,6 +28,7 @@ const LEFT_DRAWER_TOOLS: Array<{ id: DrawerKind; label: string; icon: typeof Cal
 const RIGHT_DRAWER_TOOLS: Array<{ id: DrawerKind; label: string; icon: typeof Inbox }> = [
   { id: "inbound", label: "Inbound Hub", icon: Inbox },
   { id: "termsheet", label: "Term Sheet", icon: FileSignature },
+  { id: "partnerDefense", label: "Defense Room", icon: Gavel },
 ];
 
 interface VCSimulationViewProps {
@@ -42,9 +46,14 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
   const [memo, setMemo] = useState(memoDraft);
   const [slideIndex, setSlideIndex] = useState(0);
   const [activeDrawer, setActiveDrawer] = useState<DrawerKind>(null);
+  const [auditedStartupIds, setAuditedStartupIds] = useState<Set<StartupId>>(new Set());
 
   function toggleDrawer(kind: DrawerKind) {
-    setActiveDrawer((current) => (current === kind ? null : kind));
+    setActiveDrawer((current) => {
+      const next = current === kind ? null : kind;
+      if (next && sessionId) recordToolOpened(sessionId, next);
+      return next;
+    });
   }
 
   const selectedEmail: VCEmail | undefined = emails.find((e) => e.id === selectedEmailId);
@@ -255,8 +264,13 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
                 </button>
               </div>
               {activeDrawer === "workbench" && <VCWorkbench payload={payload} />}
-              {activeDrawer === "dataroom" && <DataRoomCanvas sessionId={sessionId} />}
-              {activeDrawer === "unitEconomics" && <UnitEconomicsModel />}
+              {activeDrawer === "dataroom" && (
+                <DataRoomCanvas
+                  sessionId={sessionId}
+                  onStartupViewed={(id) => setAuditedStartupIds((prev) => (prev.has(id) ? prev : new Set(prev).add(id)))}
+                />
+              )}
+              {activeDrawer === "unitEconomics" && <UnitEconomicsModel sessionId={sessionId} />}
             </div>
           </motion.div>
         )}
@@ -279,7 +293,7 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
         ))}
       </div>
       <AnimatePresence>
-        {(activeDrawer === "inbound" || activeDrawer === "termsheet") && (
+        {(activeDrawer === "inbound" || activeDrawer === "termsheet" || activeDrawer === "partnerDefense") && (
           <motion.div
             key={activeDrawer}
             initial={{ x: 360, opacity: 0 }}
@@ -295,7 +309,8 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
                 </button>
               </div>
               {activeDrawer === "inbound" && <InboundHub sessionId={sessionId} />}
-              {activeDrawer === "termsheet" && <TermSheetBuilder />}
+              {activeDrawer === "termsheet" && <TermSheetBuilder sessionId={sessionId} />}
+              {activeDrawer === "partnerDefense" && <PartnerDefense sessionId={sessionId} auditedStartupIds={auditedStartupIds} />}
             </div>
           </motion.div>
         )}

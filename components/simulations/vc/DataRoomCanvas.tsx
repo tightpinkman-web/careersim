@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AlertTriangle, Database } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { recordInformationGather } from "@/lib/telemetry/tracker";
@@ -50,13 +50,27 @@ function deriveCohortRows(financials: StartupFinancials): CohortRow[] {
  * revenue concentration - as explicit flags once that startup is selected, the way a real forensic
  * pass over raw data (not just a summary deck) would.
  */
-export default function DataRoomCanvas({ sessionId }: { sessionId?: string }) {
+export default function DataRoomCanvas({
+  sessionId,
+  onStartupViewed,
+}: {
+  sessionId?: string;
+  /** Called whenever a startup's raw cohort data is shown here (including the initially-selected
+   *  one on mount) - lets VCSimulationView track which deals were actually diligenced this session,
+   *  independent of which one ends up backed in the Defense Room's Jump-Cut outcome. */
+  onStartupViewed?: (id: StartupId) => void;
+}) {
   const [selectedId, setSelectedId] = useState<StartupId>(STARTUP_IDS[0]);
   const financials = INITIAL_VC_STATE.startups[selectedId];
   const rows = useMemo(() => deriveCohortRows(financials), [financials]);
 
   const highChurn = financials.churnRate >= 25;
   const highConcentration = financials.revenueConcentration >= 50;
+
+  useEffect(() => {
+    onStartupViewed?.(selectedId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fires once per distinct startup shown, not on every onStartupViewed identity change
+  }, [selectedId]);
 
   function selectStartup(id: StartupId) {
     setSelectedId(id);

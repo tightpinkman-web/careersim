@@ -6,6 +6,7 @@ import { Inbox } from "lucide-react";
 import { cn } from "@/lib/utils";
 import CountdownTimer from "@/components/workspace/CountdownTimer";
 import { recordInformationGather } from "@/lib/telemetry/tracker";
+import { recordFomoTriggered } from "@/lib/telemetry/vc-tracker";
 import { STARTUP_NAMES, INITIAL_VC_STATE, formatINR, type StartupId } from "@/lib/simulation/vc-engine";
 
 const FOMO_TRIGGER_DELAY_MS = 45_000;
@@ -39,8 +40,12 @@ export default function InboundHub({ sessionId, onFomoExpire }: { sessionId?: st
   onFomoExpireRef.current = onFomoExpire;
 
   useEffect(() => {
-    const timeout = setTimeout(() => setFomoTriggered(true), FOMO_TRIGGER_DELAY_MS);
+    const timeout = setTimeout(() => {
+      setFomoTriggered(true);
+      if (sessionId) recordFomoTriggered(sessionId);
+    }, FOMO_TRIGGER_DELAY_MS);
     return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fires once per mount; sessionId is stable for the component's lifetime
   }, []);
 
   const selectedThread = DEAL_THREADS.find((t) => t.startupId === selectedId) ?? DEAL_THREADS[0];
