@@ -12,11 +12,18 @@ interface VCWorkbenchProps {
 
 const COHORT_MONTHS = 12;
 
-/** Parses the first dollar figure out of a financial-metric value string like "$42K ARR" or
- *  "$1.2M" - best-effort only, since these values are free-form narrative text from the Game
- *  Master, not structured numbers. Falls back to `fallback` when nothing parses. */
+/** Parses a dollar figure out of a financial-metric value string like "$42K" or "$1.2M" - best
+ *  effort only, since these values are free-form narrative text from the Game Master, not
+ *  structured numbers. The match is anchored to the WHOLE (trimmed) string rather than a prefix,
+ *  so a non-dollar value that merely starts with digits - "11 mo" (a runway duration, not a dollar
+ *  figure) or "1.4x" (a multiple) - is rejected outright instead of having its trailing unit letter
+ *  misread as a k/m suffix (e.g. "11 mo" silently becoming $11,000,000 via the "m" in "mo"). Falls
+ *  back to `fallback` whenever the string isn't a plain number/$-figure end to end. */
 function parseDollarFigure(value: string, fallback: number): number {
-  const match = value.replace(/,/g, "").match(/\$?\s*([\d.]+)\s*(k|m)?/i);
+  const match = value
+    .replace(/,/g, "")
+    .trim()
+    .match(/^\$?\s*([\d.]+)\s*(k|m)?$/i);
   if (!match) return fallback;
   const amount = parseFloat(match[1]);
   if (Number.isNaN(amount)) return fallback;
@@ -35,11 +42,15 @@ function parseDollarFigure(value: string, fallback: number): number {
  */
 export default function VCWorkbench({ payload }: VCWorkbenchProps) {
   const seededBurn = useMemo(() => {
-    const burnMetric = payload.financialMetrics.find((m) => /burn/i.test(m.label));
+    // Excludes "Burn Multiple" (a ratio like "1.4x", not a dollar figure) - only an actual
+    // burn-rate/monthly-burn metric should seed this slider.
+    const burnMetric = payload.financialMetrics.find((m) => /burn/i.test(m.label) && !/multiple/i.test(m.label));
     return burnMetric ? parseDollarFigure(burnMetric.value, 50_000) : 50_000;
   }, [payload.financialMetrics]);
   const seededCash = useMemo(() => {
-    const cashMetric = payload.financialMetrics.find((m) => /cash|runway|bank/i.test(m.label));
+    // Excludes "Runway" (a duration like "11 mo", not a dollar figure) - only an actual
+    // cash-on-hand/bank-balance metric should seed this slider.
+    const cashMetric = payload.financialMetrics.find((m) => /cash|bank/i.test(m.label));
     return cashMetric ? parseDollarFigure(cashMetric.value, 600_000) : 600_000;
   }, [payload.financialMetrics]);
 
