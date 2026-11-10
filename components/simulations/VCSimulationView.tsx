@@ -223,7 +223,7 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
       </div>
 
       {/* Left-side analyst tools: Workbench / Data Room / Unit Economics */}
-      <div className="absolute bottom-4 left-4 flex flex-col-reverse gap-2">
+      <div className="absolute bottom-4 left-4 z-20 flex flex-col-reverse gap-2">
         {LEFT_DRAWER_TOOLS.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -246,7 +246,7 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -360, opacity: 0 }}
             transition={{ type: "tween", duration: 0.2 }}
-            className="absolute inset-y-0 left-0 flex w-full max-w-sm flex-col overflow-hidden rounded-r-lg border border-slate-200 bg-white shadow-2xl"
+            className="absolute inset-y-0 left-0 z-10 flex w-full max-w-sm flex-col overflow-hidden rounded-r-lg border border-slate-200 bg-white pb-16 shadow-2xl"
           >
             <div className="flex min-h-0 flex-1 flex-col">
               <div className="flex items-center justify-end border-b border-slate-200 px-2 py-1">
@@ -263,7 +263,7 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
       </AnimatePresence>
 
       {/* Right-side deal tools: Inbound Hub / Term Sheet Builder */}
-      <div className="absolute bottom-4 right-4 flex flex-col-reverse gap-2">
+      <div className="absolute bottom-4 right-4 z-20 flex flex-col-reverse gap-2">
         {RIGHT_DRAWER_TOOLS.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -286,7 +286,7 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 360, opacity: 0 }}
             transition={{ type: "tween", duration: 0.2 }}
-            className="absolute inset-y-0 right-0 flex w-full max-w-sm flex-col overflow-hidden rounded-l-lg border border-slate-200 bg-white shadow-2xl"
+            className="absolute inset-y-0 right-0 z-10 flex w-full max-w-sm flex-col overflow-hidden rounded-l-lg border border-slate-200 bg-white pb-16 shadow-2xl"
           >
             <div className="flex min-h-0 flex-1 flex-col">
               <div className="flex items-center justify-end border-b border-slate-200 px-2 py-1">
