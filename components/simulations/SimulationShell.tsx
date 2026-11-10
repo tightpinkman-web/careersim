@@ -14,6 +14,8 @@ import QuantSimulationView from "@/components/simulations/QuantSimulationView";
 import WorkspaceShell, { type CrisisAnchor, type WorkspaceChatMessage, type WorkspaceEmail } from "@/components/workspace/WorkspaceShell";
 import { recordDecisionTiming, recordStrategicPivot } from "@/lib/telemetry/tracker";
 import { recordFomoResponse } from "@/lib/telemetry/vc-tracker";
+import { CAREER_TITLES } from "@/lib/careerTitles";
+import type { CareerType } from "@/types/simulation";
 
 interface SimulationShellProps {
   state: SimulationState;
@@ -245,6 +247,7 @@ export default function SimulationShell({ state, sessionId, onAction, pendingAct
           emails={deriveWorkspaceEmails(state)}
           seedMessages={deriveSeedMessages(state)}
           crisis={deriveCrisisAnchor(state)}
+          tabTitle={CAREER_TITLES[state.ui_mode as CareerType]}
         >
           <AnimatePresence mode="wait">
             <motion.div

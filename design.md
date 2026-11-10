@@ -11,6 +11,19 @@ checked against it before merging.
 > this document (hairline borders over shadows, no gradients, no pill shapes, density, GSAP/
 > framer-motion scope split) still holds; only the specific hex values and the "no pink" negative
 > constraint were superseded.
+>
+> **2026-11-10, later the same day — Desktop OS Shell pass:** a second, narrower revision on top of
+> the above. `obsidian` deepened from Midnight Blue to a true near-black void (`#050505`) as the
+> *viewport backdrop*, with Midnight Blue (`surface`) demoted to card/container surfaces only - so
+> the same two tokens now read as "void" vs. "card" rather than "dark" vs. "darker." `base-black`,
+> `midnight-blue`, and `hot-pink` were added as literal aliases of `obsidian`/`surface`/`signal`
+> (same values, alternate spelling - see §2), since new code is written against those names. Two
+> narrow, explicit exceptions were carved into §4's negative constraints: a **primary CTA button**
+> may now be `rounded-full` with a soft hover glow (`hover:shadow-[0_0_20px_rgba(236,72,153,0.3)]`),
+> and simulation-workbench cards may use `rounded-2xl`/`rounded-3xl` instead of `rounded-lg`. Neither
+> exception extends to secondary/ghost buttons, tags, or the dark Command Console shell's own cards,
+> which stay rectangular/`rounded-sm` and shadow-free as before. See §10 for the Desktop OS Shell
+> (`WorkspaceShell`) rebuild this pass also covers.
 
 ## 1. Typography
 
@@ -31,11 +44,11 @@ checked against it before merging.
 
 | Token | Value | Tailwind utility | Use |
 |---|---|---|---|
-| `--color-obsidian` | `#0B132B` | `bg-obsidian` | App-level dark (Midnight Blue) background |
-| `--color-surface` | `#1C2541` | `bg-surface` | Panels, cards, elevated bento cells (lighter Midnight Blue) |
+| `--color-obsidian` (alias: `--color-base-black`) | `#050505` | `bg-obsidian` / `bg-base-black` | App-level viewport backdrop (near-black void) |
+| `--color-surface` (alias: `--color-midnight-blue`) | `#1C2541` | `bg-surface` / `bg-midnight-blue` | Panels, cards, elevated bento cells (Midnight Blue) |
 | `--color-hairline` | `#2E3A59` | `border-hairline` | 1px dividers, card borders, grid lines |
 | `--color-ink` | `#F8FAFC` | `text-ink` | Primary text on dark surfaces (crisp white) |
-| `--color-signal` | `#EC4899` | `bg-signal` / `text-signal` / `border-signal` / `ring-signal` | The **single** accent — active state, focus rings, live/hot badges, hotkey highlights |
+| `--color-signal` (alias: `--color-hot-pink`) | `#EC4899` | `bg-signal` / `text-signal` / `border-signal` / `ring-signal` / `bg-hot-pink` / `border-hot-pink` | The **single** accent — active state, focus rings, live/hot badges, hotkey highlights, primary CTA fill |
 
 Signal is soft pink (`#EC4899`), the one deliberate break from the prior all-grayscale-plus-amber
 system - it's the sole warm, saturated color in the UI, so it still reads as *the* accent rather
@@ -58,9 +71,11 @@ own light-themed wrapper `div`s, which now sit on a dark page-level gutter inste
 ## 3. Visual Language
 
 - **Hairline bento grids**: every card/panel is a 1px `border-hairline` rectangle. No shadows, no
-  elevation. Depth comes from contrast (`obsidian` vs `surface`), never `box-shadow`.
+  elevation. Depth comes from contrast (`obsidian` vs `surface`), never `box-shadow` - **except** a
+  primary CTA button's soft hover glow (see §4's exception) and a workbench card's `rounded-2xl`/
+  `rounded-3xl` corners (see §9), both narrow, explicit carve-outs, not a general license.
 - **Zero soft pill buttons**: buttons and tags are rectangular or, at most, `rounded-sm` (2px).
-  Never `rounded-full`.
+  Never `rounded-full` — **except** the primary CTA button variant (see §4).
 - **Zero gradients**: no purple/pink gradients, no generic corporate blue. Every fill is a flat
   token color.
 - **Motion**: physical, not decorative. Tactile spring transitions on interactive elements;
@@ -75,12 +90,17 @@ own light-themed wrapper `div`s, which now sit on a dark page-level gutter inste
 
 - Generic SaaS tropes (soft gradient hero blobs, oversized rounded cards floating on white).
 - Floating modals that cover content — use inline panels or dedicated routes instead.
-- Rounded pill tags/badges (`rounded-full`) — use rectangular or `rounded-sm` tags.
+- Rounded pill tags/badges (`rounded-full`) — use rectangular or `rounded-sm` tags. **Exception**:
+  the `Button` primitive's `primary` variant is `rounded-full` with a restrained hover-only glow
+  (`hover:shadow-[0_0_20px_rgba(236,72,153,0.3)] hover:scale-[1.02]`) - a single named exception, not
+  a precedent for pill-shaping tags, badges, or any other button variant.
 - Emoji-heavy marketing copy.
 - Gradients of any kind (pink/pastel included) — every fill stays a flat token color, pink signal
   included.
-- Elevated box-shadows as a substitute for a hairline border (this now also applies to the
-  simulation workbenches - see §9 - which previously used ad hoc `shadow-lg`/`shadow-2xl`).
+- Elevated box-shadows as a substitute for a hairline border — **except** the primary CTA hover glow
+  immediately above, which is additive to (never a replacement for) its hairline/pink border. This
+  now also applies to the simulation workbenches (see §9), which previously used ad hoc
+  `shadow-lg`/`shadow-2xl` with no such exception.
 - Inline/one-off CSS `@keyframes` for entrances or interaction feedback — build those as a GSAP
   timeline through `lib/motion.ts` + `hooks/useReveal.ts` (see #6). The one standing exception is
   Tailwind's native `animate-spin` on `Loader2` spinners: a compositor-only infinite keyframe is
@@ -161,9 +181,30 @@ rebrand.
 - **No shadows**: `shadow-lg`/`shadow-2xl`/`shadow-sm` are replaced with a `border-hairline` (or
   `border-slate-200` on a white card) plus, where elevation still needs to read, a `ring-1
   ring-signal/15` rather than a drop shadow - consistent with §4's box-shadow ban, which now
-  applies here too.
-- **Spacing**: card padding moved from `p-4` to `p-6`-`p-8` and internal gaps from `gap-3`/`gap-4` to
-  `gap-6` across the five workbenches and the workspace shell, per the 2026-11-10 decluttering pass.
+  applies here too (the primary-CTA hover glow is still the one named exception, not a general one).
+- **Corners**: cards use `rounded-2xl`/`rounded-3xl` (not the Command Console shell's flat
+  `rounded-lg`) as of the Desktop OS Shell pass - a deliberate softer register for this
+  "productivity tool" surface, not a repeal of §4's pill-shape ban on buttons/tags.
+- **Spacing**: card padding moved from `p-4`/`p-6` to `p-8` and internal gaps from `gap-3`-`gap-6` to
+  `gap-8` across the five workbenches and the workspace shell, per the 2026-11-10 decluttering pass.
+
+## 10. Desktop OS Shell (`WorkspaceShell`)
+
+`components/workspace/WorkspaceShell.tsx` wraps every career track's canvas (via `SimulationShell`)
+in a simulated desktop/browser chrome rather than a bare tab switcher:
+
+- **Window chrome**: a macOS-style top bar with three traffic-light dots (non-functional - purely
+  atmospheric, never wired to real window controls) and a centered tab title naming the current
+  step's tool, on a `surface`/`midnight-blue` bar over the `obsidian`/`base-black` backdrop.
+- **Persistent 3-panel grid**, replacing the old click-to-switch Workspace/Team Chat/Inbox tabs
+  (which hid two of the three tools behind a click and were the direct cause of the "overlapping
+  drawer" complaints this pass fixes): a fixed-width **left** Comms Hub (merged chat + inbox feed,
+  always visible), a flexible **center** canvas (the role-specific tool, unchanged), and a
+  fixed-width **right** Notes & Status panel (crisis countdown when present, a lightweight session
+  scratchpad, and simple activity counts). Nothing is hidden behind a tab anymore, so nothing can
+  visually collide with its own toggle.
+- Below `lg`, the three panels stack vertically (canvas first) rather than attempting a cramped
+  3-column layout on a narrow viewport.
 
 ## 8. Components covered
 

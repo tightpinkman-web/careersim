@@ -92,7 +92,7 @@ export default function CyberWorkbench({ payload }: CyberWorkbenchProps) {
   return (
     <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto bg-black p-3 text-emerald-400 md:flex-row">
       {/* SIEM log stream */}
-      <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-hairline bg-obsidian">
+      <div className="flex min-h-0 flex-1 flex-col rounded-2xl border border-hairline bg-obsidian">
         <div className="flex items-center gap-2 border-b border-hairline px-3 py-2.5">
           <ListTree className="h-3.5 w-3.5 text-slate-300" />
           <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-300">SIEM Log Stream</h3>
@@ -126,7 +126,7 @@ export default function CyberWorkbench({ payload }: CyberWorkbenchProps) {
       </div>
 
       {/* Network topology */}
-      <div className="flex min-h-0 w-full flex-col rounded-lg border border-hairline bg-obsidian md:w-72">
+      <div className="flex min-h-0 w-full flex-col rounded-2xl border border-hairline bg-obsidian md:w-72">
         <div className="flex items-center gap-2 border-b border-hairline px-3 py-2.5">
           <Network className="h-3.5 w-3.5 text-slate-300" />
           <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-300">Network Topology</h3>

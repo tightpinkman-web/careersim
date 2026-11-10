@@ -87,9 +87,9 @@ export default function VCWorkbench({ payload }: VCWorkbenchProps) {
   }, [cashOnHand, burnRate, runwayMonths]);
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-6 overflow-y-auto bg-slate-50 p-6">
+    <div className="flex h-full min-h-0 flex-col gap-8 overflow-y-auto bg-slate-50 p-8">
       {/* Unit economics */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-8">
         <div className="mb-3 flex items-center gap-2">
           <Calculator className="h-4 w-4 text-slate-500" />
           <h2 className="text-sm font-semibold text-slate-700">Unit Economics: CAC vs. LTV</h2>
@@ -148,7 +148,7 @@ export default function VCWorkbench({ payload }: VCWorkbenchProps) {
       </div>
 
       {/* Burn rate sensitivity */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-8">
         <div className="mb-3 flex items-center gap-2">
           <Flame className="h-4 w-4 text-slate-500" />
           <h2 className="text-sm font-semibold text-slate-700">Burn Rate Sensitivity</h2>
@@ -202,7 +202,7 @@ export default function VCWorkbench({ payload }: VCWorkbenchProps) {
       </div>
 
       {/* Analyst scratchpad - deliberately separate from the official investment memo */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-8">
         <div className="mb-2 flex items-center gap-2">
           <NotebookPen className="h-4 w-4 text-slate-500" />
           <h2 className="text-sm font-semibold text-slate-700">Analyst Scratchpad</h2>

@@ -69,9 +69,9 @@ export default function PMWorkbench({ payload }: PMWorkbenchProps) {
   );
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-6 overflow-y-auto bg-slate-50 p-6">
+    <div className="flex h-full min-h-0 flex-col gap-8 overflow-y-auto bg-slate-50 p-8">
       {/* Sprint planning allocation */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-8">
         <div className="mb-3 flex items-center gap-2">
           <CalendarRange className="h-4 w-4 text-slate-500" />
           <h2 className="text-sm font-semibold text-slate-700">Sprint Capacity Planning</h2>
@@ -121,7 +121,7 @@ export default function PMWorkbench({ payload }: PMWorkbenchProps) {
       </div>
 
       {/* Stakeholder priority balancing */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-8">
         <div className="mb-3 flex items-center gap-2">
           <Users2 className="h-4 w-4 text-slate-500" />
           <h2 className="text-sm font-semibold text-slate-700">Stakeholder Priority Balance</h2>
@@ -163,7 +163,7 @@ export default function PMWorkbench({ payload }: PMWorkbenchProps) {
       </div>
 
       {/* Feedback telemetry - derived from the existing conversion funnel's stage-over-stage drop */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-8">
         <h2 className="mb-2 text-sm font-semibold text-slate-700">User Feedback Telemetry</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {funnelData.map((point, i) => {

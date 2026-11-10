@@ -34,7 +34,7 @@ export default function SlackInterrupt() {
           exit={{ opacity: 0, y: 24, scale: 0.96 }}
           transition={{ type: "spring", stiffness: 380, damping: 28 }}
           role="alert"
-          className="fixed bottom-6 right-6 z-50 w-full max-w-xs rounded-lg border border-hairline bg-obsidian p-6 text-slate-100 ring-1 ring-signal/20"
+          className="fixed bottom-6 right-6 z-50 w-full max-w-xs rounded-2xl border border-hairline bg-obsidian p-8 text-slate-100 ring-1 ring-signal/20"
         >
           <div className="flex items-start gap-3">
             <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-signal/20 text-signal">

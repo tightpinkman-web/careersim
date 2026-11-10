@@ -85,7 +85,7 @@ export default function TermSheetBuilder({ sessionId }: { sessionId?: string }) 
         ))}
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto p-6">
+      <div className="min-h-0 flex-1 overflow-y-auto p-8">
         <div className="mb-4 grid grid-cols-2 gap-4">
           <div className="rounded-md bg-obsidian p-3 text-white">
             <p className="text-xs text-slate-400">Fund Ownership</p>

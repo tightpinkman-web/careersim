@@ -23,7 +23,7 @@ export default function JumpCutModule({ startupId, auditedChurn }: JumpCutModule
 
   if (startupId === "CLOUDSCALE_AI" && !auditedChurn) {
     return (
-      <div className="rounded-lg border-2 border-rose-500 bg-rose-50 p-4">
+      <div className="rounded-2xl border-2 border-rose-500 bg-rose-50 p-4">
         <div className="mb-2 flex items-center gap-2 text-rose-700">
           <FastForward className="h-4 w-4" />
           <span className="text-xs font-bold uppercase tracking-wider">6 Months Later</span>
@@ -50,7 +50,7 @@ export default function JumpCutModule({ startupId, auditedChurn }: JumpCutModule
 
   if (startupId === "CLOUDSCALE_AI" && auditedChurn) {
     return (
-      <div className="rounded-lg border-2 border-amber-400 bg-amber-50 p-4">
+      <div className="rounded-2xl border-2 border-amber-400 bg-amber-50 p-4">
         <div className="mb-2 flex items-center gap-2 text-amber-700">
           <FastForward className="h-4 w-4" />
           <span className="text-xs font-bold uppercase tracking-wider">6 Months Later</span>
@@ -66,7 +66,7 @@ export default function JumpCutModule({ startupId, auditedChurn }: JumpCutModule
 
   if (startupId === "CLEAN_LOGISTICS") {
     return (
-      <div className="rounded-lg border-2 border-emerald-500 bg-emerald-50 p-4">
+      <div className="rounded-2xl border-2 border-emerald-500 bg-emerald-50 p-4">
         <div className="mb-2 flex items-center gap-2 text-emerald-700">
           <FastForward className="h-4 w-4" />
           <span className="text-xs font-bold uppercase tracking-wider">6 Months Later</span>
@@ -85,7 +85,7 @@ export default function JumpCutModule({ startupId, auditedChurn }: JumpCutModule
   }
 
   return (
-    <div className="rounded-lg border-2 border-slate-300 bg-slate-50 p-4">
+    <div className="rounded-2xl border-2 border-slate-300 bg-slate-50 p-4">
       <div className="mb-2 flex items-center gap-2 text-slate-600">
         <FastForward className="h-4 w-4" />
         <span className="text-xs font-bold uppercase tracking-wider">6 Months Later</span>

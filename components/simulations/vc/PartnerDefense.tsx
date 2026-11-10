@@ -96,7 +96,7 @@ export default function PartnerDefense({ sessionId, auditedStartupIds }: Partner
         ))}
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto p-6">
+      <div className="min-h-0 flex-1 overflow-y-auto p-8">
         {defenseState === "drafting" || defenseState === "loading" ? (
           <div className="space-y-4">
             <MemoField label="Core Thesis" value={coreThesis} onChange={setCoreThesis} placeholder="Why does this deal win?" />

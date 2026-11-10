@@ -65,9 +65,9 @@ export default function ProductSimulationView({ payload, narrativePrompt }: Prod
   };
 
   return (
-    <div className="relative grid h-full grid-cols-1 gap-6 overflow-hidden lg:grid-cols-2">
+    <div className="relative grid h-full grid-cols-1 gap-8 overflow-hidden lg:grid-cols-2">
       {/* Left: Kanban */}
-      <div className="flex min-h-0 flex-col rounded-lg border border-slate-200 bg-white">
+      <div className="flex min-h-0 flex-col rounded-2xl border border-slate-200 bg-white">
         <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-3">
           <GitCommitHorizontal className="h-4 w-4 text-slate-500" />
           <h2 className="text-sm font-semibold text-slate-700">Sprint Board</h2>
@@ -123,8 +123,8 @@ export default function ProductSimulationView({ payload, narrativePrompt }: Prod
       </div>
 
       {/* Right: analytics */}
-      <div className="flex min-h-0 flex-col gap-6 overflow-y-auto">
-        <div className="rounded-lg border border-slate-200 bg-white p-6">
+      <div className="flex min-h-0 flex-col gap-8 overflow-y-auto">
+        <div className="rounded-2xl border border-slate-200 bg-white p-8">
           <div className="mb-2 flex items-center gap-2">
             <BarChart3 className="h-4 w-4 text-slate-500" />
             <h2 className="text-sm font-semibold text-slate-700">Checkout Funnel</h2>
@@ -155,7 +155,7 @@ export default function ProductSimulationView({ payload, narrativePrompt }: Prod
           </div>
         </div>
 
-        <div className="flex-1 rounded-lg border border-slate-200 bg-white p-6">
+        <div className="flex-1 rounded-2xl border border-slate-200 bg-white p-8">
           <h2 className="mb-2 text-sm font-semibold text-slate-700">Impact vs. Effort</h2>
           <div className="h-56 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -182,7 +182,7 @@ export default function ProductSimulationView({ payload, narrativePrompt }: Prod
           </div>
         </div>
 
-        <p className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-3 text-xs text-slate-500">
+        <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-3 text-xs text-slate-500">
           {narrativePrompt}
         </p>
       </div>
@@ -191,7 +191,7 @@ export default function ProductSimulationView({ payload, narrativePrompt }: Prod
       {!workbenchOpen && (
         <button
           onClick={() => setWorkbenchOpen(true)}
-          className="absolute bottom-4 left-4 flex items-center gap-2 rounded-md bg-obsidian px-4 py-2.5 text-xs font-medium text-white ring-1 ring-signal/15 hover:bg-surface"
+          className="fixed bottom-4 left-4 z-20 flex items-center gap-2 rounded-md bg-obsidian px-4 py-2.5 text-xs font-medium text-white ring-1 ring-signal/15 hover:bg-surface"
         >
           <CalendarRange className="h-4 w-4" />
           Workbench
@@ -204,7 +204,7 @@ export default function ProductSimulationView({ payload, narrativePrompt }: Prod
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -360, opacity: 0 }}
             transition={{ type: "tween", duration: 0.2 }}
-            className="absolute inset-y-0 left-0 flex w-full max-w-sm flex-col overflow-hidden rounded-r-lg border border-slate-200 bg-white ring-1 ring-signal/15"
+            className="fixed inset-y-4 left-4 z-40 flex w-full max-w-sm flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white ring-1 ring-signal/15"
           >
             <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-3">
               <CalendarRange className="h-4 w-4 text-slate-500" />

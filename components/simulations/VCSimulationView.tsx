@@ -60,13 +60,13 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
   const activeSlide = deckSlides[slideIndex];
 
   return (
-    <div className="relative flex h-full min-h-0 flex-col gap-6 overflow-hidden">
+    <div className="relative flex h-full min-h-0 flex-col gap-8 overflow-hidden">
       <TickerHeader />
       <SlackInterrupt />
-      <div className="relative grid min-h-0 flex-1 grid-cols-1 gap-6 overflow-hidden md:grid-cols-2">
+      <div className="relative grid min-h-0 flex-1 grid-cols-1 gap-8 overflow-hidden md:grid-cols-2">
       {/* Left column: inbox + memo */}
-      <div className="flex min-h-0 flex-col gap-6">
-        <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-slate-200 bg-white">
+      <div className="flex min-h-0 flex-col gap-8">
+        <div className="flex min-h-0 flex-1 flex-col rounded-2xl border border-slate-200 bg-white">
           <div className="flex items-center gap-2 border-b border-slate-200 px-6 py-4">
             <Mail className="h-4 w-4 text-slate-500" />
             <h2 className="text-sm font-semibold text-slate-700">Inbox</h2>
@@ -134,7 +134,7 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
           </div>
         </div>
 
-        <div className="flex min-h-[160px] flex-col rounded-lg border border-slate-200 bg-white">
+        <div className="flex min-h-[160px] flex-col rounded-2xl border border-slate-200 bg-white">
           <div className="border-b border-slate-200 px-6 py-4">
             <h2 className="text-sm font-semibold text-slate-700">Investment Memo</h2>
           </div>
@@ -142,21 +142,21 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
             value={memo}
             onChange={(e) => setMemo(e.target.value)}
             placeholder="Draft your investment memo..."
-            className="min-h-[120px] flex-1 resize-none rounded-b-lg p-6 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:ring-1 focus:ring-signal/30"
+            className="min-h-[120px] flex-1 resize-none rounded-b-2xl p-8 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:ring-1 focus:ring-signal/30"
           />
         </div>
       </div>
 
       {/* Right column: deck + financials */}
-      <div className="flex min-h-0 flex-col gap-6">
-        <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-hairline bg-obsidian text-white">
+      <div className="flex min-h-0 flex-col gap-8">
+        <div className="flex min-h-0 flex-1 flex-col rounded-2xl border border-hairline bg-obsidian text-white">
           <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
             <h2 className="text-sm font-semibold">{startupName}: Data Room</h2>
             <span className="text-xs text-slate-400">
               {deckSlides.length > 0 ? slideIndex + 1 : 0} / {deckSlides.length}
             </span>
           </div>
-          <div className="relative flex min-h-[220px] flex-1 items-center justify-center p-6">
+          <div className="relative flex min-h-[220px] flex-1 items-center justify-center p-8">
             <AnimatePresence mode="wait">
               {activeSlide && (
                 <motion.div
@@ -208,7 +208,7 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
           </div>
         </div>
 
-        <div className="rounded-lg border border-slate-200 bg-white p-6">
+        <div className="rounded-2xl border border-slate-200 bg-white p-8">
           <h2 className="mb-3 text-sm font-semibold text-slate-700">Key Financials</h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
             {financialMetrics.map((metric) => (
@@ -225,14 +225,18 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
           </div>
         </div>
 
-        <p className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4 text-xs text-slate-500">
+        <p className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-4 text-xs text-slate-500">
           {narrativePrompt}
         </p>
       </div>
       </div>
 
-      {/* Left-side analyst tools: Workbench / Data Room / Unit Economics */}
-      <div className="absolute bottom-4 left-4 z-20 flex flex-col-reverse gap-2">
+      {/* Left-side analyst tools: Workbench / Data Room / Unit Economics. `fixed` rather than
+          `absolute` - this canvas now nests inside the Desktop OS Shell's narrower center grid
+          column (see WorkspaceShell), so a drawer anchored to that column's own (much narrower)
+          box would collide with the opposite drawer in the middle; anchoring to the viewport
+          instead keeps both drawers exactly where they were before that nesting changed. */}
+      <div className="fixed bottom-4 left-4 z-20 flex flex-col-reverse gap-2">
         {LEFT_DRAWER_TOOLS.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -255,7 +259,7 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -360, opacity: 0 }}
             transition={{ type: "tween", duration: 0.2 }}
-            className="absolute inset-y-0 left-0 z-10 flex w-full max-w-sm flex-col overflow-hidden rounded-r-lg border border-slate-200 bg-white pb-16 ring-1 ring-signal/15"
+            className="fixed inset-y-4 left-4 z-40 flex w-full max-w-sm flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white pb-16 ring-1 ring-signal/15"
           >
             <div className="flex min-h-0 flex-1 flex-col">
               <div className="flex items-center justify-end border-b border-slate-200 px-2 py-1">
@@ -276,8 +280,9 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
         )}
       </AnimatePresence>
 
-      {/* Right-side deal tools: Inbound Hub / Term Sheet Builder */}
-      <div className="absolute bottom-4 right-4 z-20 flex flex-col-reverse gap-2">
+      {/* Right-side deal tools: Inbound Hub / Term Sheet Builder - `fixed`, same reasoning as the
+          left-side stack above. */}
+      <div className="fixed bottom-4 right-4 z-20 flex flex-col-reverse gap-2">
         {RIGHT_DRAWER_TOOLS.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
@@ -300,7 +305,7 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 360, opacity: 0 }}
             transition={{ type: "tween", duration: 0.2 }}
-            className="absolute inset-y-0 right-0 z-10 flex w-full max-w-sm flex-col overflow-hidden rounded-l-lg border border-slate-200 bg-white pb-16 ring-1 ring-signal/15"
+            className="fixed inset-y-4 right-4 z-40 flex w-full max-w-sm flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white pb-16 ring-1 ring-signal/15"
           >
             <div className="flex min-h-0 flex-1 flex-col">
               <div className="flex items-center justify-end border-b border-slate-200 px-2 py-1">

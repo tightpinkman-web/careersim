@@ -99,7 +99,7 @@ export default function DataRoomCanvas({
         ))}
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto p-6">
+      <div className="min-h-0 flex-1 overflow-y-auto p-8">
         {(highChurn || highConcentration) && (
           <div className="mb-3 flex flex-col gap-1.5 rounded-md border border-rose-300 bg-rose-50 p-3 text-xs text-rose-700">
             <div className="flex items-center gap-1.5 font-semibold">

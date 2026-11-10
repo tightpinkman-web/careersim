@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0b132b;
+  --background: #000000;
   --foreground: #f8fafc;
 }
 
@@ -14,14 +14,19 @@
   --font-display: var(--font-space-grotesk);
   --font-mono: var(--font-jetbrains-mono);
 
-  /* Midnight Blue + White + Soft Pink palette (superseded the obsidian/amber system - see
-   * design.md's changelog note for the rationale). Token NAMES are kept stable (obsidian/surface/
-   * hairline/ink/signal) so every component already written against them re-themes for free. */
-  --color-obsidian: #0b132b;
+  /* Desktop OS Shell palette (2026-11-10): the viewport backdrop deepened from Midnight Blue to a
+   * true near-black void, with Midnight Blue demoted to card/container surfaces. Token NAMES are
+   * kept stable so every component re-themes for free (see design.md's changelog). `base-black`,
+   * `midnight-blue`, and `hot-pink` are literal aliases for the same three values, added so new code
+   * can spell them either way - both are canonical, neither is deprecated. */
+  --color-obsidian: #050505;
+  --color-base-black: #050505;
   --color-surface: #1c2541;
+  --color-midnight-blue: #1c2541;
   --color-hairline: #2e3a59;
   --color-ink: #f8fafc;
   --color-signal: #ec4899;
+  --color-hot-pink: #ec4899;
 }
 
 /*

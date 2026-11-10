@@ -36,7 +36,7 @@ export default function LawSimulationView({ payload, narrativePrompt, sessionId 
 
   return (
     <div className="relative flex h-full min-h-0 gap-4 overflow-hidden">
-      <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-slate-200 bg-white">
+      <div className="flex min-h-0 flex-1 flex-col rounded-2xl border border-slate-200 bg-white">
         <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-3">
           <FileText className="h-4 w-4 text-slate-500" />
           <h2 className="text-sm font-semibold text-slate-700">{documentTitle}</h2>
@@ -44,7 +44,7 @@ export default function LawSimulationView({ payload, narrativePrompt, sessionId 
             {clauses.filter((c) => c.flagged).length} flagged clause{clauses.filter((c) => c.flagged).length === 1 ? "" : "s"}
           </span>
         </div>
-        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-6 font-serif">
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-8 font-serif">
           {clauses.map((clause) => (
             <div key={clause.id}>
               <h3 className="mb-1 text-sm font-semibold text-slate-800">{clause.heading}</h3>
@@ -90,7 +90,7 @@ export default function LawSimulationView({ payload, narrativePrompt, sessionId 
       {!chatOpen && (
         <button
           onClick={() => setChatOpen(true)}
-          className="absolute bottom-4 right-4 flex items-center gap-2 rounded-md bg-obsidian px-4 py-2.5 text-xs font-medium text-white ring-1 ring-signal/15 hover:bg-surface"
+          className="fixed bottom-4 right-4 z-20 flex items-center gap-2 rounded-md bg-obsidian px-4 py-2.5 text-xs font-medium text-white ring-1 ring-signal/15 hover:bg-surface"
         >
           <MessageSquare className="h-4 w-4" />
           Negotiation ({messages.length})
@@ -105,7 +105,7 @@ export default function LawSimulationView({ payload, narrativePrompt, sessionId 
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 360, opacity: 0 }}
             transition={{ type: "tween", duration: 0.2 }}
-            className="absolute inset-y-0 right-0 flex w-full max-w-sm flex-col rounded-l-lg border border-slate-200 bg-white ring-1 ring-signal/15"
+            className="fixed inset-y-4 right-4 z-40 flex w-full max-w-sm flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white ring-1 ring-signal/15"
           >
             <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-3">
               <MessageSquare className="h-4 w-4 text-slate-500" />
@@ -114,7 +114,7 @@ export default function LawSimulationView({ payload, narrativePrompt, sessionId 
                 <X className="h-4 w-4 text-slate-500" />
               </button>
             </div>
-            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-6">
+            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-8">
               {messages.map((msg) => (
                 <div
                   key={msg.id}
@@ -122,7 +122,7 @@ export default function LawSimulationView({ payload, narrativePrompt, sessionId 
                 >
                   <div
                     className={cn(
-                      "max-w-[80%] rounded-lg px-3 py-2 text-xs",
+                      "max-w-[80%] rounded-2xl px-3 py-2 text-xs",
                       msg.sender === "student" ? "bg-signal text-white" : "bg-slate-100 text-slate-700"
                     )}
                   >
@@ -154,7 +154,7 @@ export default function LawSimulationView({ payload, narrativePrompt, sessionId 
       {!workbenchOpen && (
         <button
           onClick={() => setWorkbenchOpen(true)}
-          className="absolute bottom-4 left-4 flex items-center gap-2 rounded-md bg-obsidian px-4 py-2.5 text-xs font-medium text-white ring-1 ring-signal/15 hover:bg-surface"
+          className="fixed bottom-4 left-4 z-20 flex items-center gap-2 rounded-md bg-obsidian px-4 py-2.5 text-xs font-medium text-white ring-1 ring-signal/15 hover:bg-surface"
         >
           <FileSearch className="h-4 w-4" />
           Workbench
@@ -167,7 +167,7 @@ export default function LawSimulationView({ payload, narrativePrompt, sessionId 
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -360, opacity: 0 }}
             transition={{ type: "tween", duration: 0.2 }}
-            className="absolute inset-y-0 left-0 flex w-full max-w-sm flex-col overflow-hidden rounded-r-lg border border-slate-200 bg-white ring-1 ring-signal/15"
+            className="fixed inset-y-4 left-4 z-40 flex w-full max-w-sm flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white ring-1 ring-signal/15"
           >
             <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-3">
               <FileSearch className="h-4 w-4 text-slate-500" />

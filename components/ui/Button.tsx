@@ -22,7 +22,9 @@ export type ButtonVariant = "primary" | "secondary" | "ghost";
 export type ButtonSize = "sm" | "md" | "lg";
 
 const VARIANT_CLASSES: Record<ButtonVariant, string> = {
-  primary: "border border-signal bg-signal text-obsidian hover:opacity-90 disabled:opacity-60",
+  // The one named rounded-full/box-shadow exception in the whole system - see design.md §4.
+  primary:
+    "rounded-full border border-signal bg-signal text-obsidian transition-[transform,box-shadow,opacity] duration-300 hover:opacity-90 hover:shadow-[0_0_20px_rgba(236,72,153,0.3)] hover:scale-[1.02] disabled:opacity-60 disabled:hover:scale-100 disabled:hover:shadow-none",
   secondary: "border border-hairline text-slate-300 hover:border-signal hover:text-signal disabled:opacity-50",
   ghost: "border border-transparent text-slate-400 hover:text-signal disabled:opacity-50",
 };

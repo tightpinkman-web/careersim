@@ -109,9 +109,9 @@ export default function LegalWorkbench({ payload }: LegalWorkbenchProps) {
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-6 overflow-y-auto bg-slate-50 p-6">
+    <div className="flex h-full min-h-0 flex-col gap-8 overflow-y-auto bg-slate-50 p-8">
       {/* Risk scanner */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-8">
         <div className="mb-3 flex items-center gap-2">
           <FileSearch className="h-4 w-4 text-slate-500" />
           <h2 className="text-sm font-semibold text-slate-700">Liability &amp; Risk Scanner</h2>
@@ -165,7 +165,7 @@ export default function LegalWorkbench({ payload }: LegalWorkbenchProps) {
       </div>
 
       {/* Counter-proposal builder */}
-      <div className="rounded-lg border border-slate-200 bg-white p-6">
+      <div className="rounded-2xl border border-slate-200 bg-white p-8">
         <div className="mb-3 flex items-center gap-2">
           <GitPullRequestArrow className="h-4 w-4 text-slate-500" />
           <h2 className="text-sm font-semibold text-slate-700">Counter-Proposal Builder</h2>

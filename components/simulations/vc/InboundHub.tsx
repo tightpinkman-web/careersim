@@ -102,7 +102,7 @@ export default function InboundHub({ sessionId, onFomoExpire }: { sessionId?: st
           ))}
         </ul>
 
-        <div className="min-h-0 flex-1 overflow-y-auto p-6">
+        <div className="min-h-0 flex-1 overflow-y-auto p-8">
           <h3 className="text-sm font-semibold text-slate-900">{STARTUP_NAMES[selectedThread.startupId]}</h3>
           <p className="mt-1 text-xs text-slate-500">{selectedThread.subject}</p>
           <div className="mt-4 grid grid-cols-2 gap-3">

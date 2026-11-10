@@ -48,7 +48,7 @@ export default function CyberSimulationView({ payload, narrativePrompt, sessionI
     systemHealth >= 70 ? "bg-emerald-500" : systemHealth >= 40 ? "bg-amber-500" : "bg-rose-500";
 
   return (
-    <div className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-lg border border-hairline bg-black text-emerald-400 md:flex-row">
+    <div className="relative flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-hairline bg-black text-emerald-400 md:flex-row">
       <div className="flex min-h-0 flex-1 flex-col pb-14">
         {/* Header: SOC system health */}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-hairline bg-obsidian px-4 py-3">
@@ -146,7 +146,7 @@ export default function CyberSimulationView({ payload, narrativePrompt, sessionI
       {!workbenchOpen && (
         <button
           onClick={() => setWorkbenchOpen(true)}
-          className="absolute bottom-4 left-4 flex items-center gap-2 rounded-md bg-obsidian px-4 py-2.5 text-xs font-medium text-emerald-300 ring-1 ring-signal/15 hover:bg-surface"
+          className="fixed bottom-4 left-4 z-20 flex items-center gap-2 rounded-md bg-obsidian px-4 py-2.5 text-xs font-medium text-emerald-300 ring-1 ring-signal/15 hover:bg-surface"
         >
           <Network className="h-4 w-4" />
           Workbench
@@ -159,7 +159,7 @@ export default function CyberSimulationView({ payload, narrativePrompt, sessionI
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 360, opacity: 0 }}
             transition={{ type: "tween", duration: 0.2 }}
-            className="absolute inset-x-0 bottom-0 flex h-3/4 flex-col overflow-hidden rounded-t-lg border border-hairline ring-1 ring-signal/15"
+            className="absolute inset-x-0 bottom-0 flex h-3/4 flex-col overflow-hidden rounded-t-2xl border border-hairline ring-1 ring-signal/15"
           >
             <div className="flex items-center gap-2 border-b border-hairline bg-obsidian px-4 py-3">
               <Network className="h-4 w-4 text-slate-300" />
