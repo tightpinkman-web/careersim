@@ -71,7 +71,7 @@ export default function CountdownTimer({ anchorKey, label, durationSeconds, onEx
           : urgency === "warning"
             ? "border-amber-500/50 bg-amber-500/10 text-amber-400"
             : isDark
-              ? "border-slate-700 bg-slate-800 text-slate-300"
+              ? "border-hairline bg-surface text-slate-300"
               : "border-slate-200 bg-slate-100 text-slate-600",
         className
       )}

@@ -91,7 +91,7 @@ export default function InboundHub({ sessionId, onFomoExpire }: { sessionId?: st
                 onClick={() => selectThread(thread.startupId)}
                 className={cn(
                   "w-full border-b border-slate-100 px-3 py-2.5 text-left transition-colors",
-                  selectedId === thread.startupId ? "bg-indigo-50" : "hover:bg-slate-50"
+                  selectedId === thread.startupId ? "bg-signal/10" : "hover:bg-slate-50"
                 )}
               >
                 <p className="truncate text-xs font-semibold text-slate-900">{STARTUP_NAMES[thread.startupId]}</p>
@@ -102,7 +102,7 @@ export default function InboundHub({ sessionId, onFomoExpire }: { sessionId?: st
           ))}
         </ul>
 
-        <div className="min-h-0 flex-1 overflow-y-auto p-4">
+        <div className="min-h-0 flex-1 overflow-y-auto p-6">
           <h3 className="text-sm font-semibold text-slate-900">{STARTUP_NAMES[selectedThread.startupId]}</h3>
           <p className="mt-1 text-xs text-slate-500">{selectedThread.subject}</p>
           <div className="mt-4 grid grid-cols-2 gap-3">

@@ -32,7 +32,7 @@ export default function TickerHeader({ items = DEFAULT_TICKER_ITEMS, isDark }: {
     <div
       className={cn(
         "flex shrink-0 items-center overflow-hidden border-b font-mono text-[11px]",
-        isDark ? "border-slate-800 bg-slate-950 text-slate-400" : "border-slate-200 bg-slate-900 text-slate-300"
+        isDark ? "border-hairline bg-obsidian text-slate-400" : "border-hairline bg-obsidian text-slate-300"
       )}
     >
       <span className="shrink-0 border-r border-white/10 bg-signal/90 px-2.5 py-1.5 font-semibold uppercase tracking-wider text-slate-950">

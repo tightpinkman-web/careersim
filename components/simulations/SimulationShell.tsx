@@ -48,7 +48,7 @@ const CHOICE_SPRING = { type: "spring" as const, stiffness: 400, damping: 25 };
 // out from the others, so nothing here can be read as a hint toward the "right" or "safe" choice.
 function choiceButtonClasses(isDark: boolean): string {
   return isDark
-    ? "border-slate-800 bg-slate-900 text-slate-200 hover:border-signal focus-visible:border-signal"
+    ? "border-hairline bg-surface text-slate-200 hover:border-signal focus-visible:border-signal"
     : "border-slate-200 bg-white text-slate-700 hover:border-signal focus-visible:border-signal";
 }
 
@@ -195,7 +195,7 @@ export default function SimulationShell({ state, sessionId, onAction, pendingAct
       <div
         className={cn(
           "flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1.5 border-b px-4 py-2 font-mono text-[11px]",
-          isDark ? "border-slate-800 bg-slate-900 text-slate-300" : "border-slate-200 bg-white text-slate-600"
+          isDark ? "border-hairline bg-surface text-slate-300" : "border-slate-200 bg-white text-slate-600"
         )}
       >
         <span className="border border-signal px-2 py-1 font-semibold uppercase tracking-wider text-signal">
@@ -265,7 +265,7 @@ export default function SimulationShell({ state, sessionId, onAction, pendingAct
       <div
         className={cn(
           "shrink-0 border-t px-4 py-3",
-          isDark ? "border-slate-800 bg-slate-900" : "border-slate-200 bg-white"
+          isDark ? "border-hairline bg-surface" : "border-slate-200 bg-white"
         )}
       >
         <p className={cn("mb-3 text-xs", isDark ? "text-slate-400" : "text-slate-500")}>{state.narrativePrompt}</p>

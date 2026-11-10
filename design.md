@@ -4,6 +4,14 @@ A high-contrast, Swiss-editorial, high-density visual language for tactical deci
 interfaces. This document is the source of truth for Phase 3+ component work. New UI must be
 checked against it before merging.
 
+> **2026-11-10 rebrand:** the accent and surface palette moved from Midnight Obsidian + Amber Signal
+> to Midnight Blue + White + Soft Pink (see §2). Token *names* (`obsidian`/`surface`/`hairline`/
+> `ink`/`signal`) are unchanged - only their underlying hex values moved - so every existing
+> component re-themes automatically rather than needing a per-file color swap. Everything else in
+> this document (hairline borders over shadows, no gradients, no pill shapes, density, GSAP/
+> framer-motion scope split) still holds; only the specific hex values and the "no pink" negative
+> constraint were superseded.
+
 ## 1. Typography
 
 | Role | Font | CSS var | Tailwind utility |
@@ -23,16 +31,24 @@ checked against it before merging.
 
 | Token | Value | Tailwind utility | Use |
 |---|---|---|---|
-| `--color-obsidian` | `#020617` | `bg-obsidian` | App-level dark background |
-| `--color-surface` | `#0f172a` | `bg-surface` | Panels, cards, elevated bento cells |
-| `--color-hairline` | `#1e293b` | `border-hairline` | 1px dividers, card borders, grid lines |
-| `--color-ink` | `#f8fafc` | `text-ink` | Primary text on dark surfaces |
-| `--color-signal` | `#FFB800` | `bg-signal` / `text-signal` / `border-signal` / `ring-signal` | The **single** accent — active state, focus rings, live/hot badges, hotkey highlights |
+| `--color-obsidian` | `#0B132B` | `bg-obsidian` | App-level dark (Midnight Blue) background |
+| `--color-surface` | `#1C2541` | `bg-surface` | Panels, cards, elevated bento cells (lighter Midnight Blue) |
+| `--color-hairline` | `#2E3A59` | `border-hairline` | 1px dividers, card borders, grid lines |
+| `--color-ink` | `#F8FAFC` | `text-ink` | Primary text on dark surfaces (crisp white) |
+| `--color-signal` | `#EC4899` | `bg-signal` / `text-signal` / `border-signal` / `ring-signal` | The **single** accent — active state, focus rings, live/hot badges, hotkey highlights |
 
-Signal is amber (`#FFB800`), chosen over electric teal for its tactical/alert register — it reads
-as "live" and "armed," not "success." It is spent sparingly: one accent per view, never both an
-amber AND a colored badge system competing for attention. Status other than "active/live" stays
-grayscale (`slate-400`/`slate-500` on dark, muted borders) rather than reaching for green/red/blue.
+Signal is soft pink (`#EC4899`), the one deliberate break from the prior all-grayscale-plus-amber
+system - it's the sole warm, saturated color in the UI, so it still reads as *the* accent rather
+than one color among several. It is spent just as sparingly as the amber signal it replaced: one
+accent per view, never a pink AND a separate colored badge system competing for attention. Status
+other than "active/live" stays grayscale (`slate-400`/`slate-500` on dark, muted borders) rather
+than reaching for green/red/blue - the light-surface simulation workbenches (white cards on
+Midnight Blue canvases) are the one place semantic green/amber/rose are still allowed, for
+financial-risk and trend indicators specifically (see §9).
+
+On light (white) surfaces - the simulation workbenches, not the dark Command Console shell -
+primary text uses Deep Navy (`#0F172A`, i.e. `text-slate-900`) rather than `ink`, which is tuned for
+dark backgrounds only.
 
 `--background`/`--foreground` (the root CSS vars driving the plain `body` rule) now point at
 `obsidian`/`ink` too, so the whole site defaults to dark. Only `/login`, `/signup`, `/privacy`,
@@ -61,8 +77,10 @@ own light-themed wrapper `div`s, which now sit on a dark page-level gutter inste
 - Floating modals that cover content — use inline panels or dedicated routes instead.
 - Rounded pill tags/badges (`rounded-full`) — use rectangular or `rounded-sm` tags.
 - Emoji-heavy marketing copy.
-- Purple/pink gradients or generic corporate blue as an accent.
-- Elevated box-shadows as a substitute for a hairline border.
+- Gradients of any kind (pink/pastel included) — every fill stays a flat token color, pink signal
+  included.
+- Elevated box-shadows as a substitute for a hairline border (this now also applies to the
+  simulation workbenches - see §9 - which previously used ad hoc `shadow-lg`/`shadow-2xl`).
 - Inline/one-off CSS `@keyframes` for entrances or interaction feedback — build those as a GSAP
   timeline through `lib/motion.ts` + `hooks/useReveal.ts` (see #6). The one standing exception is
   Tailwind's native `animate-spin` on `Loader2` spinners: a compositor-only infinite keyframe is
@@ -121,6 +139,31 @@ Every GSAP call in the app should pull from these rather than hand-rolling eases
 - **Performance targets.** Animate `transform`/`opacity`/`boxShadow` only — GPU-compositable,
   never triggers layout (`width`/`top`/`left` are off-limits). Target 60fps; keep entrances
   ≤0.5s and tactile feedback ≤0.2s so nothing reads as laggy.
+
+## 9. Simulation Workbenches (light-surface tracks)
+
+The five career workbenches (`VCWorkbench`, `QuantWorkbench`, `CyberWorkbench`, `PMWorkbench`,
+`LegalWorkbench`), their parent `*SimulationView` components, and the shared
+`components/workspace/*` shell (`WorkspaceShell`, `CountdownTimer`) run on white card canvases
+rather than the dark Command Console shell - a deliberate, pre-existing split (a "productivity
+tool" register vs. the marketing/dashboard shell), reaffirmed rather than removed by the 2026-11-10
+rebrand.
+
+- **Accent**: `signal` (pink) replaces every prior `indigo-*` interactive accent - active tabs,
+  primary buttons, slider thumbs (`accent-signal`), focus rings (`focus-visible:ring-signal`/
+  `focus:border-signal`), chart primary lines. Same one-accent-per-view discipline as §2.
+- **Dark chrome within a light workbench** (toggle-button stacks, drawer header bars, chat bubbles,
+  the VC Data Room deck panel) now pulls from `obsidian`/`surface`/`hairline`/`ink` instead of
+  hardcoded `slate-900`/`slate-800`, so it reskins for free the same way the dark shell does.
+- **Financial semantics stay semantic**: risk scores, trend arrows, and diligence-flag banners keep
+  `emerald`/`amber`/`rose` - those convey real meaning (safe/caution/danger), not decoration, and
+  aren't part of the one-accent rule.
+- **No shadows**: `shadow-lg`/`shadow-2xl`/`shadow-sm` are replaced with a `border-hairline` (or
+  `border-slate-200` on a white card) plus, where elevation still needs to read, a `ring-1
+  ring-signal/15` rather than a drop shadow - consistent with §4's box-shadow ban, which now
+  applies here too.
+- **Spacing**: card padding moved from `p-4` to `p-6`-`p-8` and internal gaps from `gap-3`/`gap-4` to
+  `gap-6` across the five workbenches and the workspace shell, per the 2026-11-10 decluttering pass.
 
 ## 8. Components covered
 

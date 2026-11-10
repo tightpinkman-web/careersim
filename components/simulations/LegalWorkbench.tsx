@@ -109,9 +109,9 @@ export default function LegalWorkbench({ payload }: LegalWorkbenchProps) {
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-4 overflow-y-auto bg-slate-50 p-4">
+    <div className="flex h-full min-h-0 flex-col gap-6 overflow-y-auto bg-slate-50 p-6">
       {/* Risk scanner */}
-      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-lg border border-slate-200 bg-white p-6">
         <div className="mb-3 flex items-center gap-2">
           <FileSearch className="h-4 w-4 text-slate-500" />
           <h2 className="text-sm font-semibold text-slate-700">Liability &amp; Risk Scanner</h2>
@@ -165,7 +165,7 @@ export default function LegalWorkbench({ payload }: LegalWorkbenchProps) {
       </div>
 
       {/* Counter-proposal builder */}
-      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-lg border border-slate-200 bg-white p-6">
         <div className="mb-3 flex items-center gap-2">
           <GitPullRequestArrow className="h-4 w-4 text-slate-500" />
           <h2 className="text-sm font-semibold text-slate-700">Counter-Proposal Builder</h2>
@@ -174,7 +174,7 @@ export default function LegalWorkbench({ payload }: LegalWorkbenchProps) {
           <select
             value={selectedClauseId ?? ""}
             onChange={(e) => setSelectedClauseId(e.target.value)}
-            className="w-full rounded-md border border-slate-200 px-2.5 py-2 text-xs text-slate-700 outline-none focus:border-indigo-300"
+            className="w-full rounded-md border border-slate-200 px-2.5 py-2 text-xs text-slate-700 outline-none focus:border-signal"
           >
             {clauses.map((clause) => (
               <option key={clause.id} value={clause.id}>
@@ -186,18 +186,18 @@ export default function LegalWorkbench({ payload }: LegalWorkbenchProps) {
             value={amendment}
             onChange={(e) => setAmendment(e.target.value)}
             placeholder="Proposed amended language..."
-            className="min-h-[60px] w-full resize-none rounded-md border border-slate-200 p-2.5 text-xs text-slate-800 outline-none placeholder:text-slate-400 focus:border-indigo-300"
+            className="min-h-[60px] w-full resize-none rounded-md border border-slate-200 p-2.5 text-xs text-slate-800 outline-none placeholder:text-slate-400 focus:border-signal"
           />
           <input
             value={rationale}
             onChange={(e) => setRationale(e.target.value)}
             placeholder="Rationale (optional)"
-            className="w-full rounded-md border border-slate-200 px-2.5 py-2 text-xs text-slate-800 outline-none placeholder:text-slate-400 focus:border-indigo-300"
+            className="w-full rounded-md border border-slate-200 px-2.5 py-2 text-xs text-slate-800 outline-none placeholder:text-slate-400 focus:border-signal"
           />
           <button
             type="submit"
             disabled={!amendment.trim()}
-            className="rounded-md bg-indigo-600 px-3 py-2 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-40"
+            className="rounded-md bg-signal px-3 py-2 text-xs font-medium text-white hover:opacity-90 disabled:opacity-40"
           >
             Draft Counter-Proposal
           </button>

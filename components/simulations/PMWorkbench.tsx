@@ -69,9 +69,9 @@ export default function PMWorkbench({ payload }: PMWorkbenchProps) {
   );
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-4 overflow-y-auto bg-slate-50 p-4">
+    <div className="flex h-full min-h-0 flex-col gap-6 overflow-y-auto bg-slate-50 p-6">
       {/* Sprint planning allocation */}
-      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-lg border border-slate-200 bg-white p-6">
         <div className="mb-3 flex items-center gap-2">
           <CalendarRange className="h-4 w-4 text-slate-500" />
           <h2 className="text-sm font-semibold text-slate-700">Sprint Capacity Planning</h2>
@@ -86,7 +86,7 @@ export default function PMWorkbench({ payload }: PMWorkbenchProps) {
           step={1}
           value={capacity}
           onChange={(e) => setCapacity(parseFloat(e.target.value))}
-          className="w-full accent-indigo-500"
+          className="w-full accent-signal"
         />
         <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-slate-100">
           <div
@@ -121,7 +121,7 @@ export default function PMWorkbench({ payload }: PMWorkbenchProps) {
       </div>
 
       {/* Stakeholder priority balancing */}
-      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-lg border border-slate-200 bg-white p-6">
         <div className="mb-3 flex items-center gap-2">
           <Users2 className="h-4 w-4 text-slate-500" />
           <h2 className="text-sm font-semibold text-slate-700">Stakeholder Priority Balance</h2>
@@ -140,7 +140,7 @@ export default function PMWorkbench({ payload }: PMWorkbenchProps) {
                 step={5}
                 value={weights[stakeholder]}
                 onChange={(e) => setWeights((prev) => ({ ...prev, [stakeholder]: parseFloat(e.target.value) }))}
-                className="w-full accent-indigo-500"
+                className="w-full accent-signal"
               />
             </div>
           ))}
@@ -163,7 +163,7 @@ export default function PMWorkbench({ payload }: PMWorkbenchProps) {
       </div>
 
       {/* Feedback telemetry - derived from the existing conversion funnel's stage-over-stage drop */}
-      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-lg border border-slate-200 bg-white p-6">
         <h2 className="mb-2 text-sm font-semibold text-slate-700">User Feedback Telemetry</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {funnelData.map((point, i) => {

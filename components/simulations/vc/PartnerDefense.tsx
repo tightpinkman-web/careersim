@@ -88,7 +88,7 @@ export default function PartnerDefense({ sessionId, auditedStartupIds }: Partner
             onClick={() => selectStartup(id)}
             className={cn(
               "rounded-t-md px-3 py-1.5 text-xs font-medium transition-colors",
-              selectedId === id ? "bg-slate-900 text-white" : "text-slate-500 hover:bg-slate-100"
+              selectedId === id ? "bg-obsidian text-white" : "text-slate-500 hover:bg-slate-100"
             )}
           >
             {STARTUP_NAMES[id]}
@@ -96,9 +96,9 @@ export default function PartnerDefense({ sessionId, auditedStartupIds }: Partner
         ))}
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto p-4">
+      <div className="min-h-0 flex-1 overflow-y-auto p-6">
         {defenseState === "drafting" || defenseState === "loading" ? (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <MemoField label="Core Thesis" value={coreThesis} onChange={setCoreThesis} placeholder="Why does this deal win?" />
             <MemoField label="Risk Audit" value={riskAudit} onChange={setRiskAudit} placeholder="What could kill this investment?" />
             <MemoField
@@ -111,7 +111,7 @@ export default function PartnerDefense({ sessionId, auditedStartupIds }: Partner
             <button
               onClick={submitForReview}
               disabled={!canSubmit || defenseState === "loading"}
-              className="flex w-full items-center justify-center gap-2 rounded-md bg-slate-900 px-4 py-2.5 text-xs font-semibold text-white hover:bg-slate-800 disabled:opacity-40"
+              className="flex w-full items-center justify-center gap-2 rounded-md bg-signal px-4 py-2.5 text-xs font-semibold text-white hover:opacity-90 disabled:opacity-40"
             >
               {defenseState === "loading" ? (
                 <>
@@ -125,7 +125,7 @@ export default function PartnerDefense({ sessionId, auditedStartupIds }: Partner
           </div>
         ) : (
           partnerTurn && (
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="rounded-md border border-slate-200 bg-slate-50 p-3">
                 <p className="text-xs font-semibold text-slate-700">Memo Critique</p>
                 <p className="mt-1 text-xs text-slate-700">{partnerTurn.memo_critique}</p>
@@ -138,7 +138,7 @@ export default function PartnerDefense({ sessionId, auditedStartupIds }: Partner
                 <p className="text-xs font-semibold text-rose-800">Valuation Pushback</p>
                 <p className="mt-1 text-xs text-rose-900">{partnerTurn.valuation_pushback}</p>
               </div>
-              <div className="flex items-center justify-between rounded-md bg-slate-900 px-3 py-2 text-white">
+              <div className="flex items-center justify-between rounded-md bg-obsidian px-3 py-2 text-white">
                 <span className="text-xs">Partner Conviction</span>
                 <span className="text-sm font-bold">{partnerTurn.partner_conviction_score}/100</span>
               </div>
@@ -147,7 +147,7 @@ export default function PartnerDefense({ sessionId, auditedStartupIds }: Partner
                 <div className="flex gap-2">
                   <button
                     onClick={() => resolveConviction(true)}
-                    className="flex flex-1 items-center justify-center gap-1.5 rounded-md border border-slate-900 bg-slate-900 px-3 py-2 text-xs font-semibold text-white hover:bg-slate-800"
+                    className="flex flex-1 items-center justify-center gap-1.5 rounded-md border border-signal bg-signal px-3 py-2 text-xs font-semibold text-white hover:opacity-90"
                   >
                     <ShieldCheck className="h-3.5 w-3.5" />
                     Hold Your Position
@@ -189,7 +189,7 @@ function MemoField({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="min-h-[64px] w-full resize-none rounded-md border border-slate-200 p-2.5 text-xs text-slate-800 outline-none placeholder:text-slate-400 focus:border-indigo-300"
+        className="min-h-[64px] w-full resize-none rounded-md border border-slate-200 p-2.5 text-xs text-slate-800 outline-none placeholder:text-slate-400 focus:border-signal"
       />
     </div>
   );

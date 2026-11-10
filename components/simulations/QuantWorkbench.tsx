@@ -59,14 +59,14 @@ export default function QuantWorkbench({ payload }: QuantWorkbenchProps) {
   }, [candles, activeShock]);
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto bg-slate-950 p-3 text-slate-200">
+    <div className="flex h-full min-h-0 flex-col gap-6 overflow-y-auto bg-obsidian p-6 text-slate-200">
       <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
         <Radio className="h-3.5 w-3.5" />
         Market-Making Workbench
       </div>
 
       {/* Quoting spread */}
-      <div className="rounded-lg border border-slate-800 bg-slate-900 p-4">
+      <div className="rounded-lg border border-hairline bg-surface p-6">
         <div className="mb-2 flex items-center justify-between text-xs">
           <span className="text-slate-400">Quoting Spread</span>
           <span className="font-mono text-slate-100">{spreadBps.toFixed(0)} bps</span>
@@ -78,7 +78,7 @@ export default function QuantWorkbench({ payload }: QuantWorkbenchProps) {
           step={1}
           value={spreadBps}
           onChange={(e) => setSpreadBps(parseFloat(e.target.value))}
-          className="w-full accent-indigo-500"
+          className="w-full accent-signal"
         />
         <div className="mt-3 grid grid-cols-2 gap-3 text-center font-mono text-sm">
           <div className="rounded-md bg-emerald-500/10 py-2 text-emerald-400">
@@ -91,7 +91,7 @@ export default function QuantWorkbench({ payload }: QuantWorkbenchProps) {
       </div>
 
       {/* Inventory risk gauge */}
-      <div className="rounded-lg border border-slate-800 bg-slate-900 p-4">
+      <div className="rounded-lg border border-hairline bg-surface p-6">
         <div className="mb-2 flex items-center justify-between text-xs">
           <span className="flex items-center gap-1.5 text-slate-400">
             <Gauge className="h-3.5 w-3.5" />
@@ -111,7 +111,7 @@ export default function QuantWorkbench({ payload }: QuantWorkbenchProps) {
           onChange={(e) => setPosition(parseFloat(e.target.value))}
           className="w-full accent-slate-400"
         />
-        <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-slate-800">
+        <div className="mt-3 h-2.5 w-full overflow-hidden rounded-full bg-obsidian">
           <div
             className={cn("h-full rounded-full transition-all", inventoryColor)}
             style={{ width: `${inventoryFraction * 100}%` }}
@@ -125,7 +125,7 @@ export default function QuantWorkbench({ payload }: QuantWorkbenchProps) {
       </div>
 
       {/* Volatility shock injection */}
-      <div className="rounded-lg border border-slate-800 bg-slate-900 p-4">
+      <div className="rounded-lg border border-hairline bg-surface p-6">
         <div className="mb-2 flex items-center gap-1.5 text-xs text-slate-400">
           <Zap className="h-3.5 w-3.5" />
           Volatility Shock (what-if, local only)

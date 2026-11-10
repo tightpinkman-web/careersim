@@ -65,9 +65,9 @@ export default function ProductSimulationView({ payload, narrativePrompt }: Prod
   };
 
   return (
-    <div className="relative grid h-full grid-cols-1 gap-4 overflow-hidden lg:grid-cols-2">
+    <div className="relative grid h-full grid-cols-1 gap-6 overflow-hidden lg:grid-cols-2">
       {/* Left: Kanban */}
-      <div className="flex min-h-0 flex-col rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div className="flex min-h-0 flex-col rounded-lg border border-slate-200 bg-white">
         <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-3">
           <GitCommitHorizontal className="h-4 w-4 text-slate-500" />
           <h2 className="text-sm font-semibold text-slate-700">Sprint Board</h2>
@@ -99,7 +99,7 @@ export default function ProductSimulationView({ payload, narrativePrompt }: Prod
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.95 }}
-                      className="cursor-grab rounded-md border border-slate-200 bg-white p-2 text-xs shadow-sm active:cursor-grabbing"
+                      className="cursor-grab rounded-md border border-slate-200 bg-white p-2 text-xs ring-1 ring-signal/10 active:cursor-grabbing"
                     >
                       <div className="flex items-start justify-between gap-1">
                         <p className="font-medium text-slate-800">{card.title}</p>
@@ -123,8 +123,8 @@ export default function ProductSimulationView({ payload, narrativePrompt }: Prod
       </div>
 
       {/* Right: analytics */}
-      <div className="flex min-h-0 flex-col gap-4 overflow-y-auto">
-        <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="flex min-h-0 flex-col gap-6 overflow-y-auto">
+        <div className="rounded-lg border border-slate-200 bg-white p-6">
           <div className="mb-2 flex items-center gap-2">
             <BarChart3 className="h-4 w-4 text-slate-500" />
             <h2 className="text-sm font-semibold text-slate-700">Checkout Funnel</h2>
@@ -137,8 +137,8 @@ export default function ProductSimulationView({ payload, narrativePrompt }: Prod
               <AreaChart data={funnelData} margin={{ top: 8, right: 8, left: -16, bottom: 0 }}>
                 <defs>
                   <linearGradient id="funnelGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0.02} />
+                    <stop offset="5%" stopColor="#ec4899" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="#ec4899" stopOpacity={0.02} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -149,13 +149,13 @@ export default function ProductSimulationView({ payload, narrativePrompt }: Prod
                   labelStyle={{ color: "#0f172a" }}
                   itemStyle={{ color: "#0f172a" }}
                 />
-                <Area type="monotone" dataKey="users" stroke="#6366f1" fill="url(#funnelGradient)" strokeWidth={2} />
+                <Area type="monotone" dataKey="users" stroke="#ec4899" fill="url(#funnelGradient)" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        <div className="flex-1 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="flex-1 rounded-lg border border-slate-200 bg-white p-6">
           <h2 className="mb-2 text-sm font-semibold text-slate-700">Impact vs. Effort</h2>
           <div className="h-56 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -176,7 +176,7 @@ export default function ProductSimulationView({ payload, narrativePrompt }: Prod
                     ) : null
                   }
                 />
-                <Scatter data={prioritizationMatrix} fill="#6366f1" />
+                <Scatter data={prioritizationMatrix} fill="#ec4899" />
               </ScatterChart>
             </ResponsiveContainer>
           </div>
@@ -191,7 +191,7 @@ export default function ProductSimulationView({ payload, narrativePrompt }: Prod
       {!workbenchOpen && (
         <button
           onClick={() => setWorkbenchOpen(true)}
-          className="absolute bottom-4 left-4 flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2.5 text-xs font-medium text-white shadow-lg hover:bg-slate-800"
+          className="absolute bottom-4 left-4 flex items-center gap-2 rounded-md bg-obsidian px-4 py-2.5 text-xs font-medium text-white ring-1 ring-signal/15 hover:bg-surface"
         >
           <CalendarRange className="h-4 w-4" />
           Workbench
@@ -204,7 +204,7 @@ export default function ProductSimulationView({ payload, narrativePrompt }: Prod
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -360, opacity: 0 }}
             transition={{ type: "tween", duration: 0.2 }}
-            className="absolute inset-y-0 left-0 flex w-full max-w-sm flex-col overflow-hidden rounded-r-lg border border-slate-200 bg-white shadow-2xl"
+            className="absolute inset-y-0 left-0 flex w-full max-w-sm flex-col overflow-hidden rounded-r-lg border border-slate-200 bg-white ring-1 ring-signal/15"
           >
             <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-3">
               <CalendarRange className="h-4 w-4 text-slate-500" />

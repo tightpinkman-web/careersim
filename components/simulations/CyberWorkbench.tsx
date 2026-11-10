@@ -92,8 +92,8 @@ export default function CyberWorkbench({ payload }: CyberWorkbenchProps) {
   return (
     <div className="flex h-full min-h-0 flex-col gap-3 overflow-y-auto bg-black p-3 text-emerald-400 md:flex-row">
       {/* SIEM log stream */}
-      <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-slate-800 bg-slate-950">
-        <div className="flex items-center gap-2 border-b border-slate-800 px-3 py-2.5">
+      <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-hairline bg-obsidian">
+        <div className="flex items-center gap-2 border-b border-hairline px-3 py-2.5">
           <ListTree className="h-3.5 w-3.5 text-slate-300" />
           <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-300">SIEM Log Stream</h3>
           <div className="ml-auto flex gap-1">
@@ -103,7 +103,7 @@ export default function CyberWorkbench({ payload }: CyberWorkbenchProps) {
                 onClick={() => setSeverityFilter(level)}
                 className={cn(
                   "rounded px-1.5 py-0.5 text-[10px] font-medium uppercase",
-                  severityFilter === level ? "bg-slate-700 text-white" : "text-slate-500 hover:text-slate-300"
+                  severityFilter === level ? "bg-signal text-white" : "text-slate-500 hover:text-slate-300"
                 )}
               >
                 {level}
@@ -114,7 +114,7 @@ export default function CyberWorkbench({ payload }: CyberWorkbenchProps) {
         <div className="min-h-0 flex-1 overflow-y-auto p-2 font-mono text-[11px]">
           {streamedAlerts.length === 0 && <p className="p-2 text-slate-600">Awaiting events...</p>}
           {streamedAlerts.map((alert) => (
-            <div key={alert.id} className="flex items-start gap-2 border-b border-slate-900 px-1 py-1.5">
+            <div key={alert.id} className="flex items-start gap-2 border-b border-hairline px-1 py-1.5">
               <span className={cn("mt-1 h-1.5 w-1.5 shrink-0 rounded-full", severityDot[alert.severity])} />
               <span className="shrink-0 text-slate-500">{alert.timestamp}</span>
               <span className="shrink-0 font-semibold text-slate-400">{alert.source}</span>
@@ -126,8 +126,8 @@ export default function CyberWorkbench({ payload }: CyberWorkbenchProps) {
       </div>
 
       {/* Network topology */}
-      <div className="flex min-h-0 w-full flex-col rounded-lg border border-slate-800 bg-slate-950 md:w-72">
-        <div className="flex items-center gap-2 border-b border-slate-800 px-3 py-2.5">
+      <div className="flex min-h-0 w-full flex-col rounded-lg border border-hairline bg-obsidian md:w-72">
+        <div className="flex items-center gap-2 border-b border-hairline px-3 py-2.5">
           <Network className="h-3.5 w-3.5 text-slate-300" />
           <h3 className="text-xs font-semibold uppercase tracking-wide text-slate-300">Network Topology</h3>
         </div>
@@ -137,14 +137,14 @@ export default function CyberWorkbench({ payload }: CyberWorkbenchProps) {
             const subnetNodes = nodes.filter((n) => n.subnet === subnet);
             const isolated = isolatedSubnets.has(subnet);
             return (
-              <div key={subnet} className={cn("rounded-md border p-2", isolated ? "border-rose-500/40 bg-rose-500/5" : "border-slate-800")}>
+              <div key={subnet} className={cn("rounded-md border p-2", isolated ? "border-rose-500/40 bg-rose-500/5" : "border-hairline")}>
                 <div className="mb-1.5 flex items-center justify-between">
                   <span className="font-mono text-[11px] text-slate-300">{subnet}</span>
                   <button
                     onClick={() => toggleSubnet(subnet)}
                     className={cn(
                       "flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-medium",
-                      isolated ? "bg-rose-500/20 text-rose-300" : "bg-slate-800 text-slate-400 hover:text-slate-200"
+                      isolated ? "bg-rose-500/20 text-rose-300" : "bg-obsidian text-slate-400 hover:text-slate-200"
                     )}
                   >
                     {isolated ? <ShieldOff className="h-3 w-3" /> : <ShieldCheck className="h-3 w-3" />}
@@ -158,7 +158,7 @@ export default function CyberWorkbench({ payload }: CyberWorkbenchProps) {
                       onClick={() => setSelectedIp(node.ip)}
                       className={cn(
                         "flex items-center gap-1 rounded border px-1.5 py-1 font-mono text-[10px]",
-                        selectedIp === node.ip ? "border-signal text-signal" : "border-slate-700 text-slate-400",
+                        selectedIp === node.ip ? "border-signal text-signal" : "border-hairline text-slate-400",
                         isolated && "opacity-40"
                       )}
                     >
@@ -172,7 +172,7 @@ export default function CyberWorkbench({ payload }: CyberWorkbenchProps) {
           })}
         </div>
         {selectedNode && (
-          <div className="border-t border-slate-800 p-3 text-[11px]">
+          <div className="border-t border-hairline p-3 text-[11px]">
             <p className="font-mono font-semibold text-slate-200">{selectedNode.ip}</p>
             <p className="mt-1 text-slate-500">Subnet: {selectedNode.subnet}</p>
             <p className="text-slate-500">

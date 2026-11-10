@@ -87,9 +87,9 @@ export default function VCWorkbench({ payload }: VCWorkbenchProps) {
   }, [cashOnHand, burnRate, runwayMonths]);
 
   return (
-    <div className="flex h-full min-h-0 flex-col gap-4 overflow-y-auto bg-slate-50 p-4">
+    <div className="flex h-full min-h-0 flex-col gap-6 overflow-y-auto bg-slate-50 p-6">
       {/* Unit economics */}
-      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-lg border border-slate-200 bg-white p-6">
         <div className="mb-3 flex items-center gap-2">
           <Calculator className="h-4 w-4 text-slate-500" />
           <h2 className="text-sm font-semibold text-slate-700">Unit Economics: CAC vs. LTV</h2>
@@ -108,7 +108,7 @@ export default function VCWorkbench({ payload }: VCWorkbenchProps) {
               <span>CAC</span>
               <span className="font-mono text-slate-800">${cac}</span>
             </div>
-            <input type="range" min={50} max={3000} step={50} value={cac} onChange={(e) => setCac(parseFloat(e.target.value))} className="w-full accent-indigo-500" />
+            <input type="range" min={50} max={3000} step={50} value={cac} onChange={(e) => setCac(parseFloat(e.target.value))} className="w-full accent-signal" />
           </div>
           <div>
             <div className="mb-1 flex items-center justify-between text-xs text-slate-500">
@@ -141,14 +141,14 @@ export default function VCWorkbench({ payload }: VCWorkbenchProps) {
               <XAxis dataKey="month" tick={{ fontSize: 10 }} stroke="#94a3b8" />
               <YAxis tick={{ fontSize: 10 }} stroke="#94a3b8" />
               <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} />
-              <Bar dataKey="cumulativeValue" fill="#6366f1" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="cumulativeValue" fill="#ec4899" radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
 
       {/* Burn rate sensitivity */}
-      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-lg border border-slate-200 bg-white p-6">
         <div className="mb-3 flex items-center gap-2">
           <Flame className="h-4 w-4 text-slate-500" />
           <h2 className="text-sm font-semibold text-slate-700">Burn Rate Sensitivity</h2>
@@ -202,7 +202,7 @@ export default function VCWorkbench({ payload }: VCWorkbenchProps) {
       </div>
 
       {/* Analyst scratchpad - deliberately separate from the official investment memo */}
-      <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="rounded-lg border border-slate-200 bg-white p-6">
         <div className="mb-2 flex items-center gap-2">
           <NotebookPen className="h-4 w-4 text-slate-500" />
           <h2 className="text-sm font-semibold text-slate-700">Analyst Scratchpad</h2>
@@ -211,7 +211,7 @@ export default function VCWorkbench({ payload }: VCWorkbenchProps) {
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="Working notes on unit economics, runway, diligence questions..."
-          className="min-h-[80px] w-full resize-none rounded-md border border-slate-200 p-2.5 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-indigo-300"
+          className="min-h-[80px] w-full resize-none rounded-md border border-slate-200 p-2.5 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-signal"
         />
       </div>
     </div>

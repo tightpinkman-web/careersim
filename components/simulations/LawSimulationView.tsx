@@ -36,7 +36,7 @@ export default function LawSimulationView({ payload, narrativePrompt, sessionId 
 
   return (
     <div className="relative flex h-full min-h-0 gap-4 overflow-hidden">
-      <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-slate-200 bg-white">
         <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-3">
           <FileText className="h-4 w-4 text-slate-500" />
           <h2 className="text-sm font-semibold text-slate-700">{documentTitle}</h2>
@@ -83,14 +83,14 @@ export default function LawSimulationView({ payload, narrativePrompt, sessionId 
             </div>
           ))}
         </div>
-        <p className="border-t border-slate-200 bg-slate-50 px-4 py-2 text-[11px] text-slate-500">{narrativePrompt}</p>
+        <p className="border-t border-slate-200 bg-slate-50 px-4 py-2 pb-14 text-[11px] text-slate-500">{narrativePrompt}</p>
       </div>
 
       {/* Floating trigger */}
       {!chatOpen && (
         <button
           onClick={() => setChatOpen(true)}
-          className="absolute bottom-4 right-4 flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2.5 text-xs font-medium text-white shadow-lg hover:bg-slate-800"
+          className="absolute bottom-4 right-4 flex items-center gap-2 rounded-md bg-obsidian px-4 py-2.5 text-xs font-medium text-white ring-1 ring-signal/15 hover:bg-surface"
         >
           <MessageSquare className="h-4 w-4" />
           Negotiation ({messages.length})
@@ -105,7 +105,7 @@ export default function LawSimulationView({ payload, narrativePrompt, sessionId 
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 360, opacity: 0 }}
             transition={{ type: "tween", duration: 0.2 }}
-            className="absolute inset-y-0 right-0 flex w-full max-w-sm flex-col rounded-l-lg border border-slate-200 bg-white shadow-2xl"
+            className="absolute inset-y-0 right-0 flex w-full max-w-sm flex-col rounded-l-lg border border-slate-200 bg-white ring-1 ring-signal/15"
           >
             <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-3">
               <MessageSquare className="h-4 w-4 text-slate-500" />
@@ -114,7 +114,7 @@ export default function LawSimulationView({ payload, narrativePrompt, sessionId 
                 <X className="h-4 w-4 text-slate-500" />
               </button>
             </div>
-            <div className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
+            <div className="min-h-0 flex-1 space-y-4 overflow-y-auto p-6">
               {messages.map((msg) => (
                 <div
                   key={msg.id}
@@ -123,7 +123,7 @@ export default function LawSimulationView({ payload, narrativePrompt, sessionId 
                   <div
                     className={cn(
                       "max-w-[80%] rounded-lg px-3 py-2 text-xs",
-                      msg.sender === "student" ? "bg-indigo-600 text-white" : "bg-slate-100 text-slate-700"
+                      msg.sender === "student" ? "bg-signal text-white" : "bg-slate-100 text-slate-700"
                     )}
                   >
                     {msg.text}
@@ -136,11 +136,11 @@ export default function LawSimulationView({ payload, narrativePrompt, sessionId 
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 placeholder="Propose a term..."
-                className="flex-1 rounded-md border border-slate-200 px-3 py-2 text-xs outline-none focus:border-indigo-400"
+                className="flex-1 rounded-md border border-slate-200 px-3 py-2 text-xs outline-none focus:border-signal"
               />
               <button
                 type="submit"
-                className="rounded-md bg-indigo-600 p-2 text-white hover:bg-indigo-700 disabled:opacity-40"
+                className="rounded-md bg-signal p-2 text-white hover:opacity-90 disabled:opacity-40"
                 disabled={!draft.trim()}
               >
                 <Send className="h-3.5 w-3.5" />
@@ -154,7 +154,7 @@ export default function LawSimulationView({ payload, narrativePrompt, sessionId 
       {!workbenchOpen && (
         <button
           onClick={() => setWorkbenchOpen(true)}
-          className="absolute bottom-4 left-4 flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2.5 text-xs font-medium text-white shadow-lg hover:bg-slate-800"
+          className="absolute bottom-4 left-4 flex items-center gap-2 rounded-md bg-obsidian px-4 py-2.5 text-xs font-medium text-white ring-1 ring-signal/15 hover:bg-surface"
         >
           <FileSearch className="h-4 w-4" />
           Workbench
@@ -167,7 +167,7 @@ export default function LawSimulationView({ payload, narrativePrompt, sessionId 
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -360, opacity: 0 }}
             transition={{ type: "tween", duration: 0.2 }}
-            className="absolute inset-y-0 left-0 flex w-full max-w-sm flex-col overflow-hidden rounded-r-lg border border-slate-200 bg-white shadow-2xl"
+            className="absolute inset-y-0 left-0 flex w-full max-w-sm flex-col overflow-hidden rounded-r-lg border border-slate-200 bg-white ring-1 ring-signal/15"
           >
             <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-3">
               <FileSearch className="h-4 w-4 text-slate-500" />

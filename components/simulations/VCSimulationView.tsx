@@ -60,14 +60,14 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
   const activeSlide = deckSlides[slideIndex];
 
   return (
-    <div className="relative flex h-full min-h-0 flex-col gap-4 overflow-hidden">
+    <div className="relative flex h-full min-h-0 flex-col gap-6 overflow-hidden">
       <TickerHeader />
       <SlackInterrupt />
-      <div className="relative grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-hidden md:grid-cols-2">
+      <div className="relative grid min-h-0 flex-1 grid-cols-1 gap-6 overflow-hidden md:grid-cols-2">
       {/* Left column: inbox + memo */}
-      <div className="flex min-h-0 flex-col gap-4">
-        <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-slate-200 bg-white shadow-sm">
-          <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-3">
+      <div className="flex min-h-0 flex-col gap-6">
+        <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-slate-200 bg-white">
+          <div className="flex items-center gap-2 border-b border-slate-200 px-6 py-4">
             <Mail className="h-4 w-4 text-slate-500" />
             <h2 className="text-sm font-semibold text-slate-700">Inbox</h2>
             <span className="ml-auto text-xs text-slate-400">{emails.length} messages</span>
@@ -83,14 +83,14 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
                     }}
                     className={cn(
                       "w-full border-b border-slate-100 px-3 py-2 text-left transition-colors",
-                      selectedEmailId === email.id ? "bg-indigo-50" : "hover:bg-slate-50"
+                      selectedEmailId === email.id ? "bg-signal/10" : "hover:bg-slate-50"
                     )}
                   >
                     <div className="flex items-center justify-between">
                       <span className={cn("truncate text-xs font-medium", !email.read && "font-semibold text-slate-900")}>
                         {email.from}
                       </span>
-                      {!email.read && <span className="ml-1 h-1.5 w-1.5 shrink-0 rounded-full bg-indigo-500" />}
+                      {!email.read && <span className="ml-1 h-1.5 w-1.5 shrink-0 rounded-full bg-signal" />}
                     </div>
                     <p className="truncate text-xs text-slate-600">{email.subject}</p>
                   </button>
@@ -134,23 +134,23 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
           </div>
         </div>
 
-        <div className="flex min-h-[160px] flex-col rounded-lg border border-slate-200 bg-white shadow-sm">
-          <div className="border-b border-slate-200 px-4 py-3">
+        <div className="flex min-h-[160px] flex-col rounded-lg border border-slate-200 bg-white">
+          <div className="border-b border-slate-200 px-6 py-4">
             <h2 className="text-sm font-semibold text-slate-700">Investment Memo</h2>
           </div>
           <textarea
             value={memo}
             onChange={(e) => setMemo(e.target.value)}
             placeholder="Draft your investment memo..."
-            className="min-h-[120px] flex-1 resize-none rounded-b-lg p-4 text-sm text-slate-800 outline-none placeholder:text-slate-400"
+            className="min-h-[120px] flex-1 resize-none rounded-b-lg p-6 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:ring-1 focus:ring-signal/30"
           />
         </div>
       </div>
 
       {/* Right column: deck + financials */}
-      <div className="flex min-h-0 flex-col gap-4">
-        <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-slate-200 bg-slate-900 text-white shadow-sm">
-          <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+      <div className="flex min-h-0 flex-col gap-6">
+        <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-hairline bg-obsidian text-white">
+          <div className="flex items-center justify-between border-b border-white/10 px-6 py-4">
             <h2 className="text-sm font-semibold">{startupName}: Data Room</h2>
             <span className="text-xs text-slate-400">
               {deckSlides.length > 0 ? slideIndex + 1 : 0} / {deckSlides.length}
@@ -171,7 +171,7 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
                   <ul className="mt-4 space-y-2">
                     {activeSlide.bullets.map((bullet, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm text-slate-200">
-                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-indigo-400" />
+                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-signal" />
                         {bullet}
                       </li>
                     ))}
@@ -208,9 +208,9 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
           </div>
         </div>
 
-        <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+        <div className="rounded-lg border border-slate-200 bg-white p-6">
           <h2 className="mb-3 text-sm font-semibold text-slate-700">Key Financials</h2>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
             {financialMetrics.map((metric) => (
               <div key={metric.label} className="rounded-md bg-slate-50 p-3">
                 <p className="text-xs text-slate-500">{metric.label}</p>
@@ -225,7 +225,7 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
           </div>
         </div>
 
-        <p className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-3 text-xs text-slate-500">
+        <p className="rounded-lg border border-dashed border-slate-200 bg-slate-50 p-4 text-xs text-slate-500">
           {narrativePrompt}
         </p>
       </div>
@@ -238,8 +238,8 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
             key={id}
             onClick={() => toggleDrawer(id)}
             className={cn(
-              "flex items-center gap-2 rounded-md px-4 py-2.5 text-xs font-medium shadow-lg",
-              activeDrawer === id ? "bg-indigo-600 text-white" : "bg-slate-900 text-white hover:bg-slate-800"
+              "flex items-center gap-2 rounded-md px-4 py-2.5 text-xs font-medium ring-1 ring-signal/15",
+              activeDrawer === id ? "bg-signal text-white" : "bg-obsidian text-white hover:bg-surface"
             )}
           >
             <Icon className="h-4 w-4" />
@@ -255,7 +255,7 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -360, opacity: 0 }}
             transition={{ type: "tween", duration: 0.2 }}
-            className="absolute inset-y-0 left-0 z-10 flex w-full max-w-sm flex-col overflow-hidden rounded-r-lg border border-slate-200 bg-white pb-16 shadow-2xl"
+            className="absolute inset-y-0 left-0 z-10 flex w-full max-w-sm flex-col overflow-hidden rounded-r-lg border border-slate-200 bg-white pb-16 ring-1 ring-signal/15"
           >
             <div className="flex min-h-0 flex-1 flex-col">
               <div className="flex items-center justify-end border-b border-slate-200 px-2 py-1">
@@ -283,8 +283,8 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
             key={id}
             onClick={() => toggleDrawer(id)}
             className={cn(
-              "flex items-center gap-2 rounded-md px-4 py-2.5 text-xs font-medium shadow-lg",
-              activeDrawer === id ? "bg-indigo-600 text-white" : "bg-slate-900 text-white hover:bg-slate-800"
+              "flex items-center gap-2 rounded-md px-4 py-2.5 text-xs font-medium ring-1 ring-signal/15",
+              activeDrawer === id ? "bg-signal text-white" : "bg-obsidian text-white hover:bg-surface"
             )}
           >
             <Icon className="h-4 w-4" />
@@ -300,7 +300,7 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 360, opacity: 0 }}
             transition={{ type: "tween", duration: 0.2 }}
-            className="absolute inset-y-0 right-0 z-10 flex w-full max-w-sm flex-col overflow-hidden rounded-l-lg border border-slate-200 bg-white pb-16 shadow-2xl"
+            className="absolute inset-y-0 right-0 z-10 flex w-full max-w-sm flex-col overflow-hidden rounded-l-lg border border-slate-200 bg-white pb-16 ring-1 ring-signal/15"
           >
             <div className="flex min-h-0 flex-1 flex-col">
               <div className="flex items-center justify-end border-b border-slate-200 px-2 py-1">

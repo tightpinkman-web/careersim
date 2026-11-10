@@ -34,7 +34,7 @@ export default function SlackInterrupt() {
           exit={{ opacity: 0, y: 24, scale: 0.96 }}
           transition={{ type: "spring", stiffness: 380, damping: 28 }}
           role="alert"
-          className="fixed bottom-6 right-6 z-50 w-full max-w-xs rounded-lg border border-slate-700 bg-slate-900 p-4 text-slate-100 shadow-2xl"
+          className="fixed bottom-6 right-6 z-50 w-full max-w-xs rounded-lg border border-hairline bg-obsidian p-6 text-slate-100 ring-1 ring-signal/20"
         >
           <div className="flex items-start gap-3">
             <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-signal/20 text-signal">
@@ -49,7 +49,7 @@ export default function SlackInterrupt() {
             <button
               onClick={() => setDismissed(true)}
               aria-label="Dismiss"
-              className="shrink-0 rounded p-1 text-slate-500 hover:bg-slate-800 hover:text-slate-300"
+              className="shrink-0 rounded p-1 text-slate-500 hover:bg-surface hover:text-slate-300"
             >
               <X className="h-3.5 w-3.5" />
             </button>

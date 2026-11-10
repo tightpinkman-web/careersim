@@ -180,12 +180,12 @@ export default function WorkspaceShell({
   const totalUnread = unreadChat + unreadEmail;
 
   return (
-    <div className={cn("flex h-full min-h-0 flex-col", isDark ? "bg-slate-950" : "bg-slate-100")}>
+    <div className={cn("flex h-full min-h-0 flex-col", isDark ? "bg-obsidian" : "bg-slate-100")}>
       {/* OS top status bar */}
       <div
         className={cn(
           "flex shrink-0 items-center gap-2 border-b px-3 py-1.5",
-          isDark ? "border-slate-800 bg-slate-900" : "border-slate-200 bg-white"
+          isDark ? "border-hairline bg-surface" : "border-slate-200 bg-white"
         )}
       >
         <div className="flex items-center gap-1">
@@ -258,7 +258,7 @@ export default function WorkspaceShell({
                       message.isInterruption
                         ? "border-signal/50 bg-signal/10"
                         : isDark
-                          ? "border-slate-800 bg-slate-900 text-slate-300"
+                          ? "border-hairline bg-surface text-slate-300"
                           : "border-slate-200 bg-white text-slate-600"
                     )}
                   >
@@ -284,7 +284,7 @@ export default function WorkspaceShell({
                     key={email.id}
                     className={cn(
                       "border px-3 py-2 text-xs",
-                      isDark ? "border-slate-800 bg-slate-900 text-slate-300" : "border-slate-200 bg-white text-slate-600"
+                      isDark ? "border-hairline bg-surface text-slate-300" : "border-slate-200 bg-white text-slate-600"
                     )}
                   >
                     <div className="mb-1 flex items-center justify-between gap-2">

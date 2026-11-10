@@ -67,7 +67,7 @@ export default function UnitEconomicsModel({ sessionId }: { sessionId?: string }
             onClick={() => selectStartup(id)}
             className={cn(
               "rounded-t-md px-3 py-1.5 text-xs font-medium transition-colors",
-              selectedId === id ? "bg-slate-900 text-white" : "text-slate-500 hover:bg-slate-100"
+              selectedId === id ? "bg-obsidian text-white" : "text-slate-500 hover:bg-slate-100"
             )}
           >
             {STARTUP_NAMES[id]}
@@ -75,7 +75,7 @@ export default function UnitEconomicsModel({ sessionId }: { sessionId?: string }
         ))}
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto p-4">
+      <div className="min-h-0 flex-1 overflow-y-auto p-6">
         <div className="mb-3 flex items-center justify-between">
           <span
             className={cn(
@@ -106,7 +106,7 @@ export default function UnitEconomicsModel({ sessionId }: { sessionId?: string }
             step={5_000}
             onChange={setCac}
             onCommit={() => sessionId && recordModelTweak(sessionId)}
-            accent="accent-indigo-500"
+            accent="accent-signal"
           />
           <Slider
             label="LTV"
@@ -165,7 +165,7 @@ export default function UnitEconomicsModel({ sessionId }: { sessionId?: string }
               <YAxis tick={{ fontSize: 10 }} stroke="#94a3b8" />
               <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} formatter={(v) => `₹${Number(v).toLocaleString("en-IN")}`} />
               <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Line type="monotone" dataKey="base" name="Base case" stroke="#6366f1" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="base" name="Base case" stroke="#ec4899" strokeWidth={2} dot={false} />
               <Line type="monotone" dataKey="stressed" name="Stressed case" stroke="#f59e0b" strokeWidth={2} strokeDasharray="4 3" dot={false} />
             </LineChart>
           </ResponsiveContainer>

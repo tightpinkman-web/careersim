@@ -50,23 +50,23 @@ export default function QuantSimulationView({ payload, narrativePrompt }: QuantS
   );
 
   return (
-    <div className="relative grid h-full min-h-0 grid-cols-1 gap-3 overflow-hidden bg-slate-950 p-3 text-slate-200 xl:grid-cols-[2fr_1fr]">
+    <div className="relative grid h-full min-h-0 grid-cols-1 gap-6 overflow-hidden bg-obsidian p-6 text-slate-200 xl:grid-cols-[2fr_1fr]">
       {/* Left: chart + parameters */}
-      <div className="flex min-h-0 flex-col gap-3">
-        <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-slate-800 bg-slate-900">
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-slate-800 px-4 py-3">
+      <div className="flex min-h-0 flex-col gap-6 pb-14">
+        <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-hairline bg-surface">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-hairline px-4 py-3">
             <h2 className="text-sm font-semibold text-slate-100">{ticker}</h2>
             <span className={cn("flex items-center gap-1 text-xs font-medium", pnl >= 0 ? "text-emerald-400" : "text-rose-400")}>
               {pnl >= 0 ? <TrendingUp className="h-3.5 w-3.5" /> : <TrendingDown className="h-3.5 w-3.5" />}
               {pnl >= 0 ? "+" : ""}
               {pnl.toFixed(2)} P&amp;L
             </span>
-            <div className="ml-auto flex overflow-hidden rounded-md border border-slate-700 text-xs">
+            <div className="ml-auto flex overflow-hidden rounded-md border border-hairline text-xs">
               <button
                 onClick={() => setChartMode("candle")}
                 className={cn(
                   "flex items-center gap-1 px-2 py-1",
-                  chartMode === "candle" ? "bg-slate-700 text-white" : "text-slate-400 hover:bg-slate-800"
+                  chartMode === "candle" ? "bg-signal text-white" : "text-slate-400 hover:bg-obsidian"
                 )}
               >
                 <CandlestickChart className="h-3.5 w-3.5" />
@@ -76,7 +76,7 @@ export default function QuantSimulationView({ payload, narrativePrompt }: QuantS
                 onClick={() => setChartMode("line")}
                 className={cn(
                   "flex items-center gap-1 px-2 py-1",
-                  chartMode === "line" ? "bg-slate-700 text-white" : "text-slate-400 hover:bg-slate-800"
+                  chartMode === "line" ? "bg-signal text-white" : "text-slate-400 hover:bg-obsidian"
                 )}
               >
                 <LineChartIcon className="h-3.5 w-3.5" />
@@ -119,7 +119,7 @@ export default function QuantSimulationView({ payload, narrativePrompt }: QuantS
         </div>
 
         {/* Algorithmic parameters */}
-        <div className="rounded-lg border border-slate-800 bg-slate-900 p-4">
+        <div className="rounded-lg border border-hairline bg-surface p-6">
           <h2 className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">Algorithm Parameters</h2>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
@@ -149,7 +149,7 @@ export default function QuantSimulationView({ payload, narrativePrompt }: QuantS
                 step={0.01}
                 value={volatilityThreshold}
                 onChange={(e) => setVolatilityThreshold(parseFloat(e.target.value))}
-                className="w-full accent-indigo-500"
+                className="w-full accent-signal"
               />
             </div>
           </div>
@@ -157,12 +157,12 @@ export default function QuantSimulationView({ payload, narrativePrompt }: QuantS
       </div>
 
       {/* Right: order book + news */}
-      <div className="flex min-h-0 flex-col gap-3">
-        <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-slate-800 bg-slate-900">
-          <div className="border-b border-slate-800 px-4 py-3">
+      <div className="flex min-h-0 flex-col gap-6">
+        <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-hairline bg-surface">
+          <div className="border-b border-hairline px-4 py-3">
             <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-400">Order Book</h2>
           </div>
-          <div className="grid min-h-0 flex-1 grid-cols-2 divide-x divide-slate-800 overflow-y-auto">
+          <div className="grid min-h-0 flex-1 grid-cols-2 divide-x divide-hairline overflow-y-auto">
             <div className="p-2">
               {orderBook.bids.map((level, i) => (
                 <div key={i} className="relative mb-0.5 flex justify-between px-2 py-0.5 text-[11px] font-mono">
@@ -190,8 +190,8 @@ export default function QuantSimulationView({ payload, narrativePrompt }: QuantS
           </div>
         </div>
 
-        <div className="flex max-h-56 min-h-0 flex-col rounded-lg border border-slate-800 bg-slate-900">
-          <div className="border-b border-slate-800 px-4 py-3">
+        <div className="flex max-h-56 min-h-0 flex-col rounded-lg border border-hairline bg-surface">
+          <div className="border-b border-hairline px-4 py-3">
             <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-400">News Ticker</h2>
           </div>
           <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-3">
@@ -217,7 +217,7 @@ export default function QuantSimulationView({ payload, narrativePrompt }: QuantS
           </div>
         </div>
 
-        <p className="rounded-lg border border-dashed border-slate-800 bg-slate-900/50 p-3 text-[11px] text-slate-400">
+        <p className="rounded-lg border border-dashed border-hairline bg-surface/50 p-3 text-[11px] text-slate-400">
           {narrativePrompt}
         </p>
       </div>
@@ -226,7 +226,7 @@ export default function QuantSimulationView({ payload, narrativePrompt }: QuantS
       {!workbenchOpen && (
         <button
           onClick={() => setWorkbenchOpen(true)}
-          className="absolute bottom-4 left-4 flex items-center gap-2 rounded-md bg-slate-800 px-4 py-2.5 text-xs font-medium text-white shadow-lg hover:bg-slate-700"
+          className="absolute bottom-4 left-4 flex items-center gap-2 rounded-md bg-obsidian px-4 py-2.5 text-xs font-medium text-white ring-1 ring-signal/15 hover:bg-surface"
         >
           <SlidersHorizontal className="h-4 w-4" />
           Workbench
@@ -239,12 +239,12 @@ export default function QuantSimulationView({ payload, narrativePrompt }: QuantS
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -360, opacity: 0 }}
             transition={{ type: "tween", duration: 0.2 }}
-            className="absolute inset-y-0 left-0 flex w-full max-w-sm flex-col overflow-hidden rounded-r-lg border border-slate-800 shadow-2xl"
+            className="absolute inset-y-0 left-0 flex w-full max-w-sm flex-col overflow-hidden rounded-r-lg border border-hairline ring-1 ring-signal/15"
           >
-            <div className="flex items-center gap-2 border-b border-slate-800 bg-slate-900 px-4 py-3">
+            <div className="flex items-center gap-2 border-b border-hairline bg-surface px-4 py-3">
               <SlidersHorizontal className="h-4 w-4 text-slate-300" />
               <h2 className="text-sm font-semibold text-slate-200">Workbench</h2>
-              <button onClick={() => setWorkbenchOpen(false)} className="ml-auto rounded p-1 hover:bg-slate-800">
+              <button onClick={() => setWorkbenchOpen(false)} className="ml-auto rounded p-1 hover:bg-surface">
                 <X className="h-4 w-4 text-slate-400" />
               </button>
             </div>

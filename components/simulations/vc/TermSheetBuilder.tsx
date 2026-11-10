@@ -77,7 +77,7 @@ export default function TermSheetBuilder({ sessionId }: { sessionId?: string }) 
             onClick={() => selectStartup(id)}
             className={cn(
               "rounded-t-md px-3 py-1.5 text-xs font-medium transition-colors",
-              selectedId === id ? "bg-slate-900 text-white" : "text-slate-500 hover:bg-slate-100"
+              selectedId === id ? "bg-obsidian text-white" : "text-slate-500 hover:bg-slate-100"
             )}
           >
             {STARTUP_NAMES[id]}
@@ -85,9 +85,9 @@ export default function TermSheetBuilder({ sessionId }: { sessionId?: string }) 
         ))}
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto p-4">
-        <div className="mb-4 grid grid-cols-2 gap-2">
-          <div className="rounded-md bg-slate-900 p-3 text-white">
+      <div className="min-h-0 flex-1 overflow-y-auto p-6">
+        <div className="mb-4 grid grid-cols-2 gap-4">
+          <div className="rounded-md bg-obsidian p-3 text-white">
             <p className="text-xs text-slate-400">Fund Ownership</p>
             <p className="text-lg font-bold">{ownershipPct.toFixed(2)}%</p>
           </div>
@@ -102,7 +102,7 @@ export default function TermSheetBuilder({ sessionId }: { sessionId?: string }) 
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div>
             <div className="mb-1 flex items-center justify-between text-xs text-slate-500">
               <span>Valuation Cap</span>
@@ -117,7 +117,7 @@ export default function TermSheetBuilder({ sessionId }: { sessionId?: string }) 
               onChange={(e) => setValuationCapCr(parseFloat(e.target.value))}
               onPointerUp={commitTweak}
               onKeyUp={commitTweak}
-              className="w-full accent-indigo-500"
+              className="w-full accent-signal"
             />
           </div>
 
@@ -152,7 +152,7 @@ export default function TermSheetBuilder({ sessionId }: { sessionId?: string }) 
                   className={cn(
                     "flex-1 rounded-md border px-3 py-2 text-xs font-medium transition-colors",
                     liquidationPreference === option
-                      ? "border-slate-900 bg-slate-900 text-white"
+                      ? "border-obsidian bg-obsidian text-white"
                       : "border-slate-200 text-slate-600 hover:bg-slate-50"
                   )}
                 >
@@ -174,7 +174,7 @@ export default function TermSheetBuilder({ sessionId }: { sessionId?: string }) 
                   }}
                   className={cn(
                     "flex-1 rounded-md border px-3 py-2 text-xs font-medium transition-colors",
-                    boardSeats === n ? "border-slate-900 bg-slate-900 text-white" : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                    boardSeats === n ? "border-obsidian bg-obsidian text-white" : "border-slate-200 text-slate-600 hover:bg-slate-50"
                   )}
                 >
                   {n} seat{n === 1 ? "" : "s"}

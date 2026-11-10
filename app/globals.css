@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #020617;
+  --background: #0b132b;
   --foreground: #f8fafc;
 }
 
@@ -14,11 +14,14 @@
   --font-display: var(--font-space-grotesk);
   --font-mono: var(--font-jetbrains-mono);
 
-  --color-obsidian: #020617;
-  --color-surface: #0f172a;
-  --color-hairline: #1e293b;
+  /* Midnight Blue + White + Soft Pink palette (superseded the obsidian/amber system - see
+   * design.md's changelog note for the rationale). Token NAMES are kept stable (obsidian/surface/
+   * hairline/ink/signal) so every component already written against them re-themes for free. */
+  --color-obsidian: #0b132b;
+  --color-surface: #1c2541;
+  --color-hairline: #2e3a59;
   --color-ink: #f8fafc;
-  --color-signal: #ffb800;
+  --color-signal: #ec4899;
 }
 
 /*
