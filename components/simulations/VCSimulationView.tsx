@@ -2,10 +2,13 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Paperclip, ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Minus, Calculator, X } from "lucide-react";
+import { Mail, Paperclip, ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Minus, Calculator, Inbox, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { VCPayload, VCEmail } from "@/types/simulation";
 import VCWorkbench from "@/components/simulations/VCWorkbench";
+import TickerHeader from "@/components/simulations/vc/TickerHeader";
+import InboundHub from "@/components/simulations/vc/InboundHub";
+import SlackInterrupt from "@/components/simulations/vc/SlackInterrupt";
 import { recordInformationGather } from "@/lib/telemetry/tracker";
 
 interface VCSimulationViewProps {
@@ -23,12 +26,16 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
   const [memo, setMemo] = useState(memoDraft);
   const [slideIndex, setSlideIndex] = useState(0);
   const [workbenchOpen, setWorkbenchOpen] = useState(false);
+  const [inboundOpen, setInboundOpen] = useState(false);
 
   const selectedEmail: VCEmail | undefined = emails.find((e) => e.id === selectedEmailId);
   const activeSlide = deckSlides[slideIndex];
 
   return (
-    <div className="relative grid h-full grid-cols-1 gap-4 overflow-hidden md:grid-cols-2">
+    <div className="relative flex h-full min-h-0 flex-col gap-4 overflow-hidden">
+      <TickerHeader />
+      <SlackInterrupt />
+      <div className="relative grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-hidden md:grid-cols-2">
       {/* Left column: inbox + memo */}
       <div className="flex min-h-0 flex-col gap-4">
         <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-slate-200 bg-white shadow-sm">
@@ -194,6 +201,7 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
           {narrativePrompt}
         </p>
       </div>
+      </div>
 
       {/* Unit-economics workbench toggle + drawer */}
       {!workbenchOpen && (
@@ -222,6 +230,37 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
               </button>
             </div>
             <VCWorkbench payload={payload} />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Inbound Communications Hub toggle + drawer */}
+      {!inboundOpen && (
+        <button
+          onClick={() => setInboundOpen(true)}
+          className="absolute bottom-4 right-4 flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2.5 text-xs font-medium text-white shadow-lg hover:bg-slate-800"
+        >
+          <Inbox className="h-4 w-4" />
+          Inbound Hub
+        </button>
+      )}
+      <AnimatePresence>
+        {inboundOpen && (
+          <motion.div
+            initial={{ x: 360, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: 360, opacity: 0 }}
+            transition={{ type: "tween", duration: 0.2 }}
+            className="absolute inset-y-0 right-0 flex w-full max-w-sm flex-col overflow-hidden rounded-l-lg border border-slate-200 bg-white shadow-2xl"
+          >
+            <div className="flex min-h-0 flex-1 flex-col">
+              <div className="flex items-center justify-end border-b border-slate-200 px-2 py-1">
+                <button onClick={() => setInboundOpen(false)} className="rounded p-1 hover:bg-slate-100">
+                  <X className="h-4 w-4 text-slate-500" />
+                </button>
+              </div>
+              <InboundHub sessionId={sessionId} />
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
