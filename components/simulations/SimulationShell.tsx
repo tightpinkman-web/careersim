@@ -87,7 +87,12 @@ function deriveWorkspaceEmails(state: SimulationState): WorkspaceEmail[] {
 
 /** Seeds the Team Chat pane with one contextual message per step, so the thread isn't empty before
  *  any interruption ping fires. Keyed off state.currentStep by the caller so a new step always
- *  gets a fresh seed instead of appending forever. */
+ *  gets a fresh seed instead of appending forever. `timestamp` is deliberately left empty rather
+ *  than stamped with `new Date()` here - this runs during render, so a real wall-clock value would
+ *  differ (by milliseconds, sometimes crossing a minute boundary) between the server's render and
+ *  the client's hydration pass, and the Comms Hub now renders this message immediately rather than
+ *  behind an unclicked tab, which is exactly the text React's hydration check compares. WorkspaceShell
+ *  fills in the real timestamp client-side, after hydration, where that mismatch can't occur. */
 function deriveSeedMessages(state: SimulationState): WorkspaceChatMessage[] {
   return [
     {
@@ -95,7 +100,7 @@ function deriveSeedMessages(state: SimulationState): WorkspaceChatMessage[] {
       channel: "general",
       author: "Team Lead",
       text: state.narrativePrompt,
-      timestamp: new Date().toISOString(),
+      timestamp: "",
     },
   ];
 }

@@ -101,6 +101,7 @@ function formatTimestamp(iso: string): string {
   try {
     const date = new Date(iso);
     const hours24 = date.getHours();
+    if (Number.isNaN(hours24)) return "--:--";
     const hours12 = hours24 % 12 === 0 ? 12 : hours24 % 12;
     const minutes = date.getMinutes().toString().padStart(2, "0");
     const period = hours24 < 12 ? "AM" : "PM";
@@ -147,8 +148,12 @@ export default function WorkspaceShell({
   // those are freshly-allocated arrays on every parent render, including the once-a-second render
   // SimulationShell's own decision clock causes).
   useEffect(() => {
+    // Stamps a real timestamp here (client-only, post-hydration) rather than trusting whatever
+    // SimulationShell's deriveSeedMessages already put there - see that function's comment for why
+    // a render-time `new Date()` would cause a server/client hydration text mismatch.
+    const stamped = seedMessages.map((message) => (message.timestamp ? message : { ...message, timestamp: new Date().toISOString() }));
     // eslint-disable-next-line react-hooks/set-state-in-effect -- re-seeding the thread for a new step is the whole point of this effect
-    setMessages(seedMessages);
+    setMessages(stamped);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentionally keyed on stepKey only, see comment above
   }, [stepKey]);
 
