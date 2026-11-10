@@ -2,14 +2,30 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mail, Paperclip, ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Minus, Calculator, Inbox, X } from "lucide-react";
+import { Mail, Paperclip, ChevronLeft, ChevronRight, TrendingUp, TrendingDown, Minus, Calculator, Inbox, Database, Gauge, FileSignature, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { VCPayload, VCEmail } from "@/types/simulation";
 import VCWorkbench from "@/components/simulations/VCWorkbench";
 import TickerHeader from "@/components/simulations/vc/TickerHeader";
 import InboundHub from "@/components/simulations/vc/InboundHub";
 import SlackInterrupt from "@/components/simulations/vc/SlackInterrupt";
+import DataRoomCanvas from "@/components/simulations/vc/DataRoomCanvas";
+import UnitEconomicsModel from "@/components/simulations/vc/UnitEconomicsModel";
+import TermSheetBuilder from "@/components/simulations/vc/TermSheetBuilder";
 import { recordInformationGather } from "@/lib/telemetry/tracker";
+
+type DrawerKind = "workbench" | "dataroom" | "unitEconomics" | "inbound" | "termsheet" | null;
+
+const LEFT_DRAWER_TOOLS: Array<{ id: DrawerKind; label: string; icon: typeof Calculator }> = [
+  { id: "workbench", label: "Workbench", icon: Calculator },
+  { id: "dataroom", label: "Data Room", icon: Database },
+  { id: "unitEconomics", label: "Unit Econ", icon: Gauge },
+];
+
+const RIGHT_DRAWER_TOOLS: Array<{ id: DrawerKind; label: string; icon: typeof Inbox }> = [
+  { id: "inbound", label: "Inbound Hub", icon: Inbox },
+  { id: "termsheet", label: "Term Sheet", icon: FileSignature },
+];
 
 interface VCSimulationViewProps {
   payload: VCPayload;
@@ -25,8 +41,11 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
   const [selectedEmailId, setSelectedEmailId] = useState<string | null>(emails[0]?.id ?? null);
   const [memo, setMemo] = useState(memoDraft);
   const [slideIndex, setSlideIndex] = useState(0);
-  const [workbenchOpen, setWorkbenchOpen] = useState(false);
-  const [inboundOpen, setInboundOpen] = useState(false);
+  const [activeDrawer, setActiveDrawer] = useState<DrawerKind>(null);
+
+  function toggleDrawer(kind: DrawerKind) {
+    setActiveDrawer((current) => (current === kind ? null : kind));
+  }
 
   const selectedEmail: VCEmail | undefined = emails.find((e) => e.id === selectedEmailId);
   const activeSlide = deckSlides[slideIndex];
@@ -203,50 +222,66 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
       </div>
       </div>
 
-      {/* Unit-economics workbench toggle + drawer */}
-      {!workbenchOpen && (
-        <button
-          onClick={() => setWorkbenchOpen(true)}
-          className="absolute bottom-4 left-4 flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2.5 text-xs font-medium text-white shadow-lg hover:bg-slate-800"
-        >
-          <Calculator className="h-4 w-4" />
-          Workbench
-        </button>
-      )}
+      {/* Left-side analyst tools: Workbench / Data Room / Unit Economics */}
+      <div className="absolute bottom-4 left-4 flex flex-col-reverse gap-2">
+        {LEFT_DRAWER_TOOLS.map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            onClick={() => toggleDrawer(id)}
+            className={cn(
+              "flex items-center gap-2 rounded-md px-4 py-2.5 text-xs font-medium shadow-lg",
+              activeDrawer === id ? "bg-indigo-600 text-white" : "bg-slate-900 text-white hover:bg-slate-800"
+            )}
+          >
+            <Icon className="h-4 w-4" />
+            {label}
+          </button>
+        ))}
+      </div>
       <AnimatePresence>
-        {workbenchOpen && (
+        {(activeDrawer === "workbench" || activeDrawer === "dataroom" || activeDrawer === "unitEconomics") && (
           <motion.div
+            key={activeDrawer}
             initial={{ x: -360, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -360, opacity: 0 }}
             transition={{ type: "tween", duration: 0.2 }}
             className="absolute inset-y-0 left-0 flex w-full max-w-sm flex-col overflow-hidden rounded-r-lg border border-slate-200 bg-white shadow-2xl"
           >
-            <div className="flex items-center gap-2 border-b border-slate-200 px-4 py-3">
-              <Calculator className="h-4 w-4 text-slate-500" />
-              <h2 className="text-sm font-semibold text-slate-700">Workbench</h2>
-              <button onClick={() => setWorkbenchOpen(false)} className="ml-auto rounded p-1 hover:bg-slate-100">
-                <X className="h-4 w-4 text-slate-500" />
-              </button>
+            <div className="flex min-h-0 flex-1 flex-col">
+              <div className="flex items-center justify-end border-b border-slate-200 px-2 py-1">
+                <button onClick={() => setActiveDrawer(null)} className="rounded p-1 hover:bg-slate-100">
+                  <X className="h-4 w-4 text-slate-500" />
+                </button>
+              </div>
+              {activeDrawer === "workbench" && <VCWorkbench payload={payload} />}
+              {activeDrawer === "dataroom" && <DataRoomCanvas sessionId={sessionId} />}
+              {activeDrawer === "unitEconomics" && <UnitEconomicsModel />}
             </div>
-            <VCWorkbench payload={payload} />
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Inbound Communications Hub toggle + drawer */}
-      {!inboundOpen && (
-        <button
-          onClick={() => setInboundOpen(true)}
-          className="absolute bottom-4 right-4 flex items-center gap-2 rounded-md bg-slate-900 px-4 py-2.5 text-xs font-medium text-white shadow-lg hover:bg-slate-800"
-        >
-          <Inbox className="h-4 w-4" />
-          Inbound Hub
-        </button>
-      )}
+      {/* Right-side deal tools: Inbound Hub / Term Sheet Builder */}
+      <div className="absolute bottom-4 right-4 flex flex-col-reverse gap-2">
+        {RIGHT_DRAWER_TOOLS.map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            onClick={() => toggleDrawer(id)}
+            className={cn(
+              "flex items-center gap-2 rounded-md px-4 py-2.5 text-xs font-medium shadow-lg",
+              activeDrawer === id ? "bg-indigo-600 text-white" : "bg-slate-900 text-white hover:bg-slate-800"
+            )}
+          >
+            <Icon className="h-4 w-4" />
+            {label}
+          </button>
+        ))}
+      </div>
       <AnimatePresence>
-        {inboundOpen && (
+        {(activeDrawer === "inbound" || activeDrawer === "termsheet") && (
           <motion.div
+            key={activeDrawer}
             initial={{ x: 360, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: 360, opacity: 0 }}
@@ -255,11 +290,12 @@ export default function VCSimulationView({ payload, narrativePrompt, sessionId }
           >
             <div className="flex min-h-0 flex-1 flex-col">
               <div className="flex items-center justify-end border-b border-slate-200 px-2 py-1">
-                <button onClick={() => setInboundOpen(false)} className="rounded p-1 hover:bg-slate-100">
+                <button onClick={() => setActiveDrawer(null)} className="rounded p-1 hover:bg-slate-100">
                   <X className="h-4 w-4 text-slate-500" />
                 </button>
               </div>
-              <InboundHub sessionId={sessionId} />
+              {activeDrawer === "inbound" && <InboundHub sessionId={sessionId} />}
+              {activeDrawer === "termsheet" && <TermSheetBuilder />}
             </div>
           </motion.div>
         )}

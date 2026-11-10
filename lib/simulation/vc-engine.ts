@@ -127,3 +127,13 @@ export function applyCapitalAllocation(current: VCState, startupId: StartupId, i
     riskDelta: calculateRiskDelta(startup),
   };
 }
+
+/** ₹1,20,00,00,000 -> "₹120 Cr", ₹4,20,00,000 -> "₹4.2 L" - Indian-convention short form shared by
+ *  every VC-track component that displays the raw rupee integers above, so formatting never drifts
+ *  between the Inbound Hub, Data Room, Unit Economics Model, and Term Sheet Builder. */
+export function formatINR(amount: number): string {
+  const abs = Math.abs(amount);
+  if (abs >= 1_00_00_000) return `₹${(amount / 1_00_00_000).toFixed(abs >= 10_00_00_000 ? 0 : 1)} Cr`;
+  if (abs >= 1_00_000) return `₹${(amount / 1_00_000).toFixed(1)} L`;
+  return `₹${amount.toLocaleString("en-IN")}`;
+}

@@ -6,21 +6,11 @@ import { Inbox } from "lucide-react";
 import { cn } from "@/lib/utils";
 import CountdownTimer from "@/components/workspace/CountdownTimer";
 import { recordInformationGather } from "@/lib/telemetry/tracker";
-import { STARTUP_NAMES, INITIAL_VC_STATE, type StartupId } from "@/lib/simulation/vc-engine";
+import { STARTUP_NAMES, INITIAL_VC_STATE, formatINR, type StartupId } from "@/lib/simulation/vc-engine";
 
 const FOMO_TRIGGER_DELAY_MS = 45_000;
 const FOMO_WINDOW_SECONDS = 5 * 60;
 const FOMO_LABEL = "Rival Tier-1 Term Sheet Submitted: ₹12 Cr @ ₹100 Cr Valuation";
-
-/** ₹1,20,00,00,000 -> "₹120 Cr", ₹4,20,00,000 -> "₹4.2 L" - Indian-convention short form used across
- *  the deal threads below, since the raw rupee integers in lib/simulation/vc-engine.ts are not
- *  meant to be displayed as-is. */
-function formatINR(amount: number): string {
-  const abs = Math.abs(amount);
-  if (abs >= 1_00_00_000) return `₹${(amount / 1_00_00_000).toFixed(abs >= 10_00_00_000 ? 0 : 1)} Cr`;
-  if (abs >= 1_00_000) return `₹${(amount / 1_00_000).toFixed(1)} L`;
-  return `₹${amount.toLocaleString("en-IN")}`;
-}
 
 interface DealThread {
   startupId: StartupId;
