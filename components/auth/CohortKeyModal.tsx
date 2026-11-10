@@ -120,14 +120,14 @@ export default function CohortKeyModal() {
               ) : (
                 <>
                   <p className="mt-3 text-sm text-slate-400">
-                    Ask your counselor or Mindler representative for your school&apos;s cohort key to unlock full
+                    Ask your counselor or platform administrator for your school&apos;s cohort key to unlock full
                     multi-step enterprise simulations.
                   </p>
                   <input
                     value={accessKey}
                     onChange={(e) => setAccessKey(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && submit()}
-                    placeholder="e.g. MNDL-DPS2026"
+                    placeholder="e.g. ENT-DPS2026"
                     className="mt-4 min-h-11 w-full border border-hairline bg-slate-950/40 px-3 py-2 text-sm text-ink outline-none placeholder:text-slate-600 focus:border-signal"
                   />
                   {error && (

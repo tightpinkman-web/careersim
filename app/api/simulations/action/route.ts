@@ -201,7 +201,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         error:
-          "Your school is currently on the demo tier. Ask your counselor or Mindler representative for full enterprise access.",
+          "Your school is currently on the demo tier. Ask your counselor or platform administrator for full enterprise access.",
         code: "DEMO_CAP_REACHED",
       },
       { status: 403 }

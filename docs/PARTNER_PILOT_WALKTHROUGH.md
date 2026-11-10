@@ -1,8 +1,8 @@
-# Mindler Pilot Walkthrough
+# Enterprise Partner Pilot Walkthrough
 
 Live demo script for the partner entitlement layer (`lib/auth/entitlements.ts`). Covers the three
-behaviors a Mindler/DPS stakeholder will want to see: domain auto-upgrade, the public demo cap,
-and cohort-key redemption.
+behaviors an enterprise partner stakeholder will want to see: domain auto-upgrade, the public demo
+cap, and cohort-key redemption.
 
 Seeded partner org (already in the production database):
 
@@ -10,7 +10,7 @@ Seeded partner org (already in the production database):
 |---|---|
 | School | Delhi Public School, Vasant Kunj |
 | Domains | `dpsvk.com`, `dpsvk.edu.in` |
-| Access key | `MNDL-DPS2026` |
+| Access key | `ENT-DPS2026` |
 | Max students | 500 |
 
 ## Pre-flight (do this before the call, not during it)
@@ -37,7 +37,7 @@ Seeded partner org (already in the production database):
 2. Confirm `/api/auth/entitlement` returns `{"tier":"PUBLIC_DEMO", ...}`.
 3. Start a simulation from `/demo` and complete **3 decision steps**.
 4. On the 4th action attempt, the simulation blocks with the inline banner:
-   > "Your school is currently on the demo tier. Ask your counselor or Mindler representative for
+   > "Your school is currently on the demo tier. Ask your counselor or platform administrator for
    > full enterprise access."
    This is a hard server-side cap (`DEMO_STEP_CAP` in `lib/auth/entitlements.ts`, enforced in
    `app/api/simulations/action/route.ts`) - it isn't a client-side UI limit that could be bypassed
@@ -47,7 +47,7 @@ Seeded partner org (already in the production database):
 
 1. Still signed in as the `@gmail.com` demo-tier user from Beat 2, go to `/history`.
 2. Click **"Have a School Access Key?"**.
-3. Enter `MNDL-DPS2026` and submit.
+3. Enter `ENT-DPS2026` and submit.
 4. Confirm the modal shows "You're now enrolled under Delhi Public School, Vasant Kunj" and
    `/api/auth/entitlement` now returns `ENTERPRISE_STUDENT`.
 5. Start a **new** simulation and play past step 3 - the cap is gone, same as Beat 1.
@@ -69,5 +69,5 @@ Seeded partner org (already in the production database):
 - Cap not triggering at step 3: check `app/api/simulations/action` logs for `DEMO_CAP_REACHED` -
   if it's missing entirely, the signed-in student may already be `ENTERPRISE_STUDENT` from a
   previous test run on that same email; sign up fresh instead of reusing an account.
-- Cohort key rejected as invalid: confirm `MNDL-DPS2026` matches exactly (case-sensitive, no
+- Cohort key rejected as invalid: confirm `ENT-DPS2026` matches exactly (case-sensitive, no
   trailing space) - `select "accessKey" from school_organizations;`.

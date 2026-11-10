@@ -39,7 +39,7 @@ model SchoolOrganization {
   name        String
   domains     String[]
   accessKey   String?  @unique
-  partnerRef  String   @default("mindler")
+  partnerRef  String   @default("enterprise")
   maxStudents Int      @default(500)
   createdAt   DateTime @default(now()) @map("created_at")
 

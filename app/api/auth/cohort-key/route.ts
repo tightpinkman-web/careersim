@@ -36,7 +36,7 @@ export async function POST(request: Request) {
   const enrolledCount = await prisma.student.count({ where: { schoolId: organization.id } });
   if (enrolledCount >= organization.maxStudents && student.schoolId !== organization.id) {
     return NextResponse.json(
-      { error: "This cohort has reached its enrollment limit. Contact your Mindler representative.", code: "COHORT_FULL" },
+      { error: "This cohort has reached its enrollment limit. Contact your platform administrator.", code: "COHORT_FULL" },
       { status: 409 }
     );
   }
